@@ -71,4 +71,6 @@ model Bundle {
 
   name       String
   sitemapUrl String
+
+  parsedSitemap Json?
 }

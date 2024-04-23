@@ -14,3 +14,8 @@ export const UpdateBundleSchema = CreateBundleSchema.merge(
 export const DeleteBundleSchema = z.object({
   id: z.number(),
 });
+
+export const LoadBundleSchema = z.object({
+  id: z.number(),
+});
+

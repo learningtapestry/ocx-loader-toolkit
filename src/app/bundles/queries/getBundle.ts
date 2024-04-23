@@ -12,7 +12,6 @@ export default resolver.pipe(
   resolver.zod(GetBundle),
   resolver.authorize(),
   async ({ id }) => {
-    // TODO: in multi-tenant app, you must add validation to ensure correct tenant
     const bundle = await db.bundle.findFirst({ where: { id } });
 
     if (!bundle) throw new NotFoundError();
