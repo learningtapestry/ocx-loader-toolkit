@@ -1,18 +1,21 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
-import { New__ModelName } from "../components/NewBundle";
+import { NodesList } from "./components/NodesList";
 
 export const metadata: Metadata = {
-  title: "New Bundle",
-  description: "Create a new bundle",
+  title: "Nodes",
+  description: "List of nodes",
 };
 
 export default function Page() {
   return (
     <div>
-      <h1>Create New Bundle</h1>
+      <p>
+        <Link href={"/nodes/new"}>Create Node</Link>
+      </p>
       <Suspense fallback={<div>Loading...</div>}>
-        <New__ModelName />
+        <NodesList />
       </Suspense>
     </div>
   );

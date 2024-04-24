@@ -73,4 +73,25 @@ model Bundle {
   sitemapUrl String
 
   parsedSitemap Json?
+  nodes         Node[]
+}
+
+model Node {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bundleId Int
+
+  parentId        Int?
+  positionAsChild Int  @default(0)
+
+  bundle Bundle @relation(fields: [bundleId], references: [id])
+
+  parent   Node?  @relation("Node", fields: [parentId], references: [id])
+  children Node[] @relation("Node")
+
+  content  String
+  metadata Json
+  url      String
 }

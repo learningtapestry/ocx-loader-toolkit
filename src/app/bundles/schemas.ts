@@ -15,7 +15,7 @@ export const DeleteBundleSchema = z.object({
   id: z.number(),
 });
 
-export const LoadBundleSchema = z.object({
+export const ImportBundleSchema = z.object({
   id: z.number(),
 });
 

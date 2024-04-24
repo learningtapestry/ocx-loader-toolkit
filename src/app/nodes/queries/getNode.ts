@@ -3,26 +3,20 @@ import { resolver } from "@blitzjs/rpc";
 import db from "db";
 import { z } from "zod";
 
-const GetBundle = z.object({
+const GetNode = z.object({
   // This accepts type of undefined, but is required at runtime
   id: z.number().optional().refine(Boolean, "Required"),
 });
 
 export default resolver.pipe(
-  resolver.zod(GetBundle),
+  resolver.zod(GetNode),
   resolver.authorize(),
   async ({ id }) => {
-    const bundle = await db.bundle.findFirst({
-      where: { id },
-      include: {
-        nodes: {
-          orderBy: { positionAsChild: 'asc' }
-        },
-      }
-    });
+    // TODO: in multi-tenant app, you must add validation to ensure correct tenant
+    const node = await db.node.findFirst({ where: { id } });
 
-    if (!bundle) throw new NotFoundError();
+    if (!node) throw new NotFoundError();
 
-    return bundle;
+    return node;
   }
 );

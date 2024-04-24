@@ -3,27 +3,45 @@ import { setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import deleteBundle from "../mutations/deleteBundle";
-import loadBundle from "../mutations/loadBundle";
+import importBundle from "../mutations/importBundle";
 import getBundle from "../queries/getBundle";
+
+import OcxBundle from "@/src/lib/OcxBundle";
+
+import Node from "./Node";
 
 export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const router = useRouter();
   const [deleteBundleMutation] = useMutation(deleteBundle);
-  const [loadBundleMutation] = useMutation(loadBundle);
+  const [importBundleMutation] = useMutation(importBundle);
   const [bundle] = useQuery(getBundle, { id: bundleId });
+
+  const ocxBundle = new OcxBundle(bundle, bundle.nodes);
 
   return (
     <>
       <div>
         <h1>Bundle {bundle.name}</h1>
-        <pre>{JSON.stringify(bundle, null, 2)}</pre>
+
+        {
+          ocxBundle.rootNodes.map((node) => <Node key={node.ocxId} node={node} />)
+        }
+
+        {
+          bundle.parsedSitemap && (
+            <div>
+              <h2>Parsed Sitemap</h2>
+              <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>
+            </div>
+          )
+        }
 
         <Link href={`/bundles/${bundle.id}/edit`}>Edit</Link>
 
         <button
           type="button"
           onClick={async () => {
-            const updatedBundle = await loadBundleMutation({ id: bundle.id })
+            const updatedBundle = await importBundleMutation({ id: bundle.id })
             await setQueryData(getBundle, { id: bundle.id }, updatedBundle)
           }}
           style={{ marginLeft: "0.5rem" }}
