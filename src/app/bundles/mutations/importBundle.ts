@@ -1,8 +1,9 @@
 import { resolver } from "@blitzjs/rpc";
-import db from "db";
 import { ImportBundleSchema } from "../schemas";
 
-import { Prisma } from ".prisma/client"
+import { Prisma, Node as PrismaNode } from ".prisma/client"
+import db from "db";
+
 import * as cheerio from 'cheerio';
 
 import parseSitemap from "@/src/app/ocx/loader/utils/parseSitemap"
@@ -49,20 +50,21 @@ export default resolver.pipe(
           }
         });
 
-        return node;
+        return node as PrismaNode;
       }
     }))
 
     // assign parent and update positionAsChild
-    nodes.forEach(async (node) => {
-      if (!node) return;
+    for (const node of nodes) {
+      if (!node) continue;
 
       const metadata = node.metadata as Prisma.JsonObject;
       const parts = metadata.hasPart as Prisma.JsonObject[];
 
-      parts.forEach(async (childData, index) => {
-        const ocxId = childData['@id'];
-        const child = nodes.find(n => n.metadata['@id'] === ocxId);
+      for (const childData of parts) {
+        const index = parts.indexOf(childData)
+        const ocxId = childData['@id'] as string;
+        const child = nodes.find(n => (n!.metadata as Prisma.JsonObject)['@id'] === ocxId);
         if (child) {
           await db.node.update({
             where: { id: child.id },
@@ -74,8 +76,8 @@ export default resolver.pipe(
         } else {
           // TODO: the "child" should be an element in the html (content)
         }
-      });
-    });
+      }
+    }
 
     const updatedBundle = await db.bundle.update({
       where: { id },

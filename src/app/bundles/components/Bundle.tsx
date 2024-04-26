@@ -1,12 +1,15 @@
 "use client";
-import { setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
+import { useState } from 'react';
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+import { setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
 import deleteBundle from "../mutations/deleteBundle";
 import importBundle from "../mutations/importBundle";
 import getBundle from "../queries/getBundle";
 
-import OcxBundle from "@/src/lib/OcxBundle";
+import OcxBundle from "@/src/app/lib/OcxBundle";
 
 import Node from "./Node";
 
@@ -15,6 +18,8 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
   const [bundle] = useQuery(getBundle, { id: bundleId });
+
+  const [showSitemap, setShowSitemap] = useState(false);
 
   const ocxBundle = new OcxBundle(bundle, bundle.nodes);
 
@@ -30,8 +35,11 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         {
           bundle.parsedSitemap && (
             <div>
-              <h2>Parsed Sitemap</h2>
-              <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>
+              <h2>Parsed Sitemap <button onClick={() => setShowSitemap(!showSitemap)}>Toggle Sitemap</button></h2>
+
+              {showSitemap &&
+                <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>
+              }
             </div>
           )
         }

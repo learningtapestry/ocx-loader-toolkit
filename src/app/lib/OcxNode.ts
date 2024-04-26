@@ -1,0 +1,225 @@
+import { Node as PrismaNode, Prisma, PrismaClient } from "@prisma/client"
+
+import OcxBundle from "./OcxBundle";
+
+export interface NodePartData {
+  "@id": string;
+  "@type": string;
+  name: string;
+  alternateName: string;
+}
+
+export default class OcxNode {
+  prismaNode: PrismaNode;
+  ocxBundle: OcxBundle;
+
+  childrenNotFoundData: Prisma.JsonObject[] = [];
+
+  constructor(prismaNode: PrismaNode, ocxBundle: OcxBundle) {
+    this.prismaNode = prismaNode;
+    this.ocxBundle = ocxBundle;
+  }
+
+  get metadata() {
+    return this.prismaNode.metadata as Prisma.JsonObject;
+  }
+
+  get ocxId() : string {
+    return this.metadata["@id"] as string;
+  }
+
+  get dbId() : number {
+    return this.prismaNode.id;
+  }
+
+  get ocxType() : string {
+    return this.metadata["@type"] as string;
+  }
+
+  // the parent here is based on hasPart. In theory it should be the
+  // same as isPartOf, but an incongruent OCX file could have a different - which is not acceptable
+  get parent() : OcxNode | null {
+    const parentId = this.prismaNode.parentId;
+    const parent = parentId ? this.ocxBundle.ocxNodes.find((node) => node.prismaNode.id === parentId) : null;
+    return parent || null;
+  }
+
+  get isPartOf() : OcxNode | null {
+    const parentId = this.metadata.isPartOf ? (this.metadata.isPartOf as unknown as NodePartData)["@id"] as string : null;
+    return parentId ? this.ocxBundle.findNodeByOcxId(parentId) : null;
+  }
+
+  get children() : OcxNode[] {
+    if (!this.metadata.hasPart) return [];
+
+    const children : OcxNode[] = [];
+    const childrenNotFoundData : Prisma.JsonObject[] = [];
+
+    (this.metadata.hasPart as Prisma.JsonObject[]).forEach((childData) => {
+      const ocxId = childData["@id"] as string;
+      const child = this.ocxBundle.findNodeByOcxId(ocxId);
+
+      if (child) {
+        children.push(child);
+      } else {
+        childrenNotFoundData.push(childData);
+      }
+    });
+
+    this.childrenNotFoundData = childrenNotFoundData;
+
+    return children;
+  }
+
+  get asPartData() : NodePartData {
+    return {
+      "@id": this.ocxId,
+      "@type": this.ocxType,
+      "name": this.metadata.name as string,
+      "alternateName": this.metadata.alternateName as string
+    }
+  }
+
+  async removeChild(db: PrismaClient, child: OcxNode) {
+    await db.$transaction([
+      db.node.update({
+        where: { id: this.prismaNode.id },
+        data: {
+          metadata: {
+            ...this.metadata,
+            hasPart: (this.metadata.hasPart as Prisma.JsonObject[])
+              .filter((childData) => childData["@id"] !== child.ocxId)
+          }
+        }
+      }),
+      db.node.update({
+        where: { id: child.prismaNode.id },
+        data: {
+          metadata: {
+            ...child.metadata,
+            isPartOf: null,
+          },
+          parentId: null
+        }
+      })
+    ]);
+  }
+
+  async setParent(db: PrismaClient, parent: OcxNode, position: 'firstChild' | 'lastChild') {
+    await db.$transaction(async (tx) => {
+      // update the previous parent
+      if (this.parent) {
+        await db.node.update({
+          where: { id: this.parent.prismaNode.id },
+          data: {
+            metadata: {
+              ...this.parent.metadata,
+              hasPart: (this.parent.metadata.hasPart as Prisma.JsonObject[])
+                .filter((childData) => childData["@id"] !== this.ocxId)
+            }
+          }
+        });
+      }
+
+      // update the new parent
+      const updatedParentHasPart = position === 'firstChild' ?
+        [this.asPartData as unknown as Prisma.JsonObject, ...(parent.metadata.hasPart as Prisma.JsonObject[])]
+        :
+        [...(parent.metadata.hasPart as Prisma.JsonObject[]), this.asPartData as unknown as Prisma.JsonObject]
+      ;
+
+      await tx.node.update({
+        where: { id: parent.prismaNode.id },
+        data: {
+          metadata: {
+            ...parent.metadata,
+            hasPart: updatedParentHasPart
+          }
+        }
+      });
+
+      // update the node
+      await tx.node.update({
+        where: { id: this.prismaNode.id },
+        data: {
+          metadata: {
+            ...this.metadata,
+            isPartOf: parent.asPartData as unknown as Prisma.JsonObject,
+          },
+          parentId: parent.prismaNode.id
+        }
+      });
+    });
+  }
+
+  async delete(db : PrismaClient) {
+    await db.$transaction(async (tx) => {
+      if (this.parent) {
+        await tx.node.update({
+          where: { id: this.parent.prismaNode.id },
+          data: {
+            metadata: {
+              ...this.parent.metadata,
+              hasPart: (this.parent.metadata.hasPart as Prisma.JsonObject[])
+                .filter((childData) => childData["@id"] !== this.ocxId)
+            }
+          }
+        });
+      }
+
+      for (const child of this.children) {
+        await tx.node.update({
+          where: { id: child.prismaNode.id },
+          data: {
+            metadata: {
+              ...child.metadata,
+              isPartOf: null,
+            },
+            parentId: null
+          }
+        });
+      }
+
+      await tx.node.delete({
+        where: { id: this.prismaNode.id }
+      });
+    });
+  }
+
+  async deleteBranch(db : PrismaClient) {
+    // remove from parent if there is one
+    // delete the node and all its descendants
+    await db.$transaction(async (tx) => {
+      if (this.parent) {
+        await tx.node.update({
+          where: { id: this.parent.prismaNode.id },
+          data: {
+            metadata: {
+              ...this.parent.metadata,
+              hasPart: (this.parent.metadata.hasPart as Prisma.JsonObject[])
+                .filter((childData) => childData["@id"] !== this.ocxId)
+            }
+          }
+        });
+      }
+
+      // find all descendants
+      const descendants : OcxNode[] = [this];
+      let i = 0;
+      while (i < descendants.length) {
+        const node = descendants[i];
+        descendants.push(...node.children);
+        i++;
+      }
+
+      // delete all descendants
+      const ids = descendants.map((descendant) => descendant.prismaNode.id);
+
+      console.log('ids', ids);
+
+      await tx.node.deleteMany({
+        where: { id: { in: ids } }
+      });
+    });
+  }
+}

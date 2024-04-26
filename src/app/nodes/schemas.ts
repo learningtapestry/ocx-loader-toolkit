@@ -12,3 +12,9 @@ export const UpdateNodeSchema = CreateNodeSchema.merge(
 export const DeleteNodeSchema = z.object({
   id: z.number(),
 });
+
+export const SetNodeParentSchema = z.object({
+  id: z.number(),
+  parentId: z.number().nullable(),
+  position: z.enum(["firstChild", "lastChild", "remove"])
+});

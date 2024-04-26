@@ -37,3 +37,4 @@ yarn-error.log*
 next-env.d.ts
 
 .vscode
+/src/node_modules/.vitest/results.json

@@ -1,10 +1,27 @@
 import React, { useState } from "react";
-import OcxNode from "@/src/lib/OcxNode"
+
+import OcxNode from "@/src/app/lib/OcxNode"
 
 import XMLViewer from 'react-xml-viewer';
 
+import { useMutation } from "@blitzjs/rpc"
+import setNodeParent from "@/src/app/nodes/mutations/setNodeParent"
+import deleteNode from "@/src/app/nodes/mutations/deleteNode"
+
+
 export default function Node({ node }: { node: OcxNode }) {
   const [showMetadata, setShowMetadata] = useState(false);
+
+  const [setParentNodeMutation] = useMutation(setNodeParent);
+  const [deleteNodeMutation] = useMutation(deleteNode);
+
+  const onFixParentNode = async function(position: 'firstChild' | 'lastChild' | 'remove'){
+    await setParentNodeMutation({id: node.dbId, parentId: node.isPartOf && node.ocxBundle.findNodeByOcxId(node.isPartOf?.ocxId)?.dbId, position});
+  };
+
+  const onDeleteNode = async function(){
+    await deleteNodeMutation({id: node.dbId});
+  };
 
   return (
     <div key={node.ocxId} style={{paddingLeft: 16, borderLeft: '1px black solid'}}>
@@ -28,6 +45,13 @@ export default function Node({ node }: { node: OcxNode }) {
               <li>Parent id: {node.parent?.ocxId}</li>
               <li>isPartOf id: {node.isPartOf?.ocxId}</li>
             </ul>
+
+            <div style={{display: 'flex', gap: 4}}>
+              <button onClick={() => onFixParentNode('lastChild')}>Fix: as last node</button>
+              <button onClick={() => onFixParentNode('firstChild')}>Fix: as first node</button>
+              <button onClick={() => onFixParentNode('remove')}>Remove from parent</button>
+              <button onClick={onDeleteNode}>Delete node</button>
+            </div>
           </div>
         )
       }
