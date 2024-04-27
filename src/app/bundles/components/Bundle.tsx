@@ -17,7 +17,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const router = useRouter();
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
-  const [bundle] = useQuery(getBundle, { id: bundleId });
+  const [bundle, {refetch}] = useQuery(getBundle, { id: bundleId });
 
   const [showSitemap, setShowSitemap] = useState(false);
 
@@ -29,7 +29,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         <h1>Bundle {bundle.name}</h1>
 
         {
-          ocxBundle.rootNodes.map((node) => <Node key={node.ocxId} node={node} />)
+          ocxBundle.rootNodes.map((node) => <Node key={node.ocxId} node={node} refetchBundle={refetch} />)
         }
 
         {

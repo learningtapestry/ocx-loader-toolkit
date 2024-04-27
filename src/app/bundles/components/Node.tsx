@@ -9,7 +9,7 @@ import setNodeParent from "@/src/app/nodes/mutations/setNodeParent"
 import deleteNode from "@/src/app/nodes/mutations/deleteNode"
 
 
-export default function Node({ node }: { node: OcxNode }) {
+export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBundle: Function }) {
   const [showMetadata, setShowMetadata] = useState(false);
 
   const [setParentNodeMutation] = useMutation(setNodeParent);
@@ -17,10 +17,12 @@ export default function Node({ node }: { node: OcxNode }) {
 
   const onFixParentNode = async function(position: 'firstChild' | 'lastChild' | 'remove'){
     await setParentNodeMutation({id: node.dbId, parentId: node.isPartOf && node.ocxBundle.findNodeByOcxId(node.isPartOf?.ocxId)?.dbId, position});
+    refetchBundle();
   };
 
   const onDeleteNode = async function(){
     await deleteNodeMutation({id: node.dbId});
+    refetchBundle();
   };
 
   return (
@@ -66,7 +68,7 @@ export default function Node({ node }: { node: OcxNode }) {
       }
 
       {
-        node.children.map((child : OcxNode) => <Node key={child.ocxId} node={child} />)
+        node.children.map((child : OcxNode) => <Node key={child.ocxId} node={child} refetchBundle={refetchBundle} />)
       }
     </div>
   );
