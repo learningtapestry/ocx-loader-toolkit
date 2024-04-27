@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import OcxNode from "@/src/app/lib/OcxNode"
 
 import XMLViewer from 'react-xml-viewer';
+import JsonView from '@uiw/react-json-view';
 
 import { useMutation } from "@blitzjs/rpc"
 import setNodeParent from "@/src/app/nodes/mutations/setNodeParent"
@@ -11,6 +12,7 @@ import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotF
 
 export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBundle: Function }) {
   const [showMetadata, setShowMetadata] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   const [setParentNodeMutation] = useMutation(setNodeParent);
   const [deleteNodeMutation] = useMutation(deleteNode);
@@ -33,17 +35,33 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
 
   return (
     <div key={node.ocxId} style={{paddingLeft: 16, borderLeft: '1px black solid'}}>
-      <h2>{node.prismaNode.url}</h2>
-      <h3>{node.ocxId}</h3>
-
-      <div style={{marginBottom: 4}}>
+      <h2>
+        <span dangerouslySetInnerHTML={{__html: `${node.metadata!.name as string}`}}></span>
+        &nbsp;
+        <button onClick={() => setShowContent(!showContent)}>Toggle Content</button>
+        &nbsp;
         <button onClick={() => setShowMetadata(!showMetadata)}>Toggle Metadata</button>
-        {showMetadata && <pre>{JSON.stringify(node.metadata, null, 2)}</pre>}
-      </div>
+      </h2>
 
-      <div>
-        <XMLViewer xml={node.prismaNode.content} />
-      </div>
+      {showMetadata &&
+        <div>
+          Sitemap Url: {node.prismaNode.url}
+
+          <div style={{margin: '8px 0'}}>
+            <JsonView
+              value={node.metadata}
+              displayObjectSize={false}
+              displayDataTypes={false}
+            />
+          </div>
+        </div>
+      }
+
+      {showContent &&
+        <div>
+          <XMLViewer xml={node.prismaNode.content} />
+        </div>
+      }
 
       {
         node.parent != node.isPartOf && (
