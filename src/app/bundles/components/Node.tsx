@@ -7,13 +7,14 @@ import XMLViewer from 'react-xml-viewer';
 import { useMutation } from "@blitzjs/rpc"
 import setNodeParent from "@/src/app/nodes/mutations/setNodeParent"
 import deleteNode from "@/src/app/nodes/mutations/deleteNode"
-
+import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotFound"
 
 export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBundle: Function }) {
   const [showMetadata, setShowMetadata] = useState(false);
 
   const [setParentNodeMutation] = useMutation(setNodeParent);
   const [deleteNodeMutation] = useMutation(deleteNode);
+  const [removeChildrenNotFoundMutation] = useMutation(removeChildrenNotFound);
 
   const onFixParentNode = async function(position: 'firstChild' | 'lastChild' | 'remove'){
     await setParentNodeMutation({id: node.dbId, parentId: node.isPartOf && node.ocxBundle.findNodeByOcxId(node.isPartOf?.ocxId)?.dbId, position});
@@ -24,6 +25,11 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
     await deleteNodeMutation({id: node.dbId});
     refetchBundle();
   };
+
+  const onRemoveChildrenNotFound = async function(){
+    await removeChildrenNotFoundMutation({id: node.dbId});
+    refetchBundle();
+  }
 
   return (
     <div key={node.ocxId} style={{paddingLeft: 16, borderLeft: '1px black solid'}}>
@@ -61,7 +67,7 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
       {
         node.childrenNotFoundData.length > 0 && (
           <div style={{ color: "red" }}>
-            <h3>Children not found</h3>
+            <h3>Children not found <button onClick={onRemoveChildrenNotFound}>Remove Children Not Found</button></h3>
             <pre>{JSON.stringify(node.childrenNotFoundData, null, 2)}</pre>
           </div>
         )

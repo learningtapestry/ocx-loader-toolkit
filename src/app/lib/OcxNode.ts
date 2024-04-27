@@ -222,4 +222,21 @@ export default class OcxNode {
       });
     });
   }
+
+  async removeChildrenNotFound(db: PrismaClient) {
+    const cleanedHasPart = (this.metadata.hasPart as unknown as NodePartData[]).filter((childData) => {
+      const ocxId = childData["@id"] as string;
+      return !!this.ocxBundle.findNodeByOcxId(ocxId);
+    });
+
+    await db.node.update({
+      where: { id: this.prismaNode.id },
+      data: {
+        metadata: {
+          ...this.metadata,
+          hasPart: cleanedHasPart as unknown as Prisma.JsonObject[]
+        }
+      }
+    });
+  }
 }

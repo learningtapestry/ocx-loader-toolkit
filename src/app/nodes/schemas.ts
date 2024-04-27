@@ -13,6 +13,10 @@ export const DeleteNodeSchema = z.object({
   id: z.number(),
 });
 
+export const RemoveChildrenNotFoundSchema = z.object({
+  id: z.number(),
+});
+
 export const SetNodeParentSchema = z.object({
   id: z.number(),
   parentId: z.number().nullable(),

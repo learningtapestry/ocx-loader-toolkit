@@ -256,4 +256,67 @@ describe('OcxNode', () => {
       expect(ocxNode1.children).to.have.length(0);
     });
   });
+
+  describe('#removeChildrenNotFound', () => {
+    let ocxNode4: OcxNode;
+
+    beforeEach(async () => {
+      await db.node.create({
+        data: {
+          id: 4,
+          bundleId: prismaBundle.id,
+          metadata: {
+            "@id": 'node4',
+            "@type": 'type',
+            "name": 'name4',
+            "alternateName": 'alternateName4',
+            "hasPart": [
+              {
+                "@id": 'nonexistent',
+                "@type": 'type',
+                "name": 'nonexistent',
+                "alternateName": 'nonexistent'
+              },
+              {
+                "@id": 'node2',
+                "@type": 'type',
+                "name": 'node2',
+                "alternateName": 'node2'
+              }
+            ],
+            "isPartOf": null
+          },
+          parentId: null,
+          positionAsChild: 0,
+          content: '',
+          url: 'http://localhost'
+        }
+      });
+
+      await reloadFromDb();
+
+      ocxNode4 = ocxBundle.findNodeByDbId(4);
+    });
+
+    it('should remove children not found', async () => {
+      await ocxNode4.removeChildrenNotFound(db);
+
+      await reloadFromDb();
+      ocxNode4 = ocxBundle.findNodeByDbId(4);
+
+      expect(ocxNode4.children).to.have.length(1);
+      expect(ocxNode4.children[0].ocxId).to.equal(ocxNode2.ocxId);
+
+      expect(ocxNode4.metadata.hasPart).to.have.length(1);
+    });
+
+    it('should not change anything if all children are found', async () => {
+      await ocxNode1.removeChildrenNotFound(db);
+
+      await reloadFromDb();
+
+      expect(ocxNode1.children).to.have.length(1);
+      expect(ocxNode1.metadata.hasPart).to.have.length(1);
+    });
+  });
 });
