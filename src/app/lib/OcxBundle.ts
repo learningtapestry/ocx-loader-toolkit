@@ -10,6 +10,7 @@ import parseSitemap from "@/src/app/ocx/loader/utils/parseSitemap"
 import absolutizeUrl from "@/src/app/ocx/loader/utils/absolutizeUrl"
 import { ParsedSitemap } from "@/src/app/ocx/loader/types"
 import { Prisma } from ".prisma/client"
+import { parseStringPromise } from "xml2js"
 
 const METADATA_SELECTOR = 'script[type="application/ld+json"]';
 
@@ -71,6 +72,20 @@ export default class OcxBundle {
       sitemap = await parseSitemap(this.prismaBundle.sitemapUrl);
     }
 
+    const filesTexts: { [key: string]: string } = {};
+
+    for (const url of sitemap.urls) {
+      const absoluteUrl = absolutizeUrl(this.prismaBundle.sitemapUrl, url);
+      const response = await fetch(absoluteUrl);
+      const html = await response.text();
+
+      filesTexts[url] = html;
+    }
+
+    return this.createNodesFromFilesTexts(db, filesTexts);
+  }
+
+  async createNodesFromFilesTexts(db: PrismaClient, filesTexts: { [key: string]: string }) {
     await db.node.deleteMany({
       where: { bundleId: this.prismaBundle.id }
     });
@@ -78,28 +93,23 @@ export default class OcxBundle {
     const bundleErrors: Prisma.JsonObject[] = [];
 
     // load all files in the sitemap and create a node for each
-    const nodes = await Promise.all(sitemap.urls.map(async (url, index) => {
-      const response = await fetch(absolutizeUrl(this.prismaBundle.sitemapUrl, url));
-      const html = await response.text();
+    const nodes = await Promise.all(Object.keys(filesTexts).map(async (url, index) => {
+      const html = filesTexts[url];
 
-      if (!response.ok) {
-        bundleErrors.push({ url, status: response.status });
-      } else {
-        const $ = cheerio.load(html);
-        const content = $('body').first();
-        const metadata = JSON.parse($(METADATA_SELECTOR).first().html()!);
+      const $ = cheerio.load(html);
+      const content = $('body').first();
+      const metadata = JSON.parse($(METADATA_SELECTOR).first().html()!);
 
-        const node = await db.node.create({
-          data: {
-            url,
-            content: content.html() as string,
-            metadata,
-            bundleId: this.prismaBundle.id,
-          }
-        });
+      const node = await db.node.create({
+        data: {
+          url,
+          content: content.html() as string,
+          metadata,
+          bundleId: this.prismaBundle.id,
+        }
+      });
 
-        return node as PrismaNode;
-      }
+      return node as PrismaNode;
     }));
 
     await db.bundle.update({
@@ -228,5 +238,37 @@ export default class OcxBundle {
     await this.assignParentsToNodes(db, nodes);
 
     await this.reloadFromDb(db);
+  }
+
+  async importFromZipFile(db: PrismaClient, zipContent: File | Buffer, isBase64: boolean = false) {
+    const zip = await JSZip.loadAsync(zipContent, { base64: isBase64 });
+
+    const sitemapFile = zip.file('sitemap.xml');
+    if (!sitemapFile) {
+      throw new Error('sitemap.xml not found in the zip file');
+    }
+
+    const sitemapContent = await sitemapFile.async('text');
+    const parsedSitemap = await parseStringPromise(sitemapContent);
+    const urls = parsedSitemap.urlset.url.map((url: any) => url.loc[0]);
+
+    const filesTexts: { [key: string]: string } = {};
+
+    for (const url of urls) {
+      const file = zip.file(url);
+      if (!file) {
+        throw new Error(`File not found in the zip: ${url}`);
+      }
+
+      filesTexts[url] =await file.async('text');
+    }
+
+    const nodes = await this.createNodesFromFilesTexts(db, filesTexts);
+    await this.splitPartNodes(db, nodes);
+    await this.assignParentsToNodes(db, nodes);
+
+    await this.reloadFromDb(db);
+
+    return this.prismaBundle;
   }
 }

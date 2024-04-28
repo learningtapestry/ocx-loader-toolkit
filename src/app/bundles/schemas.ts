@@ -19,3 +19,8 @@ export const ImportBundleSchema = z.object({
   id: z.number(),
 });
 
+export const ImportBundleFromZipFileSchema = z.object({
+  id: z.number(),
+  zipDataUrl: z.string(),
+});
+

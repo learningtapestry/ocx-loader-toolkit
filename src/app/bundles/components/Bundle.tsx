@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
 import deleteBundle from "../mutations/deleteBundle";
 import importBundle from "../mutations/importBundle";
+import importBundleFromZipFile from "@/src/app/bundles/mutations/importBundleFromZipFile";
 import getBundle from "../queries/getBundle";
 
 import OcxBundle from "@/src/app/lib/OcxBundle";
@@ -17,6 +18,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const router = useRouter();
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
+  const [importBundleFromZipFileMutation] = useMutation(importBundleFromZipFile);
   const [bundle, {refetch}] = useQuery(getBundle, { id: bundleId });
 
   const [showSitemap, setShowSitemap] = useState(false);
@@ -85,6 +87,32 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
           }}
           style={{ marginLeft: "0.5rem" }}
         >Download zip</button>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.zip';
+
+            fileInput.addEventListener('change', async () => {
+              const file = fileInput.files?.[0];
+
+              if (file) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+
+                reader.onload = async () => {
+                  const updatedBundle = await importBundleFromZipFileMutation({ id: bundle.id, zipDataUrl: reader.result as string});
+                  await setQueryData(getBundle, { id: bundle.id }, updatedBundle);
+                }
+              }
+            });
+
+            fileInput.click();
+          }}
+          style={{ marginLeft: "0.5rem" }}
+        >Import zip</button>
       </div>
     </>
   );

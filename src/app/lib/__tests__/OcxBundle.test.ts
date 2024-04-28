@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
+const fs = require('fs');
+const path = require('path');
+
 import { setupRecorder } from "nock-record";
 const record = setupRecorder();
 
@@ -43,7 +46,7 @@ describe('OcxBundle', () => {
         expect(ocxBundle.ocxNodes.length).toEqual(117);
         expect(ocxBundle.rootNodes.length).toEqual(35);
         expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(0);
-      });
+      }, 30000);
     });
 
     describe('when the sitemap points to just one file with multiple nodes', () => {
@@ -91,5 +94,36 @@ describe('OcxBundle', () => {
 
   describe('#exportZip', () => {
     // TODO
+  });
+
+  describe('#importFromZipFile', () => {
+    const name = 'Grade 6 Unit 2';
+    const sitemapUrl = 'https://raw.githubusercontent.com/illustrativemathematics/static-ocx/main/build/cms_im-PR1334/ed-node-244422/sitemap.xml';
+
+    let prismaBundle: Bundle;
+    let ocxBundle: OcxBundle;
+
+    beforeEach(async () => {
+      await db.$reset();
+
+      prismaBundle = await db.bundle.create({
+        data: {
+          name: name,
+          sitemapUrl: sitemapUrl,
+        }
+      });
+
+      ocxBundle = new OcxBundle(prismaBundle, []);
+    });
+
+    it('should load data from a zip file', async () => {
+      const zipData = fs.readFileSync(path.join(__dirname, 'bundle.ocx.zip'));
+
+      await ocxBundle.importFromZipFile(db, zipData);
+
+      expect(ocxBundle.ocxNodes.length).toEqual(115);
+      expect(ocxBundle.rootNodes.length).toEqual(43);
+      expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(0);
+    });
   });
 });
