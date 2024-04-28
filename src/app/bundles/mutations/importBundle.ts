@@ -28,13 +28,15 @@ export default resolver.pipe(
       where: { bundleId: id }
     });
 
-    // create all nodes in the DB
+    const bundleErrors: Prisma.JsonObject[] = [];
+
+    // load all files in the sitemap and create a node for each
     const nodes = await Promise.all(sitemap.urls.map(async (url, index) => {
       const response = await fetch(absolutizeUrl(bundle.sitemapUrl, url));
       const html = await response.text();
 
       if (!response.ok) {
-        console.log(url);
+        bundleErrors.push({ url, status: response.status });
       } else {
         const $ = cheerio.load(html);
         const content = $('body').first();
@@ -46,15 +48,21 @@ export default resolver.pipe(
             content: content.html() as string,
             metadata,
             bundleId: id,
-            positionAsChild: index
           }
         });
 
         return node as PrismaNode;
       }
-    }))
+    }));
 
-    // assign parent and update positionAsChild
+    await db.bundle.update({
+      where: { id },
+      data: {
+        errors: bundleErrors
+      }
+    });
+
+    // assign parent
     for (const node of nodes) {
       if (!node) continue;
 
@@ -62,7 +70,6 @@ export default resolver.pipe(
       const parts = metadata.hasPart as Prisma.JsonObject[];
 
       for (const childData of parts) {
-        const index = parts.indexOf(childData)
         const ocxId = childData['@id'] as string;
         const child = nodes.find(n => (n!.metadata as Prisma.JsonObject)['@id'] === ocxId);
         if (child) {
@@ -70,7 +77,6 @@ export default resolver.pipe(
             where: { id: child.id },
             data: {
               parentId: node.id,
-              positionAsChild: index
             }
           });
         } else {
@@ -85,9 +91,7 @@ export default resolver.pipe(
         parsedSitemap: sitemap as unknown as Prisma.JsonObject
       },
       include: {
-        nodes: {
-          orderBy: { positionAsChild: 'asc' }
-        },
+        nodes: true,
       }
     });
 

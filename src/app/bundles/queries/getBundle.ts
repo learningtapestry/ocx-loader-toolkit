@@ -15,9 +15,7 @@ export default resolver.pipe(
     const bundle = await db.bundle.findFirst({
       where: { id },
       include: {
-        nodes: {
-          orderBy: { positionAsChild: 'asc' }
-        },
+        nodes: true
       }
     });
 

@@ -38,7 +38,6 @@ describe('OcxNode', () => {
                 "isPartOf": null
               },
               parentId: null,
-              positionAsChild: 0,
               content: '',
               url: 'http://localhost'
             },
@@ -56,7 +55,6 @@ describe('OcxNode', () => {
                 }
               },
               parentId: 1,
-              positionAsChild: 0,
               content: '',
               url: 'http://localhost'
             },
@@ -71,7 +69,6 @@ describe('OcxNode', () => {
                 "isPartOf": null
               },
               parentId: null,
-              positionAsChild: 0,
               content: '',
               url: 'http://localhost'
             },
@@ -186,7 +183,6 @@ describe('OcxNode', () => {
               "isPartOf": null
             },
             parentId: null,
-            positionAsChild: 0,
             content: '',
             url: 'http://localhost',
           },
@@ -202,7 +198,6 @@ describe('OcxNode', () => {
               "isPartOf": null
             },
             parentId: null,
-            positionAsChild: 1,
             content: '',
             url: 'http://localhost'
           },
@@ -218,7 +213,6 @@ describe('OcxNode', () => {
               "isPartOf": null
             },
             parentId: null,
-            positionAsChild: 0,
             content: '',
             url: 'http://localhost'
           }
@@ -287,7 +281,6 @@ describe('OcxNode', () => {
             "isPartOf": null
           },
           parentId: null,
-          positionAsChild: 0,
           content: '',
           url: 'http://localhost'
         }

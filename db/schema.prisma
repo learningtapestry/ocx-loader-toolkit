@@ -74,6 +74,8 @@ model Bundle {
 
   parsedSitemap Json?
   nodes         Node[]
+
+  errors Json @default("[]")
 }
 
 model Node {
@@ -83,8 +85,7 @@ model Node {
 
   bundleId Int
 
-  parentId        Int?
-  positionAsChild Int  @default(0)
+  parentId Int?
 
   bundle Bundle @relation(fields: [bundleId], references: [id])
 
