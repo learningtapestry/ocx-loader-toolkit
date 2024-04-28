@@ -91,6 +91,80 @@ export default class OcxBundle {
     return nodes;
   }
 
+  async splitPartNodes(db: PrismaClient, nodes: PrismaNode[]) {
+    // for each hasPart, check if there is a node with the same id
+    // if there is, split the content and create a new node
+    // if at the end there is nothing left in the original node, delete it
+    // a node metadata in hasPart could have hasPart too, so we need to also iterate on the new nodes
+
+    const nodesDup = nodes.slice();
+    const updatedNodes: PrismaNode[] = [];
+
+    for (let i = 0; i < nodesDup.length; i++) {
+      const node = nodesDup[i];
+      const metadata = node.metadata as Prisma.JsonObject;
+      const parts = (metadata.hasPart || []) as Prisma.JsonObject[];
+      const parsedContent = cheerio.load(node.content as string);
+
+      for (const partMetadata of parts) {
+        const ocxId = partMetadata['@id'] as string;
+
+        if (!ocxId.startsWith('#')) {
+          continue;
+        }
+
+        const htmlId = ocxId.substring(1);
+
+        const elementForPart = parsedContent(`[id="${htmlId}"]`);
+
+        if (elementForPart.length === 0) {
+          continue;
+        }
+
+        const partCheerio = cheerio.load(parsedContent.html()!);
+        partCheerio('body').html(elementForPart.html()!);
+        elementForPart.remove();
+
+        const partNode = await db.node.create({
+          data: {
+            url: node.url,
+            content: partCheerio.html() as string,
+            metadata: {
+              hasPart: [],
+              ...partMetadata
+            },
+            bundleId: node.bundleId,
+            parentId: node.id
+          }
+        });
+
+        updatedNodes.push(partNode);
+        nodesDup.push(partNode);
+      }
+
+      // update the original node if there was any change
+      if (nodesDup.length > nodes.length) {
+        await db.node.update({
+          where: { id: node.id },
+          data: {
+            content: parsedContent.html()
+          }
+        });
+      }
+
+      // if the original node has no content left, delete it
+      if (parsedContent('body').children().length === 0) {
+        await db.node.delete({
+          where: { id: node.id }
+        });
+      } else {
+        updatedNodes.push(node);
+      }
+    }
+
+    return updatedNodes;
+  }
+
   async assignParentsToNodes(db: PrismaClient, nodes: PrismaNode[]) {
     const errors = this.prismaBundle.errors as Prisma.JsonObject[];
 
@@ -126,10 +200,11 @@ export default class OcxBundle {
   }
 
   async importFromSitemap(db: PrismaClient, sitemap: ParsedSitemap | null = null) {
-    const nodes = (await this.createNodesFromSitemap(db, sitemap))
+    let nodes = (await this.createNodesFromSitemap(db, sitemap))
       .filter(Boolean) as PrismaNode[]
 
-    await this.assignParentsToNodes(db, nodes.filter(Boolean) as PrismaNode[]);
+    nodes = await this.splitPartNodes(db, nodes);
+    await this.assignParentsToNodes(db, nodes);
 
     await this.reloadFromDb(db);
   }
