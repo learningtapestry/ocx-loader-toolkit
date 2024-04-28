@@ -80,6 +80,22 @@ export default class OcxNode {
     }
   }
 
+  get asHtml() : string {
+    return `
+      <!DOCTYPE html PUBLIC "UTF-8">
+      <html lang="en">
+        <head>
+          <title>${this.metadata.name}</title>
+
+          <script type="application/ld+json">${JSON.stringify(this.metadata)}</script>
+        </head>
+        <body>
+          ${this.prismaNode.content}
+        </body>
+      </html>
+    `;
+  }
+
   async removeChild(db: PrismaClient, child: OcxNode) {
     await db.$transaction([
       db.node.update({

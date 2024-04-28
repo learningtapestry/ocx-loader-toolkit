@@ -69,6 +69,22 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         >
           Delete
         </button>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const zip = await ocxBundle.exportZip();
+
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(zip);
+            link.download = 'bundle.ocx.zip';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }}
+          style={{ marginLeft: "0.5rem" }}
+        >Download zip</button>
       </div>
     </>
   );

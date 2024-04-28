@@ -3,6 +3,8 @@ import { Bundle as PrismaBundle, Node as PrismaNode, PrismaClient } from "@prism
 import OcxNode from "./OcxNode"
 
 import * as cheerio from 'cheerio';
+import JSZip from 'jszip';
+import slugify from 'slugify';
 
 import parseSitemap from "@/src/app/ocx/loader/utils/parseSitemap"
 import absolutizeUrl from "@/src/app/ocx/loader/utils/absolutizeUrl"
@@ -31,6 +33,25 @@ export default class OcxBundle {
 
   get rootNodes() {
     return this.ocxNodes.filter((node) => !node.parent);
+  }
+
+  async exportZip() {
+    const zip = new JSZip();
+    const $ = cheerio.load('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', {
+      xmlMode: true
+    });
+
+    for (const node of this.ocxNodes) {
+      const fileName = `${slugify(node.ocxId)}.ocx.html`;
+
+      zip.file(fileName, node.asHtml);
+
+      $('urlset').append(`<url><loc>${fileName}</loc></url>`);
+    }
+
+    zip.file('sitemap.xml', $.xml());
+
+    return zip.generateAsync({ type: 'blob' });
   }
 
   async reloadFromDb(db : PrismaClient) {
