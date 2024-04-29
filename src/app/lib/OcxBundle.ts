@@ -90,6 +90,14 @@ export default class OcxBundle {
       where: { bundleId: this.prismaBundle.id }
     });
 
+    await db.bundle.update({
+      where: { id: this.prismaBundle.id },
+      data: {
+        errors: []
+      }
+    });
+    this.prismaBundle.errors = [];
+
     const bundleErrors: Prisma.JsonObject[] = [];
 
     // load all files in the sitemap and create a node for each
@@ -112,48 +120,111 @@ export default class OcxBundle {
       return node as PrismaNode;
     }));
 
+    const ocxIds: string[] = [];
+
+    const updatedNodes = await Promise.all(nodes.map(async (node) => {
+      const metadata = node.metadata as Prisma.JsonObject;
+
+      if (ocxIds.includes(metadata['@id'] as string)) {
+        const newOcxId = `${metadata['@id']}-${node.id}`;
+
+        bundleErrors.push({ nodeId: node.id, ocxId: (node.metadata as Prisma.JsonObject)['@id'], message: 'Duplicate @id' });
+
+        ocxIds.push(newOcxId);
+
+        return(await db.node.update({
+          where: { id: node.id },
+          data: {
+            metadata: {
+              ...metadata,
+              '@id': newOcxId
+            }
+          }
+        }));
+      } else {
+        ocxIds.push(metadata['@id'] as string);
+
+        return node;
+      }
+    }));
+
+    await this.appendErrors(db, bundleErrors);
+
+    return updatedNodes;
+  }
+
+  async appendErrors(db: PrismaClient, errors: Prisma.JsonObject[]) {
+    const updatedErrors = ((this.prismaBundle.errors || []) as Prisma.JsonObject[]).concat(errors);
+
     await db.bundle.update({
       where: { id: this.prismaBundle.id },
       data: {
-        errors: bundleErrors
+        errors: updatedErrors
       }
     });
 
-    return nodes;
+    this.prismaBundle.errors = updatedErrors;
   }
 
   async splitPartNodes(db: PrismaClient, nodes: PrismaNode[]) {
-    // for each hasPart, check if there is a node with the same id
+    // for each hasPart, check if there is an html element with the same id
     // if there is, split the content and create a new node
-    // if at the end there is nothing left in the original node, delete it
     // a node metadata in hasPart could have hasPart too, so we need to also iterate on the new nodes
 
     const nodesDup = nodes.slice();
     const updatedNodes: PrismaNode[] = [];
 
+    const errors = [] as Prisma.JsonObject[];
+
     for (let i = 0; i < nodesDup.length; i++) {
       const node = nodesDup[i];
       const metadata = node.metadata as Prisma.JsonObject;
       const parts = (metadata.hasPart || []) as Prisma.JsonObject[];
+      const updatedParts = [] as Prisma.JsonObject[];
       const parsedContent = cheerio.load(node.content as string);
 
       for (const partMetadata of parts) {
         const ocxId = partMetadata['@id'] as string;
 
         if (!ocxId.startsWith('#')) {
+          updatedParts.push(partMetadata);
+
           continue;
         }
+
+        const existingPart = nodesDup.find(n => (n.metadata as Prisma.JsonObject)['@id'] === ocxId);
 
         const htmlId = ocxId.substring(1);
 
         const elementForPart = parsedContent(`[id="${htmlId}"]`);
 
         if (elementForPart.length === 0) {
+          if (!existingPart) {
+            errors.push({ node: (node.metadata as Prisma.JsonObject)['@id'], message: `Part/Element not found: ${ocxId}` });
+          } else {
+            const existingPartOcxNode = new OcxNode(existingPart, this);
+
+            updatedParts.push(existingPartOcxNode.asPartData as unknown as Prisma.JsonObject);
+          }
+
           continue;
         }
 
+        if (elementForPart.length > 1) {
+          errors.push({ node: (node.metadata as Prisma.JsonObject)['@id'], message: `Multiple elements with the same html id: ${htmlId}` });
+        }
+
+        if (existingPart) {
+          const renamedId = `${ocxId}-${i}`;
+
+          errors.push({ node: (node.metadata as Prisma.JsonObject)['@id'], message: `Multiple elements with the same @id: ${ocxId}. Renamed to ${renamedId}`});
+
+          partMetadata['@id'] = renamedId;
+          elementForPart.attr('id', renamedId.slice(1));
+        }
+
         const partCheerio = cheerio.load(parsedContent.html()!);
-        partCheerio('body').html(elementForPart.html()!);
+        partCheerio('body').html(elementForPart.toString()!);
         elementForPart.remove();
 
         const partNode = await db.node.create({
@@ -169,29 +240,33 @@ export default class OcxBundle {
           }
         });
 
-        updatedNodes.push(partNode);
+        const partMetadataReduced = {
+          '@id': partMetadata['@id'],
+          '@type': partMetadata['@type'],
+          name: partMetadata.name,
+          url: partMetadata.url
+        };
+        updatedParts.push(partMetadataReduced);
+
         nodesDup.push(partNode);
       }
 
-      // update the original node if there was any change
-      if (nodesDup.length > nodes.length) {
-        await db.node.update({
-          where: { id: node.id },
-          data: {
-            content: parsedContent.html()
+      // update the original node
+      const updatedNode = await db.node.update({
+        where: { id: node.id },
+        data: {
+          content: parsedContent.html(),
+          metadata: {
+            ...metadata,
+            hasPart: updatedParts
           }
-        });
-      }
+        }
+      });
 
-      // if the original node has no content left, delete it
-      if (parsedContent('body').children().length === 0) {
-        await db.node.delete({
-          where: { id: node.id }
-        });
-      } else {
-        updatedNodes.push(node);
-      }
+      updatedNodes.push(updatedNode);
     }
+
+    await this.appendErrors(db, errors);
 
     return updatedNodes;
   }
@@ -240,7 +315,7 @@ export default class OcxBundle {
     await this.reloadFromDb(db);
   }
 
-  async importFromZipFile(db: PrismaClient, zipContent: File | Buffer, isBase64: boolean = false) {
+  async importFromZipFile(db: PrismaClient, zipContent: File | Buffer | ArrayBuffer, isBase64: boolean = false) {
     const zip = await JSZip.loadAsync(zipContent, { base64: isBase64 });
 
     const sitemapFile = zip.file('sitemap.xml');

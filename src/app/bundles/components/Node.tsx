@@ -7,6 +7,7 @@ import JsonView from '@uiw/react-json-view';
 
 import { useMutation } from "@blitzjs/rpc"
 import setNodeParent from "@/src/app/nodes/mutations/setNodeParent"
+import fixNodeIsPartOf from "@/src/app/nodes/mutations/fixNodeIsPartOf"
 import deleteNode from "@/src/app/nodes/mutations/deleteNode"
 import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotFound"
 
@@ -15,6 +16,7 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
   const [showContent, setShowContent] = useState(false);
 
   const [setParentNodeMutation] = useMutation(setNodeParent);
+  const [fixNodeIsPartOfMutation] = useMutation(fixNodeIsPartOf);
   const [deleteNodeMutation] = useMutation(deleteNode);
   const [removeChildrenNotFoundMutation] = useMutation(removeChildrenNotFound);
 
@@ -22,6 +24,11 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
     await setParentNodeMutation({id: node.dbId, parentId: node.isPartOf && node.ocxBundle.findNodeByOcxId(node.isPartOf?.ocxId)?.dbId, position});
     refetchBundle();
   };
+
+  const onFixNodeIsPartOf = async function(){
+    await fixNodeIsPartOfMutation({id: node.dbId, parentId: node.parent!.prismaNode.id});
+    refetchBundle();
+  }
 
   const onDeleteNode = async function(){
     await deleteNodeMutation({id: node.dbId});
@@ -37,6 +44,9 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
     <div key={node.ocxId} style={{paddingLeft: 16, borderLeft: '1px black solid'}}>
       <h2>
         <span dangerouslySetInnerHTML={{__html: `${node.metadata!.name as string}`}}></span>
+        &nbsp;
+        <span style={{color: 'CornflowerBlue', fontWeight: 'normal'}}>[{node.metadata['@type'] as string}]</span>
+        <span style={{color: 'DarkKhaki', fontWeight: 'normal'}}>[{node.ocxId}]</span>
         &nbsp;
         <button onClick={() => setShowContent(!showContent)}>Toggle Content</button>
         &nbsp;
@@ -72,12 +82,20 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
               <li>isPartOf id: {node.isPartOf?.ocxId}</li>
             </ul>
 
-            <div style={{display: 'flex', gap: 4}}>
-              <button onClick={() => onFixParentNode('lastChild')}>Fix: as last node</button>
-              <button onClick={() => onFixParentNode('firstChild')}>Fix: as first node</button>
-              <button onClick={() => onFixParentNode('remove')}>Remove from parent</button>
-              <button onClick={onDeleteNode}>Delete node</button>
-            </div>
+            { node.isPartOf &&
+              <div style={{display: 'flex', gap: 4}}>
+                <button onClick={() => onFixParentNode('lastChild')}>Fix: as last node</button>
+                <button onClick={() => onFixParentNode('firstChild')}>Fix: as first node</button>
+                <button onClick={() => onFixParentNode('remove')}>Remove from parent</button>
+                <button onClick={onDeleteNode}>Delete node</button>
+              </div>
+            }
+
+            { node.parent &&
+              <div style={{display: 'flex', gap: 4}}>
+                <button onClick={onFixNodeIsPartOf}>Fix isPartOf</button>
+              </div>
+            }
           </div>
         )
       }

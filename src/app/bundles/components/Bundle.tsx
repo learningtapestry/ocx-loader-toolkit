@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { Prisma } from "@prisma/client"
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,10 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
   const [importBundleFromZipFileMutation] = useMutation(importBundleFromZipFile);
-  const [bundle, {refetch}] = useQuery(getBundle, { id: bundleId });
+  const [bundle, {refetch}] = useQuery(getBundle, {id: bundleId}, {
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  } );
 
   const [showSitemap, setShowSitemap] = useState(false);
 
@@ -42,6 +46,15 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
               {showSitemap &&
                 <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>
               }
+            </div>
+          )
+        }
+
+        {
+          (ocxBundle.prismaBundle.errors as Prisma.JsonObject[])?.length > 0 && (
+            <div style={{color: 'red'}}>
+              <h2>Errors</h2>
+              <pre>{JSON.stringify(ocxBundle.prismaBundle.errors, null, 2)}</pre>
             </div>
           )
         }

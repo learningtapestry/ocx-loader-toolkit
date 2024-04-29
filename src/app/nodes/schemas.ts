@@ -22,3 +22,8 @@ export const SetNodeParentSchema = z.object({
   parentId: z.number().nullable(),
   position: z.enum(["firstChild", "lastChild", "remove"])
 });
+
+export const FixNodeIsPartOfSchema = z.object({
+  id: z.number(),
+  parentId: z.number(),
+});

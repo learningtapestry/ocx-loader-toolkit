@@ -168,7 +168,24 @@ export default class OcxNode {
     });
   }
 
-  async delete(db : PrismaClient) {
+  async fixIsPartOf(db: PrismaClient, parent: OcxNode) {
+    if (!parent.children.find((child) => child.ocxId === this.ocxId)) {
+      throw new Error(`Node ${this.ocxId} is not part of the parent ${parent.ocxId}`);
+    }
+
+    await db.node.update({
+      where: { id: this.prismaNode.id },
+      data: {
+        metadata: {
+          ...this.metadata,
+          isPartOf: parent.asPartData as unknown as Prisma.JsonObject
+        },
+        parentId: parent.prismaNode.id
+      }
+    });
+  }
+
+  async delete(db: PrismaClient) {
     await db.$transaction(async (tx) => {
       if (this.parent) {
         await tx.node.update({

@@ -312,4 +312,36 @@ describe('OcxNode', () => {
       expect(ocxNode1.metadata.hasPart).to.have.length(1);
     });
   });
+
+  describe('#fixIsPartOf', () => {
+    beforeEach(async () => {
+      // change node2 isPartOf to point to node3
+      await db.node.update({
+        where: { id: 2 },
+        data: {
+          metadata: {
+            ...ocxNode2.metadata,
+            isPartOf: ocxNode3.asPartData as unknown as Prisma.JsonObject
+          }
+        }
+      });
+    });
+
+    it('should fix isPartOf when the node is listed in the parent children', async () => {
+      await ocxNode2.fixIsPartOf(db, ocxNode1);
+
+      await reloadFromDb();
+
+      expect(ocxNode2.isPartOf?.ocxId).to.equal(ocxNode1.ocxId);
+    });
+
+    it('should throw an error when the node is not listed in the parent children', async () => {
+      try {
+        await ocxNode2.fixIsPartOf(db, ocxNode3);
+        expect.fail('Should throw an error');
+      } catch (e) {
+        expect((e as Error).message).to.equal(`Node ${ocxNode2.ocxId} is not part of the parent ${ocxNode3.ocxId}`);
+      }
+    });
+  });
 });
