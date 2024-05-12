@@ -2,7 +2,11 @@ import { useState } from 'react';
 
 import OcxBundle from "@/src/app/lib/OcxBundle";
 
+import { useUiStore } from "@/src/app/stores/UiStore"
+
 export default function BundleNodeTypes({ocxBundle} : {ocxBundle: OcxBundle}) {
+  const nodeTypesColors = useUiStore(state => state.nodeTypesColors);
+
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
 
@@ -19,7 +23,10 @@ export default function BundleNodeTypes({ocxBundle} : {ocxBundle: OcxBundle}) {
         <ul>
           {
             types.sort().map((type: string) => (
-              <li key={type}>{type} ({typesNodeCount[type]})</li>
+              <li key={type}>
+                <span style={{color: nodeTypesColors[type]}}>{type}</span>
+                ({typesNodeCount[type]})
+              </li>
             ))
           }
         </ul>

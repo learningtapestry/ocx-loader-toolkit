@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Prisma } from "@prisma/client"
 
 import Link from "next/link";
@@ -17,7 +17,11 @@ import Node from "./Node";
 import BundleNodeTypes from "./BundleNodeTypes"
 import BundleNodeProperties from "@/src/app/bundles/components/BundleNodeProperties"
 
+import { useUiStore } from "@/src/app/stores/UiStore"
+
 export const Bundle = ({ bundleId }: { bundleId: number }) => {
+  const setNodeTypes = useUiStore(state => state.setNodeTypes);
+
   const router = useRouter();
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
@@ -31,6 +35,10 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const toggleSitemapVerb = showSitemap ? 'Hide' : 'Show';
 
   const ocxBundle = new OcxBundle(bundle, bundle.nodes);
+
+  useEffect(() => {
+    setNodeTypes(ocxBundle.allCombinedTypes);
+  }, [ocxBundle.allCombinedTypes]);
 
   return (
     <>

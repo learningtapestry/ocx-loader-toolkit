@@ -11,7 +11,11 @@ import fixNodeIsPartOf from "@/src/app/nodes/mutations/fixNodeIsPartOf"
 import deleteNode from "@/src/app/nodes/mutations/deleteNode"
 import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotFound"
 
+import { useUiStore } from "@/src/app/stores/UiStore"
+
 export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBundle: Function }) {
+  const nodeTypesColors = useUiStore(state => state.nodeTypesColors);
+
   const [showMetadata, setShowMetadata] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
@@ -48,7 +52,7 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
       <h2>
         <span dangerouslySetInnerHTML={{__html: `${node.metadata!.name as string}`}}></span>
         &nbsp;
-        <span style={{color: 'CornflowerBlue', fontWeight: 'normal'}}>[{node.ocxCombinedTypes}]</span>
+        <span style={{color: nodeTypesColors[node.ocxCombinedTypes], fontWeight: 'normal'}}>[{node.ocxCombinedTypes}]</span>
         <span style={{color: 'DarkKhaki', fontWeight: 'normal'}}>[{node.ocxId}]</span>
         &nbsp;
         <button onClick={() => setShowContent(!showContent)}>{toggleContentVerb} Content</button>
