@@ -18,9 +18,12 @@ export default class OcxBundle {
   prismaBundle: PrismaBundle;
   ocxNodes: OcxNode[];
 
-  allTypes: string[] = []; // all @type values
-  allCombinedTypes = []; // all combinations of @type values
+  allTypes: string[] = []; // all @type values (not combined)
+  allTypesNodeCount: { [key: string]: number } = {};
+  allCombinedTypes: string[] = []; // all combinations of @type values
+  allCombinedTypesNodeCount: { [key: string]: number } = {};
   allProperties: string[] = []; // all properties nodes metadata
+  allPropertiesNodeCount: { [key: string]: number } = {};
   allScalarPropertiesValues: { [key: string]: string[] } = {};
 
   constructor(prismaBundle: PrismaBundle, nodes: PrismaNode[]) {
@@ -78,22 +81,40 @@ export default class OcxBundle {
 
   computeAllTypes() {
     this.allTypes = [];
+    this.allTypesNodeCount = {};
     this.allCombinedTypes = [];
+    this.allCombinedTypesNodeCount = {};
     this.allProperties = [];
+    this.allPropertiesNodeCount = {};
     this.allScalarPropertiesValues = {};
 
     for (const node of this.ocxNodes) {
-      // iterate on all properties of the node metadata
-      for (const key of Object.keys(node.metadata)) {
-        for (const type of node.ocxTypes as string[]) {
-          if (!this.allTypes.includes(type)) {
-            this.allTypes.push(type);
-          }
+      for (const type of node.ocxTypes as string[]) {
+        if (!this.allTypes.includes(type)) {
+          this.allTypes.push(type);
         }
 
-        if (!this.allCombinedTypes.includes(node.ocxCombinedTypes)) {
-          this.allCombinedTypes.push(node.ocxCombinedTypes);
+        if (!this.allTypesNodeCount[type]) {
+          this.allTypesNodeCount[type] = 0;
         }
+        this.allTypesNodeCount[type]++;
+      }
+
+      if (!this.allCombinedTypes.includes(node.ocxCombinedTypes)) {
+        this.allCombinedTypes.push(node.ocxCombinedTypes);
+      }
+
+      if (!this.allCombinedTypesNodeCount[node.ocxCombinedTypes]) {
+        this.allCombinedTypesNodeCount[node.ocxCombinedTypes] = 0;
+      }
+      this.allCombinedTypesNodeCount[node.ocxCombinedTypes]++;
+
+      // iterate on all properties of the node metadata
+      for (const key of Object.keys(node.metadata)) {
+        if (!this.allPropertiesNodeCount[key]) {
+          this.allPropertiesNodeCount[key] = 0;
+        }
+        this.allPropertiesNodeCount[key]++;
 
         if (key === '@id' || key === '@type') continue;
 
@@ -152,7 +173,7 @@ export default class OcxBundle {
       const content = $('body').first();
       const metadata = JSON.parse($(METADATA_SELECTOR).first().html()!);
 
-      const node = await db.node.create({
+      const node: PrismaNode = await db.node.create({
         data: {
           url,
           content: content.html() as string,
@@ -161,7 +182,7 @@ export default class OcxBundle {
         }
       });
 
-      return node as PrismaNode;
+      return node;
     }));
 
     const ocxIds: string[] = [];

@@ -53,8 +53,12 @@ describe('OcxBundle', () => {
         expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(2);
 
         expect(ocxBundle.allTypes.length).toEqual(5);
+        expect(ocxBundle.allTypesNodeCount['oer:Unit']).toEqual(6);
         expect(ocxBundle.allCombinedTypes.length).toEqual(5);
+        expect(ocxBundle.allCombinedTypesNodeCount['oer:Unit']).toEqual(6);
         expect(ocxBundle.allProperties.length).toEqual(29);
+        expect(Object.keys(ocxBundle.allPropertiesNodeCount).length).toEqual(31);
+        expect(ocxBundle.allPropertiesNodeCount['@id']).toEqual(117);
         expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(20);
         expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(115);
       }, 30000);
@@ -101,6 +105,8 @@ describe('OcxBundle', () => {
         expect(ocxBundle.allTypes.length).toEqual(2);
         expect(ocxBundle.allCombinedTypes.length).toEqual(2);
         expect(ocxBundle.allProperties.length).toEqual(13);
+        expect(Object.keys(ocxBundle.allPropertiesNodeCount).length).toEqual(15);
+        expect(ocxBundle.allPropertiesNodeCount['@id']).toEqual(9);
         expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(6);
         expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(9);
       });
@@ -151,8 +157,12 @@ describe('OcxBundle', () => {
       expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(6);
 
       expect(ocxBundle.allTypes.length).toEqual(6);
+      expect(ocxBundle.allTypesNodeCount['oer:Lesson']).toEqual(8);
       expect(ocxBundle.allCombinedTypes.length).toEqual(4);
+      expect(ocxBundle.allCombinedTypesNodeCount['Course oer:Lesson']).toEqual(8);
       expect(ocxBundle.allProperties.length).toEqual(23);
+      expect(Object.keys(ocxBundle.allPropertiesNodeCount).length).toEqual(25);
+      expect(ocxBundle.allPropertiesNodeCount['@id']).toEqual(30);
       expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(15);
       expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(23);
     });

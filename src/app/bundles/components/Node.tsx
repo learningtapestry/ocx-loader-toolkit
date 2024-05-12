@@ -15,6 +15,9 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
   const [showMetadata, setShowMetadata] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
+  const toggleMetadataVerb = showMetadata ? 'Hide' : 'Show';
+  const toggleContentVerb = showContent ? 'Hide' : 'Show';
+
   const [setParentNodeMutation] = useMutation(setNodeParent);
   const [fixNodeIsPartOfMutation] = useMutation(fixNodeIsPartOf);
   const [deleteNodeMutation] = useMutation(deleteNode);
@@ -45,12 +48,12 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
       <h2>
         <span dangerouslySetInnerHTML={{__html: `${node.metadata!.name as string}`}}></span>
         &nbsp;
-        <span style={{color: 'CornflowerBlue', fontWeight: 'normal'}}>[{node.metadata['@type'] as string}]</span>
+        <span style={{color: 'CornflowerBlue', fontWeight: 'normal'}}>[{node.ocxCombinedTypes}]</span>
         <span style={{color: 'DarkKhaki', fontWeight: 'normal'}}>[{node.ocxId}]</span>
         &nbsp;
-        <button onClick={() => setShowContent(!showContent)}>Toggle Content</button>
+        <button onClick={() => setShowContent(!showContent)}>{toggleContentVerb} Content</button>
         &nbsp;
-        <button onClick={() => setShowMetadata(!showMetadata)}>Toggle Metadata</button>
+        <button onClick={() => setShowMetadata(!showMetadata)}>{toggleMetadataVerb} Metadata</button>
       </h2>
 
       {showMetadata &&

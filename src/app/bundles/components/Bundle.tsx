@@ -14,6 +14,8 @@ import getBundle from "../queries/getBundle";
 import OcxBundle from "@/src/app/lib/OcxBundle";
 
 import Node from "./Node";
+import BundleNodeTypes from "./BundleNodeTypes"
+import BundleNodeProperties from "@/src/app/bundles/components/BundleNodeProperties"
 
 export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const router = useRouter();
@@ -26,6 +28,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   } );
 
   const [showSitemap, setShowSitemap] = useState(false);
+  const toggleSitemapVerb = showSitemap ? 'Hide' : 'Show';
 
   const ocxBundle = new OcxBundle(bundle, bundle.nodes);
 
@@ -34,6 +37,9 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
       <div>
         <h1>Bundle {bundle.name}</h1>
 
+        <BundleNodeTypes ocxBundle={ocxBundle} />
+        <BundleNodeProperties ocxBundle={ocxBundle} />
+
         {
           ocxBundle.rootNodes.map((node) => <Node key={node.ocxId} node={node} refetchBundle={refetch} />)
         }
@@ -41,7 +47,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         {
           bundle.parsedSitemap && (
             <div>
-              <h2>Parsed Sitemap <button onClick={() => setShowSitemap(!showSitemap)}>Toggle Sitemap</button></h2>
+              <h2>Parsed Sitemap <button onClick={() => setShowSitemap(!showSitemap)}>{toggleSitemapVerb} Sitemap</button></h2>
 
               {showSitemap &&
                 <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>
