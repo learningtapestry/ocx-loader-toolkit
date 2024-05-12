@@ -51,6 +51,12 @@ describe('OcxBundle', () => {
         expect(ocxBundle.rootNodes.length).toEqual(35);
         // there are three nodes with the same id in the IM data
         expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(2);
+
+        expect(ocxBundle.allTypes.length).toEqual(5);
+        expect(ocxBundle.allCombinedTypes.length).toEqual(5);
+        expect(ocxBundle.allProperties.length).toEqual(29);
+        expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(20);
+        expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(115);
       }, 30000);
     });
 
@@ -91,6 +97,12 @@ describe('OcxBundle', () => {
         expect(ocxBundle.ocxNodes.length).toEqual(9);
         expect(ocxBundle.rootNodes.length).toEqual(1);
         expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(0);
+
+        expect(ocxBundle.allTypes.length).toEqual(2);
+        expect(ocxBundle.allCombinedTypes.length).toEqual(2);
+        expect(ocxBundle.allProperties.length).toEqual(13);
+        expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(6);
+        expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(9);
       });
     });
   });
@@ -121,6 +133,12 @@ describe('OcxBundle', () => {
       expect(ocxBundle.ocxNodes.length).toEqual(115);
       expect(ocxBundle.rootNodes.length).toEqual(43);
       expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(0);
+
+      expect(ocxBundle.allTypes.length).toEqual(5);
+      expect(ocxBundle.allCombinedTypes.length).toEqual(5);
+      expect(ocxBundle.allProperties.length).toEqual(29);
+      expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(20);
+      expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(115);
     });
 
     it('should load data from an OSE zip file', async () => {
@@ -131,6 +149,12 @@ describe('OcxBundle', () => {
       expect(ocxBundle.ocxNodes.length).toEqual(30);
       expect(ocxBundle.rootNodes.length).toEqual(1);
       expect((ocxBundle.prismaBundle.errors as Prisma.JsonArray).length).toEqual(6);
+
+      expect(ocxBundle.allTypes.length).toEqual(6);
+      expect(ocxBundle.allCombinedTypes.length).toEqual(4);
+      expect(ocxBundle.allProperties.length).toEqual(23);
+      expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(15);
+      expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(23);
     });
 
     describe("full circle", () => {

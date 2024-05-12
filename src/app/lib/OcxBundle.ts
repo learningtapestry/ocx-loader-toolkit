@@ -18,10 +18,17 @@ export default class OcxBundle {
   prismaBundle: PrismaBundle;
   ocxNodes: OcxNode[];
 
+  allTypes: string[] = []; // all @type values
+  allCombinedTypes = []; // all combinations of @type values
+  allProperties: string[] = []; // all properties nodes metadata
+  allScalarPropertiesValues: { [key: string]: string[] } = {};
+
   constructor(prismaBundle: PrismaBundle, nodes: PrismaNode[]) {
     this.prismaBundle = prismaBundle;
 
     this.ocxNodes = nodes.map((node) => new OcxNode(node, this));
+
+    this.computeAllTypes();
   }
 
   findNodeByOcxId(ocxId: string) : OcxNode {
@@ -65,6 +72,43 @@ export default class OcxBundle {
     this.prismaBundle = prismaBundle!;
 
     this.ocxNodes = prismaBundle!.nodes.map((node:PrismaNode) => new OcxNode(node, this));
+
+    this.computeAllTypes();
+  }
+
+  computeAllTypes() {
+    this.allTypes = [];
+    this.allCombinedTypes = [];
+    this.allProperties = [];
+    this.allScalarPropertiesValues = {};
+
+    for (const node of this.ocxNodes) {
+      // iterate on all properties of the node metadata
+      for (const key of Object.keys(node.metadata)) {
+        for (const type of node.ocxTypes as string[]) {
+          if (!this.allTypes.includes(type)) {
+            this.allTypes.push(type);
+          }
+        }
+
+        if (!this.allCombinedTypes.includes(node.ocxCombinedTypes)) {
+          this.allCombinedTypes.push(node.ocxCombinedTypes);
+        }
+
+        if (key === '@id' || key === '@type') continue;
+
+        if (!this.allProperties.includes(key)) {
+          this.allProperties.push(key);
+        }
+
+        if (typeof node.metadata[key] !== 'string') continue; // only scalar properties
+        const value = node.metadata[key]! as string;
+        if (!this.allScalarPropertiesValues[key]) this.allScalarPropertiesValues[key] = [];
+        if (!this.allScalarPropertiesValues[key].includes(value)) {
+          this.allScalarPropertiesValues[key].push(value);
+        }
+      }
+    }
   }
 
   async createNodesFromSitemap(db: PrismaClient, sitemap: ParsedSitemap | null) {

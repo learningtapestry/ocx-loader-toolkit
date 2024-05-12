@@ -4,7 +4,7 @@ import OcxBundle from "./OcxBundle";
 
 export interface NodePartData {
   "@id": string;
-  "@type": string;
+  "@type": string | string[];
   name: string;
   alternateName: string;
 }
@@ -32,8 +32,20 @@ export default class OcxNode {
     return this.prismaNode.id;
   }
 
-  get ocxType() : string {
-    return this.metadata["@type"] as string;
+  get ocxType() : string | string[] {
+    return this.metadata["@type"] as string | string[];
+  }
+
+  get ocxTypes() : string[] {
+    if (Array.isArray(this.metadata["@type"])) {
+      return this.metadata["@type"] as string[];
+    }
+
+    return [this.metadata["@type"] as string];
+  }
+
+  get ocxCombinedTypes() : string {
+    return this.ocxTypes.sort().join(' ');
   }
 
   // the parent here is based on hasPart. In theory it should be the
