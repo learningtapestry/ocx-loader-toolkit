@@ -12,9 +12,12 @@ import deleteNode from "@/src/app/nodes/mutations/deleteNode"
 import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotFound"
 
 import { useUiStore } from "@/src/app/stores/UiStore"
+import { Prisma } from "@prisma/client"
 
 export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBundle: Function }) {
   const nodeTypesColors = useUiStore(state => state.nodeTypesColors);
+  const highlightProperties = useUiStore(state => state.highlightProperties);
+  const highlightPropertiesValues = useUiStore(state => state.highlightPropertiesValues);
 
   const [showMetadata, setShowMetadata] = useState(false);
   const [showContent, setShowContent] = useState(false);
@@ -47,6 +50,10 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
     refetchBundle();
   }
 
+  const metadataPropertiesToHighlight = Object.keys(node.metadata).filter(
+    (key) => highlightProperties.includes(key) || highlightPropertiesValues[key]?.includes(node.metadata[key] as string)
+  );
+
   return (
     <div key={node.ocxId} style={{paddingLeft: 16, borderLeft: '1px black solid'}}>
       <h2>
@@ -59,6 +66,27 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
         &nbsp;
         <button onClick={() => setShowMetadata(!showMetadata)}>{toggleMetadataVerb} Metadata</button>
       </h2>
+
+      {
+        metadataPropertiesToHighlight.length > 0 && (
+          <ul>
+            {
+              metadataPropertiesToHighlight.map((key) => (
+                <li key={key}>
+                  <span style={{color: 'red'}}>{key}</span>: {
+                      typeof node.metadata[key] === "string" ? <span>{node.metadata[key] as string}</span> :
+                        <JsonView
+                          value={node.metadata[key] as Prisma.JsonObject}
+                          displayObjectSize={false}
+                          displayDataTypes={false}
+                        />
+                    }
+                </li>
+              ))
+            }
+          </ul>
+        )
+      }
 
       {showMetadata &&
         <div>

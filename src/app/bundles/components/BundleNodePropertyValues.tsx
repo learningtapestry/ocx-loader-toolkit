@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle"
+
 export default function BundleNodePropertyValues({propertyName, propertyValues} : {propertyName: string, propertyValues: string[]}) {
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
@@ -12,7 +14,9 @@ export default function BundleNodePropertyValues({propertyName, propertyValues} 
         <ul>
           {
             propertyValues.sort().map((value: string) => (
-              <li key={value}>{value}</li>
+              <li key={value}>{value} &nbsp;
+                <PropertyHighlightToggle property={propertyName} value={value} />
+              </li>
             ))
           }
         </ul>

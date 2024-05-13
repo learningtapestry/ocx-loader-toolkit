@@ -3,11 +3,24 @@ import {create} from 'zustand';
 export interface UiStoreState {
   nodeTypesColors: Record<string, string>;
 
+  highlightProperties: string[];
+  highlightPropertiesValues: Record<string, string[]>;
+
   setNodeTypes: (nodeTypes: string[]) => void;
+
+  addHighlightProperty: (property: string) => void;
+  removeHighlightProperty: (property: string) => void;
+
+  addHighlightPropertyValue: (property: string, value: string) => void;
+  removeHighlightPropertyValue: (property: string, value: string) => void;
+
+  resetPropertiesHighlights: () => void;
 }
 
 export const useUiStore = create<UiStoreState>((set) => ({
   nodeTypesColors: {},
+  highlightProperties: [],
+  highlightPropertiesValues: {},
 
   setNodeTypes: (nodeTypes) => {
     const nodeTypesColors: Record<string, string> = {};
@@ -17,6 +30,48 @@ export const useUiStore = create<UiStoreState>((set) => ({
     });
 
     set({nodeTypesColors});
+  },
+
+  addHighlightProperty: (property) => {
+    set((state) => {
+      if (state.highlightProperties.includes(property)) {
+        return state;
+      }
+      const highlightProperties = [...state.highlightProperties, property];
+      return {highlightProperties};
+    });
+  },
+  removeHighlightProperty: (property) => {
+    set((state) => {
+      const highlightProperties = state.highlightProperties.filter((p) => p !== property);
+      return {highlightProperties};
+    });
+  },
+  addHighlightPropertyValue: (property, value) => {
+    set((state) => {
+      const highlightPropertiesValues = {...state.highlightPropertiesValues};
+      if (!highlightPropertiesValues[property]) {
+        highlightPropertiesValues[property] = [];
+      }
+      if (highlightPropertiesValues[property].includes(value)) {
+        return state;
+      }
+      highlightPropertiesValues[property].push(value);
+      return {highlightPropertiesValues};
+    });
+  },
+  removeHighlightPropertyValue: (property, value) => {
+    set((state) => {
+      const highlightPropertiesValues = {...state.highlightPropertiesValues};
+      if (!highlightPropertiesValues[property]) {
+        return state;
+      }
+      highlightPropertiesValues[property] = highlightPropertiesValues[property].filter((v) => v !== value);
+      return {highlightPropertiesValues};
+    });
+  },
+  resetPropertiesHighlights: () => {
+    set({highlightProperties: [], highlightPropertiesValues: {}});
   }
 }));
 
