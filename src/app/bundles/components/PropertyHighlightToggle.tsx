@@ -1,6 +1,7 @@
 import { useUiStore } from "@/src/app/stores/UiStore"
+import { Prisma } from "@prisma/client"
 
-export default function PropertyHighlightToggle({ property, value }: { property: string, value?: string }) {
+export default function PropertyHighlightToggle({ property, value }: { property: string, value?: Prisma.JsonValue }) {
   const addHighlightProperty = useUiStore(state => state.addHighlightProperty);
   const removeHighlightProperty = useUiStore(state => state.removeHighlightProperty);
   const highlightProperties = useUiStore(state => state.highlightProperties);

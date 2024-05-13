@@ -1,8 +1,12 @@
 import { useState } from 'react';
 
+import { Prisma } from "@prisma/client"
+
+import JsonView from '@uiw/react-json-view';
+
 import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle"
 
-export default function BundleNodePropertyValues({propertyName, propertyValues} : {propertyName: string, propertyValues: string[]}) {
+export default function BundleNodeObjectPropertyValues({propertyName, propertyValues} : {propertyName: string, propertyValues: Prisma.JsonObject[]}) {
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
 
@@ -13,9 +17,14 @@ export default function BundleNodePropertyValues({propertyName, propertyValues} 
       {showList &&
         <ul>
           {
-            propertyValues.sort().map((value: string) => (
-              <li key={value}>{value} &nbsp;
+            propertyValues.sort().map((value: Prisma.JsonObject) => (
+              <li key={JSON.stringify(value)}>
                 <PropertyHighlightToggle property={propertyName} value={value} />
+                <JsonView
+                  value={value}
+                  displayObjectSize={false}
+                  displayDataTypes={false}
+                />
               </li>
             ))
           }

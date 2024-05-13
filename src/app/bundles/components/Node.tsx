@@ -13,6 +13,7 @@ import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotF
 
 import { useUiStore } from "@/src/app/stores/UiStore"
 import { Prisma } from "@prisma/client"
+import _ from "lodash"
 
 export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBundle: Function }) {
   const nodeTypesColors = useUiStore(state => state.nodeTypesColors);
@@ -51,7 +52,7 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
   }
 
   const metadataPropertiesToHighlight = Object.keys(node.metadata).filter(
-    (key) => highlightProperties.includes(key) || highlightPropertiesValues[key]?.includes(node.metadata[key] as string)
+    (key) => highlightProperties.includes(key) || highlightPropertiesValues[key]?.some(value => _.isEqual(value, node.metadata[key]))
   );
 
   return (

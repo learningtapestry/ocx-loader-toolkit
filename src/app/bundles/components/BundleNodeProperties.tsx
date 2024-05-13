@@ -1,8 +1,10 @@
 import { useState } from 'react';
 
 import OcxBundle from "@/src/app/lib/OcxBundle";
-import BundleNodePropertyValues from "@/src/app/bundles/components/BundleNodePropertyValues"
-import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle"
+
+import BundleNodeScalarPropertyValues from "./BundleNodeScalarPropertyValues"
+import PropertyHighlightToggle from "./PropertyHighlightToggle"
+import BundleNodeObjectPropertyValues from "./BundleNodeObjectPropertyValues"
 
 import { useUiStore } from "@/src/app/stores/UiStore";
 
@@ -14,7 +16,8 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
 
   const properties = ocxBundle.allProperties.sort();
   const propertiesNodeCount = ocxBundle.allPropertiesNodeCount;
-  const propertiesValues = ocxBundle.allScalarPropertiesValues;
+  const propertiesScalarValues = ocxBundle.allScalarPropertiesValues;
+  const propertiesObjectValues = ocxBundle.allObjectPropertiesValues;
 
   return (
     <>
@@ -36,13 +39,16 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
           {
             properties.sort().map((property: string) => (
               <tr key={property}>
-                <td>{property} &nbsp;
+                <td style={{color: propertiesScalarValues[property] ? 'black' : 'blue'}}>{property} &nbsp;
                   <PropertyHighlightToggle property={property} />
                 </td>
                 <td>{propertiesNodeCount[property]}</td>
                 <td>
-                  {propertiesValues[property] &&
-                    <BundleNodePropertyValues propertyName={property} propertyValues={propertiesValues[property]} />
+                  {propertiesScalarValues[property] &&
+                    <BundleNodeScalarPropertyValues propertyName={property} propertyValues={propertiesScalarValues[property]} />
+                  }
+                  {propertiesObjectValues[property] &&
+                    <BundleNodeObjectPropertyValues propertyName={property} propertyValues={propertiesObjectValues[property]} />
                   }
                 </td>
               </tr>

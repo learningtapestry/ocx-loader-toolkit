@@ -1,18 +1,20 @@
 import {create} from 'zustand';
+import _ from "lodash"
+import { Prisma } from "@prisma/client"
 
 export interface UiStoreState {
   nodeTypesColors: Record<string, string>;
 
   highlightProperties: string[];
-  highlightPropertiesValues: Record<string, string[]>;
+  highlightPropertiesValues: Record<string, Prisma.JsonValue[]>;
 
   setNodeTypes: (nodeTypes: string[]) => void;
 
   addHighlightProperty: (property: string) => void;
   removeHighlightProperty: (property: string) => void;
 
-  addHighlightPropertyValue: (property: string, value: string) => void;
-  removeHighlightPropertyValue: (property: string, value: string) => void;
+  addHighlightPropertyValue: (property: string, value: Prisma.JsonValue) => void;
+  removeHighlightPropertyValue: (property: string, value: Prisma.JsonValue) => void;
 
   resetPropertiesHighlights: () => void;
 }
@@ -53,7 +55,7 @@ export const useUiStore = create<UiStoreState>((set) => ({
       if (!highlightPropertiesValues[property]) {
         highlightPropertiesValues[property] = [];
       }
-      if (highlightPropertiesValues[property].includes(value)) {
+      if (highlightPropertiesValues[property].some(v => _.isEqual(v, value))) {
         return state;
       }
       highlightPropertiesValues[property].push(value);
@@ -66,7 +68,7 @@ export const useUiStore = create<UiStoreState>((set) => ({
       if (!highlightPropertiesValues[property]) {
         return state;
       }
-      highlightPropertiesValues[property] = highlightPropertiesValues[property].filter((v) => v !== value);
+      highlightPropertiesValues[property] = highlightPropertiesValues[property].filter((v) => !_.isEqual(v, value));
       return {highlightPropertiesValues};
     });
   },

@@ -5,6 +5,7 @@ import OcxNode from "./OcxNode"
 import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
 import slugify from 'slugify';
+import _ from 'lodash';
 
 import parseSitemap from "@/src/app/ocx/loader/utils/parseSitemap"
 import absolutizeUrl from "@/src/app/ocx/loader/utils/absolutizeUrl"
@@ -25,6 +26,7 @@ export default class OcxBundle {
   allProperties: string[] = []; // all properties nodes metadata
   allPropertiesNodeCount: { [key: string]: number } = {};
   allScalarPropertiesValues: { [key: string]: string[] } = {};
+  allObjectPropertiesValues: Record<string, Prisma.JsonObject[]> = {}
 
   constructor(prismaBundle: PrismaBundle, nodes: PrismaNode[]) {
     this.prismaBundle = prismaBundle;
@@ -87,6 +89,7 @@ export default class OcxBundle {
     this.allProperties = [];
     this.allPropertiesNodeCount = {};
     this.allScalarPropertiesValues = {};
+    this.allObjectPropertiesValues = {};
 
     for (const node of this.ocxNodes) {
       for (const type of node.ocxTypes as string[]) {
@@ -122,11 +125,18 @@ export default class OcxBundle {
           this.allProperties.push(key);
         }
 
-        if (typeof node.metadata[key] !== 'string') continue; // only scalar properties
-        const value = node.metadata[key]! as string;
-        if (!this.allScalarPropertiesValues[key]) this.allScalarPropertiesValues[key] = [];
-        if (!this.allScalarPropertiesValues[key].includes(value)) {
-          this.allScalarPropertiesValues[key].push(value);
+        if (typeof node.metadata[key] === 'string') {
+          const value = node.metadata[key]! as string;
+          if (!this.allScalarPropertiesValues[key]) this.allScalarPropertiesValues[key] = [];
+          if (!this.allScalarPropertiesValues[key].includes(value)) {
+            this.allScalarPropertiesValues[key].push(value);
+          }
+        } else {
+          const value = node.metadata[key] as Prisma.JsonObject;
+          if (!this.allObjectPropertiesValues[key]) this.allObjectPropertiesValues[key] = [];
+          if (!this.allObjectPropertiesValues[key].find((v) => _.isEqual(v, value))) {
+            this.allObjectPropertiesValues[key].push(value);
+          }
         }
       }
     }

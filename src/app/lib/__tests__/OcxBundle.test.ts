@@ -61,6 +61,8 @@ describe('OcxBundle', () => {
         expect(ocxBundle.allPropertiesNodeCount['@id']).toEqual(117);
         expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(20);
         expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(115);
+        expect(Object.keys(ocxBundle.allObjectPropertiesValues).length).toEqual(9);
+        expect(ocxBundle.allObjectPropertiesValues['hasPart'].length).toEqual(25);
       }, 30000);
     });
 
@@ -109,6 +111,8 @@ describe('OcxBundle', () => {
         expect(ocxBundle.allPropertiesNodeCount['@id']).toEqual(9);
         expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(6);
         expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(9);
+        expect(Object.keys(ocxBundle.allObjectPropertiesValues).length).toEqual(7);
+        expect(ocxBundle.allObjectPropertiesValues['@context'].length).toEqual(1);
       });
     });
   });
