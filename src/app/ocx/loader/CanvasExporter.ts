@@ -50,9 +50,9 @@ export default class CanvasExporter {
         payload
       );
 
-        if (resourceName === 'page') {
-          console.log('page', resource);
-        }
+      if (resourceName === 'page') {
+        console.log('page', resource);
+      }
 
       if (!node.exportData.canvasId) {
         node.exportData.canvasId = resource.id;
@@ -62,12 +62,15 @@ export default class CanvasExporter {
         node.exportData.canvasUrl = resource.html_url;
       }
 
+      console.log(node.exportData.canvasUrl);
+
       return resource;
     } catch (e: any) {
       const error: HttpError = e;
       const action = method === 'POST' ? 'create' : 'update';
       error.description = `Failed to ${action} ${resourceName}`;
       node.exportData.errors.push(error);
+      console.log('!!!', error.description, error);
       return null;
     }
   }
@@ -210,7 +213,7 @@ export default class CanvasExporter {
     }
 
     if (!parent.exportData.canvasId) {
-      console.log(`Node ${node.id} has no canvas ID`);
+      console.log(`Node ${node.id} has no parent canvas ID`);
       return;
     }
 
@@ -220,7 +223,7 @@ export default class CanvasExporter {
     }
 
     if (!root.exportData.canvasId) {
-      console.log(`Node ${node.id} has no canvas ID`);
+      console.log(`Node ${node.id} has no root canvas ID`);
       return;
     }
 
@@ -417,7 +420,7 @@ export default class CanvasExporter {
   }
 
   private async createQuizFromQTI(node: CourseNode, position?: number) {
-    console.log(`Create Quiz ${node.fullName} (${position})`);
+    console.log(`Create Quiz (QTI) ${node.fullName} (${position})`);
 
     const { parent, root } = node;
 
@@ -443,10 +446,11 @@ export default class CanvasExporter {
 
     const file = node
       .files
-      .find((f: any) => f.encodingFormat === 'application/ims-qti+zip');
+      .find((f: any) => f.encodingFormat === 'application/ims-qti+zip' || f.encodingFormat === 'application/xml');
 
     if (!file) {
       node.exportData.errors.push(new Error(`Node ${node.id} has no QTI file`));
+      console.log(`!!! Node ${node.id} has no QTI file`);
       return;
     }
 
@@ -491,6 +495,7 @@ export default class CanvasExporter {
 
     if (!quizId) {
       node.exportData.errors.push(new Error())
+      console.log(`!!! Failed to import quiz for node ${node.id}`);
     }
 
     await this.createOrUpdateResource(
