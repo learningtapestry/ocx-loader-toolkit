@@ -26,6 +26,9 @@ Ensure the `.env.test.local` file has required environment variables:
 
 ```
 DATABASE_URL=postgresql://<YOUR_DB_USERNAME>@localhost:5432/ocx-loader_test
+
+CANVAS_BASE_URL=http://your.server/
+CANVAS_ACCESS_TOKEN=your_token
 ```
 
 ## Tests
