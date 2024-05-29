@@ -6,9 +6,14 @@ export default function BundleNodeScalarPropertyValues({propertyName, propertyVa
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
 
+  const buttonColor = propertyValues.length > 1 ? 'blue' : 'black';
+
   return (
     <span>
-        &nbsp; <button onClick={() => setShowList(!showList)}>{toggleListVerb} {propertyValues.length} values</button>
+        &nbsp; <button
+                  onClick={() => setShowList(!showList)}
+                  style={{color: buttonColor}}
+               >{toggleListVerb} {propertyValues.length} values</button>
 
       {showList &&
         <ul>
