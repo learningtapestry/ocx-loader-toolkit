@@ -26,7 +26,12 @@ export default class OcxBundle {
   allProperties: string[] = []; // all properties nodes metadata
   allPropertiesNodeCount: { [key: string]: number } = {};
   allScalarPropertiesValues: { [key: string]: string[] } = {};
-  allObjectPropertiesValues: Record<string, Prisma.JsonObject[]> = {}
+  allObjectPropertiesValues: Record<string, Prisma.JsonObject[]> = {};
+
+  propertiesByType: { [key: string]: string[] } = {};
+  propertiesNodeCountByType: { [key: string]: { [key: string]: number } } = {};
+  scalarPropertiesValuesByType: { [key: string]: { [key: string]: string[] } } = {};
+  objectPropertiesValuesByType: { [key: string]: { [key: string]: Prisma.JsonObject[] } } = {};
 
   constructor(prismaBundle: PrismaBundle, nodes: PrismaNode[]) {
     this.prismaBundle = prismaBundle;
@@ -91,6 +96,11 @@ export default class OcxBundle {
     this.allScalarPropertiesValues = {};
     this.allObjectPropertiesValues = {};
 
+    this.propertiesByType = {};
+    this.propertiesNodeCountByType = {};
+    this.scalarPropertiesValuesByType = {};
+    this.objectPropertiesValuesByType = {};
+
     for (const node of this.ocxNodes) {
       for (const type of node.ocxTypes as string[]) {
         if (!this.allTypes.includes(type)) {
@@ -119,10 +129,27 @@ export default class OcxBundle {
         }
         this.allPropertiesNodeCount[key]++;
 
+        // by type
+        if (!this.propertiesNodeCountByType[node.ocxCombinedTypes]) {
+          this.propertiesNodeCountByType[node.ocxCombinedTypes] = {};
+        }
+        if (!this.propertiesNodeCountByType[node.ocxCombinedTypes][key]) {
+          this.propertiesNodeCountByType[node.ocxCombinedTypes][key] = 0;
+        }
+        this.propertiesNodeCountByType[node.ocxCombinedTypes][key]++;
+
         if (key === '@id' || key === '@type') continue;
 
         if (!this.allProperties.includes(key)) {
           this.allProperties.push(key);
+        }
+
+        // by type
+        if (!this.propertiesByType[node.ocxCombinedTypes]) {
+          this.propertiesByType[node.ocxCombinedTypes] = [];
+        }
+        if (!this.propertiesByType[node.ocxCombinedTypes].includes(key)) {
+          this.propertiesByType[node.ocxCombinedTypes].push(key);
         }
 
         if (typeof node.metadata[key] === 'string') {
@@ -131,11 +158,33 @@ export default class OcxBundle {
           if (!this.allScalarPropertiesValues[key].includes(value)) {
             this.allScalarPropertiesValues[key].push(value);
           }
+
+          // by type
+          if (!this.scalarPropertiesValuesByType[node.ocxCombinedTypes]) {
+            this.scalarPropertiesValuesByType[node.ocxCombinedTypes] = {};
+          }
+          if (!this.scalarPropertiesValuesByType[node.ocxCombinedTypes][key]) {
+            this.scalarPropertiesValuesByType[node.ocxCombinedTypes][key] = [];
+          }
+          if (!this.scalarPropertiesValuesByType[node.ocxCombinedTypes][key].includes(value)) {
+            this.scalarPropertiesValuesByType[node.ocxCombinedTypes][key].push(value);
+          }
         } else {
           const value = node.metadata[key] as Prisma.JsonObject;
           if (!this.allObjectPropertiesValues[key]) this.allObjectPropertiesValues[key] = [];
           if (!this.allObjectPropertiesValues[key].find((v) => _.isEqual(v, value))) {
             this.allObjectPropertiesValues[key].push(value);
+          }
+
+          // by type
+          if (!this.objectPropertiesValuesByType[node.ocxCombinedTypes]) {
+            this.objectPropertiesValuesByType[node.ocxCombinedTypes] = {};
+          }
+          if (!this.objectPropertiesValuesByType[node.ocxCombinedTypes][key]) {
+            this.objectPropertiesValuesByType[node.ocxCombinedTypes][key] = [];
+          }
+          if (!this.objectPropertiesValuesByType[node.ocxCombinedTypes][key].find((v) => _.isEqual(v, value))) {
+            this.objectPropertiesValuesByType[node.ocxCombinedTypes][key].push(value);
           }
         }
       }
