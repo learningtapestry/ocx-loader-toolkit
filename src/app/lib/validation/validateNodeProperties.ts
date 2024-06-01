@@ -6,12 +6,13 @@ import { PropertyValidationResult } from "../OcxNode";
 
 import { JSONSchema7 } from 'json-schema';
 
-import activityJsonSchemaImport from "./activity.schema.json";
+import ocxNodeSchema from "./ocx_node.schema.json";
+import activityJsonSchema from "./activity.schema.json";
 
-const activityJsonSchema = activityJsonSchemaImport as JSONSchema7;
 
 const jsonSchemaByType: {[key: string]: JSONSchema7}  = {
-  "oer:Activity": activityJsonSchema
+  "ocx:Node": ocxNodeSchema as JSONSchema7,
+  "oer:Activity": activityJsonSchema as JSONSchema7
 };
 
 export default function validateNodeProperties(properties: Prisma.JsonObject, nodeTypes: string[])  {
@@ -23,7 +24,8 @@ export default function validateNodeProperties(properties: Prisma.JsonObject, no
     jsonIsValid: false
   };
 
-  const propertiesSchema = nodeTypes.map((type) => jsonSchemaByType[type]).find((schema) => !!schema);
+  const propertiesSchema =
+    nodeTypes.map((type) => jsonSchemaByType[type]).find((schema) => !!schema);
 
   if (!propertiesSchema) {
     ret.hasUnrecognizedType = true;
@@ -34,14 +36,19 @@ export default function validateNodeProperties(properties: Prisma.JsonObject, no
   const ajv = new Ajv();
   // @ts-ignore
   addFormats(ajv);
-  const validate = ajv.compile(propertiesSchema);
 
-  ret.jsonIsValid = validate(properties);
+  ajv.addSchema(ocxNodeSchema, 'https://k12ocx.github.io/ocx_node');
+  ajv.addSchema(activityJsonSchema, 'https://k12ocx.github.io/activity');
+
+  const validate = ajv.getSchema('https://k12ocx.github.io/activity')!;
+
+  ret.jsonIsValid = validate(properties) as boolean;
 
   const validationErrors = validate.errors;
 
   for (const propertyName in properties) {
-    const propertyValidationSchema = propertiesSchema.properties![propertyName];
+    const propertyValidationSchema = propertiesSchema.properties![propertyName]
+      || jsonSchemaByType['ocx:Node'].properties![propertyName];
 
     if (!propertyValidationSchema) {
       ret.nonStandardProperties.push(propertyName);
@@ -56,7 +63,8 @@ export default function validateNodeProperties(properties: Prisma.JsonObject, no
     }
 
     const propertyValidate = ajv.compile({
-      ...propertiesSchema,
+      ...jsonSchemaByType['ocx:Node'],
+      "$id": `https://k12ocx.github.io/activity#${propertyName}`,
       properties: {
         [propertyName]: propertyValidationSchema
       },

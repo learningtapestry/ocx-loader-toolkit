@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://k12ocx.github.io/ocx_node",
+  "title": "Ocx Node",
+  "type": "object",
+  "properties": {
+    "@id": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeId" },
+    "@type": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeType" },
+    "name": { "type": "string" },
+    "url": { "type": "string", "format": "uri" },
+    "alternateName": { "type": "string" },
+    "description": { "type": "string" },
+    "about": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Thing" },
+
+    "hasPart": { "type": "array",
+      "items": {
+        "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeReference"
+      }
+    },
+    "isPartOf": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeReference" },
+
+    "accessibilitySummary": { "type": "string" },
+    "audience": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/EducationalAudience" },
+    "author": {
+      "oneOf": [
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Person" }
+      ]
+    },
+    "citation": {
+      "oneOf": [
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/CreativeWork" },
+        { "type": "string" }
+      ]
+    },
+    "contributor": {
+      "oneOf": [
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Person" }
+      ]
+    },
+    "dateCreated": { "type": "string", "format": "date" },
+    "dateModified": { "type": "string", "format": "date" },
+    "educationalAlignment": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/AlignmentObject" },
+    "inLanguage": {
+      "oneOf": [
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Language" },
+        { "type": "string" }
+      ]
+    },
+    "isBasedOn": {
+      "oneOf": [
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/CreativeWork" },
+        { "type": "string", "format": "uri" }
+      ]
+    },
+    "keywords": { "type": "string" },
+    "learningResourceType": { "type": "string" },
+    "provider": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
+    "publisher": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
+    "timeRequired": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" }
+      ]
+    },
+    "typicalAgeRange": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "forTopic": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Topic" },
+    "cc:license": {
+      "oneOf": [
+        { "type": "string" },
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/License" }
+      ]
+    },
+    "cc:morePermissions": { "type": "string" },
+    "cc:attributionName": { "type": "string" },
+    "cc:attributionURL": { "type": "string", "format": "uri" },
+    "cc:useGuidelines": { "type": "string" }
+  },
+  "required": ["@id", "name"],
+  "definitions": {
+    "NodeId": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ]
+        }
+      ]
+    },
+    "NodeType": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "NodeReference": {
+      "type": "object",
+      "properties": {
+        "@id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "@type": {
+          "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeType"
+        }
+      },
+      "required": [
+        "@id",
+        "name",
+        "@type"
+      ]
+    },
+    "Thing": {
+      "type": "object"
+    },
+    "EducationalAudience": {
+      "type": "object"
+    },
+    "Organization": {
+      "type": "object"
+    },
+    "Person": {
+      "type": "object"
+    },
+    "CreativeWork": {
+      "type": "object"
+    },
+    "AlignmentObject": {
+      "type": "object"
+    },
+    "MediaObject": {
+      "type": "object"
+    },
+    "Language": {
+      "type": "object"
+    },
+    "oer:Assessment": {
+      "type": "object"
+    },
+    "oer:GradeFormat": {
+      "type": "object"
+    },
+    "asn:Rubric": {
+      "type": "object"
+    },
+    "ocx:AssociatedMaterial": {
+      "type": "object"
+    },
+    "oer:Course": {
+      "type": "object"
+    },
+    "Task": {
+      "type": "object"
+    },
+    "LearningObjective": {
+      "type": "object"
+    },
+    "Topic": {
+      "type": "object"
+    },
+    "License": {
+      "type": "object"
+    }
+  }
+}
