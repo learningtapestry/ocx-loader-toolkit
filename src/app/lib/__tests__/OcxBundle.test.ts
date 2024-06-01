@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 import { setupRecorder } from "nock-record";
 const record = setupRecorder();

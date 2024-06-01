@@ -1,4 +1,5 @@
 import { Node as PrismaNode, Prisma, PrismaClient } from "@prisma/client"
+import { ErrorObject } from "ajv"
 
 import OcxBundle from "./OcxBundle";
 
@@ -7,6 +8,15 @@ export interface NodePartData {
   "@type": string | string[];
   name: string;
   alternateName: string;
+}
+
+export interface PropertyValidationResult {
+  propertyName: string;
+  isRecognizedProperty: boolean;
+
+  isValid: boolean;
+
+  validationErrors: ErrorObject[];
 }
 
 export default class OcxNode {

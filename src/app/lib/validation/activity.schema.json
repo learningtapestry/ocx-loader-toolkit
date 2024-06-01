@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Activity",
+  "type": "object",
+  "properties": {
+    "@type": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "@id": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "value": { "type": "string" }
+          },
+          "required": ["type", "value"]
+        }
+      ]
+    },
+    "url": { "type": "string", "format": "uri" },
+    "name": { "type": "string" },
+    "alternateName": { "type": "string" },
+    "description": { "type": "string" },
+    "about": { "$ref": "#/definitions/Thing" },
+    "accessibilitySummary": { "type": "string" },
+    "audience": { "$ref": "#/definitions/EducationalAudience" },
+    "author": {
+      "oneOf": [
+        { "$ref": "#/definitions/Organization" },
+        { "$ref": "#/definitions/Person" }
+      ]
+    },
+    "citation": {
+      "oneOf": [
+        { "$ref": "#/definitions/CreativeWork" },
+        { "type": "string" }
+      ]
+    },
+    "contributor": {
+      "oneOf": [
+        { "$ref": "#/definitions/Organization" },
+        { "$ref": "#/definitions/Person" }
+      ]
+    },
+    "dateCreated": { "type": "string", "format": "date" },
+    "dateModified": { "type": "string", "format": "date" },
+    "educationalAlignment": { "$ref": "#/definitions/AlignmentObject" },
+    "educationalUse": { "type": "string" },
+    "encoding": { "$ref": "#/definitions/MediaObject" },
+
+    "hasPart": { "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@id": { "type": "string" },
+          "name": { "type": "string" },
+          "@type": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["@id", "name", "@type"]
+      }
+    },
+    "isPartOf": { "$ref": "#/definitions/CreativeWork" },
+
+    "inLanguage": {
+      "oneOf": [
+        { "$ref": "#/definitions/Language" },
+        { "type": "string" }
+      ]
+    },
+    "isBasedOn": {
+      "oneOf": [
+        { "$ref": "#/definitions/CreativeWork" },
+        { "type": "string", "format": "uri" }
+      ]
+    },
+    "keywords": { "type": "string" },
+    "learningResourceType": { "type": "string" },
+    "provider": { "$ref": "#/definitions/Organization" },
+    "publisher": { "$ref": "#/definitions/Organization" },
+    "timeRequired": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" }
+      ]
+    },
+    "typicalAgeRange": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "oer:assessedBy": { "$ref": "#/definitions/oer:Assessment" },
+    "gradingFormat": {
+      "oneOf": [
+        { "$ref": "#/definitions/oer:GradeFormat" },
+        { "type": "string" },
+        { "$ref": "#/definitions/asn:Rubric" }
+      ]
+    },
+    "ocx:material": { "$ref": "#/definitions/ocx:AssociatedMaterial" },
+    "ocx:optionality": { "type": "string" },
+    "ocx:totalPoints": { "type": "number" },
+    "ocx:assignmentModality": { "type": "string" },
+    "ocx:collaborationType": { "type": "string" },
+    "oer:forCourse": { "$ref": "#/definitions/oer:Course" },
+    "doTask": { "$ref": "#/definitions/Task" },
+    "hasLearningObjective": { "$ref": "#/definitions/LearningObjective" },
+    "forTopic": { "$ref": "#/definitions/Topic" },
+    "cc:license": {
+      "oneOf": [
+        { "type": "string" },
+        { "$ref": "#/definitions/License" }
+      ]
+    },
+    "cc:morePermissions": { "type": "string" },
+    "cc:attributionName": { "type": "string" },
+    "cc:attributionURL": { "type": "string", "format": "uri" },
+    "cc:useGuidelines": { "type": "string" }
+  },
+  "required": ["@id", "name"],
+  "definitions": {
+    "Thing": { "type": "object" },
+    "EducationalAudience": { "type": "object" },
+    "Organization": { "type": "object" },
+    "Person": { "type": "object" },
+    "CreativeWork": { "type": "object" },
+    "AlignmentObject": { "type": "object" },
+    "MediaObject": { "type": "object" },
+    "Language": { "type": "object" },
+    "oer:Assessment": { "type": "object" },
+    "oer:GradeFormat": { "type": "object" },
+    "asn:Rubric": { "type": "object" },
+    "ocx:AssociatedMaterial": { "type": "object" },
+    "oer:Course": { "type": "object" },
+    "Task": { "type": "object" },
+    "LearningObjective": { "type": "object" },
+    "Topic": { "type": "object" },
+    "License": { "type": "object" },
+    "NodeType": { "oneOf": [
+      { "type": "string" },
+      { "type": "array", "items": { "type": "string" } }
+    ] },
+    "NodeReference": {  "type": "object",
+      "properties": {
+        "@id": { "type": "string" },
+        "name": { "type": "string" },
+        "@type": { "$ref": "#/definitions/NodeType"}
+      },
+      "required": ["@id", "name", "@type"] }
+  }
+}
