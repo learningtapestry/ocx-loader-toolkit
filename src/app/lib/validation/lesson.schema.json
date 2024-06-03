@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://k12ocx.github.io/lesson.json",
+  "title": "Lesson",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://k12ocx.github.io/ocx_node" }
+  ],
+  "properties": {
+    "courseCode": { "type": "string" },
+    "coursePrerequisites": {
+      "oneOf": [
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/AlignmentObject" },
+        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Course" },
+        { "type": "string" }
+      ]
+    },
+    "educationalLevel": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/DefinedTerm" },
+    "position": { "type": "integer" }
+  }
+}

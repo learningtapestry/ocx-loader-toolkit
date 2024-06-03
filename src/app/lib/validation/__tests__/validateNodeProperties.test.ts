@@ -93,7 +93,7 @@ describe('validateNodeProperties', () => {
         "googleClassroom"
       ]);
       expect(result.hasUnrecognizedType).toBe(false);
-      expect(result.jsonIsValid).toBe(true);
+      expect(result.jsonIsValid).toBe(false);
     });
   });
 });

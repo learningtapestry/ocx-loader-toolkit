@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://k12ocx.github.io/supporting_material.json",
+  "title": "SupportingMaterial",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://k12ocx.github.io/ocx_node" }
+  ],
+  "properties": {
+    "educationalUse": { "type": "string" },
+    "ocx:collaborationType": { "type": "string" },
+    "learningResourceType": { "type": "string" }
+  }
+}

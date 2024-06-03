@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://k12ocx.github.io/supplemental_material.json",
+  "title": "SupplementalMaterial",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://k12ocx.github.io/ocx_node" }
+  ],
+  "properties": {
+    "typicalAgeRange": { "type": "string" },
+    "ocx:partType": { "type": "string" }
+  }
+}

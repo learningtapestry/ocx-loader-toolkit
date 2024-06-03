@@ -8,11 +8,27 @@ import { JSONSchema7 } from 'json-schema';
 
 import ocxNodeSchema from "./ocx_node.schema.json";
 import activityJsonSchema from "./activity.schema.json";
+import assessmentJsonSchema from "./assessment.schema.json";
+import courseJsonSchema from "./course.schema.json";
+import lessonJsonSchema from "./lesson.schema.json";
+import moduleJsonSchema from "./module.schema.json";
+import referencedMaterialJsonSchema from "./referenced_material.schema.json";
+import supplementalMaterialJsonSchema from "./supplemental_material.schema.json";
+import supportingMaterialJsonSchema from "./supporting_material.schema.json";
+import unitJsonSchema from "./unit.schema.json";
 
 
 const jsonSchemaByType: {[key: string]: JSONSchema7}  = {
   "ocx:Node": ocxNodeSchema as JSONSchema7,
-  "oer:Activity": activityJsonSchema as JSONSchema7
+  "oer:Activity": activityJsonSchema as JSONSchema7,
+  "oer:Assessment": assessmentJsonSchema as JSONSchema7,
+  "oer:Course": courseJsonSchema as JSONSchema7,
+  "oer:Lesson": lessonJsonSchema as JSONSchema7,
+  "oer:Module": moduleJsonSchema as JSONSchema7,
+  "oer:ReferencedMaterial": referencedMaterialJsonSchema as JSONSchema7,
+  "oer:SupplementalMaterial": supplementalMaterialJsonSchema as JSONSchema7,
+  "oer:SupportingMaterial": supportingMaterialJsonSchema as JSONSchema7,
+  "oer:Unit": unitJsonSchema as JSONSchema7
 };
 
 export default function validateNodeProperties(properties: Prisma.JsonObject, nodeTypes: string[])  {
