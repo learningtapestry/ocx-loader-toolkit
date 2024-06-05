@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import OcxBundle from "@/src/app/lib/OcxBundle";
 
+import ColorDotWithNumber from "@/src/app/components/ColorDotWithNumber"
+
 import BundleNodeScalarPropertyValues from "./BundleNodeScalarPropertyValues"
 import PropertyHighlightToggle from "./PropertyHighlightToggle"
 import BundleNodeObjectPropertyValues from "./BundleNodeObjectPropertyValues"
@@ -20,14 +22,31 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
 
   let properties = allProperties;
   let propertiesNodeCount = ocxBundle.allPropertiesNodeCount;
+  let propertiesNotValidNodeCount = ocxBundle.allPropertiesNotValidNodeCount;
+  let propertiesUnrecognizedNodeCount = ocxBundle.allPropertiesUnrecognizedNodeCount;
   let propertiesScalarValues = ocxBundle.allScalarPropertiesValues;
+  let propertiesScalarValuesValidation = ocxBundle.allScalarPropertiesValuesValidation;
   let propertiesObjectValues = ocxBundle.allObjectPropertiesValues;
+  let propertiesObjectValuesValidation = ocxBundle.allObjectPropertiesValuesValidation;
+
+  const totalPropertiesNotValidCount = Object.values(ocxBundle.allPropertiesNotValidNodeCount).reduce((a, b) => a + b, 0);
+  const totalPropertiesUnrecognizedCount = Object.values(ocxBundle.allPropertiesUnrecognizedNodeCount).reduce((a, b) => a + b, 0);
+
+  let propertiesNotValidCount = 0;
+  let propertiesUnrecognizedCount = 0;
 
   if (filterPropertiesForType !== 'All') {
     properties = ocxBundle.propertiesByType[filterPropertiesForType].sort();
     propertiesNodeCount = ocxBundle.propertiesNodeCountByType[filterPropertiesForType];
+    propertiesNotValidNodeCount = ocxBundle.propertiesNotValidNodeCountByType[filterPropertiesForType];
+    propertiesUnrecognizedNodeCount = ocxBundle.propertiesUnrecognizedNodeCountByType[filterPropertiesForType];
     propertiesScalarValues = ocxBundle.scalarPropertiesValuesByType[filterPropertiesForType];
+    propertiesScalarValuesValidation = ocxBundle.scalarPropertiesValuesValidationByType[filterPropertiesForType];
     propertiesObjectValues = ocxBundle.objectPropertiesValuesByType[filterPropertiesForType];
+    propertiesObjectValuesValidation = ocxBundle.objectPropertiesValuesValidationByType[filterPropertiesForType];
+
+    propertiesNotValidCount = Object.values(ocxBundle.propertiesNotValidNodeCountByType[filterPropertiesForType]).reduce((a, b) => a + b, 0);
+    propertiesUnrecognizedCount = Object.values(ocxBundle.propertiesUnrecognizedNodeCountByType[filterPropertiesForType]).reduce((a, b) => a + b, 0);
   }
 
   return (
@@ -35,11 +54,23 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
       <h2>Properties: {allProperties.length}
         &nbsp; <button onClick={() => setShowList(!showList)}>{toggleListVerb} List</button>
         &nbsp; <button onClick={resetPropertiesHighlights}>Reset Highlights</button>
+
       </h2>
+      <p>
+        Properties values validation totals:
+        &nbsp; {
+          totalPropertiesNotValidCount > 0 &&
+          <ColorDotWithNumber color="red" number={totalPropertiesNotValidCount} />
+        }
+          &nbsp; {
+          totalPropertiesUnrecognizedCount > 0 &&
+          <ColorDotWithNumber color="orange" number={totalPropertiesUnrecognizedCount} />
+        }
+      </p>
 
       {showList && <>
         <div>
-          Filter by node type:
+          Filter by node type: &nbsp;
           <select onChange={(e) => setFilterPropertiesForType(e.target.value)}>
             <option value={'All'}>All</option>
             {
@@ -53,6 +84,19 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
         {filterPropertiesForType !== 'All' &&
           <div>
             <h3>Properties for type: {properties.length}</h3>
+
+            <p>
+              Properties values validation totals for type:
+              {
+                propertiesNotValidCount > 0 &&
+                <ColorDotWithNumber color="red" number={propertiesNotValidCount} />
+              }
+              &nbsp;
+              {
+                propertiesUnrecognizedCount > 0 &&
+                <ColorDotWithNumber color="orange" number={propertiesUnrecognizedCount} />
+              }
+            </p>
           </div>
         }
         {filterPropertiesForType == 'All' && <br />}
@@ -62,6 +106,7 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
           <tr>
             <th>Property</th>
             <th>Nodes</th>
+            <th>Validation</th>
             <th>Values</th>
           </tr>
           </thead>
@@ -69,18 +114,35 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
           {
             properties.sort().map((property: string) => (
               <tr key={property}>
-                <td style={{ color: propertiesScalarValues[property] ? "black" : "blue" }}>{property} &nbsp;
+                <td style={{ color: propertiesScalarValues[property] ? "black" : "blue", verticalAlign: "top" }}>{property} &nbsp;
                   <PropertyHighlightToggle property={property} />
                 </td>
-                <td>{propertiesNodeCount[property]}</td>
+                <td style={{verticalAlign: "top"}}>{propertiesNodeCount[property]}</td>
+                <td style={{verticalAlign: "top"}}>
+                  { propertiesNotValidNodeCount[property] == 0 && propertiesUnrecognizedNodeCount[property] == 0 &&
+                    <ColorDotWithNumber color="green" />
+                  }
+                  { propertiesNotValidNodeCount[property] > 0 &&
+                    <ColorDotWithNumber color="red" number={propertiesNotValidNodeCount[property]} />
+                  }
+                  { propertiesUnrecognizedNodeCount[property] > 0 &&
+                    <ColorDotWithNumber color="orange" number={propertiesUnrecognizedNodeCount[property]} />
+                  }
+                </td>
                 <td>
                   {propertiesScalarValues[property] &&
-                    <BundleNodeScalarPropertyValues propertyName={property}
-                                                    propertyValues={propertiesScalarValues[property]} />
+                    <BundleNodeScalarPropertyValues
+                      propertyName={property}
+                      propertyValues={propertiesScalarValues[property]}
+                      propertyValuesValidation={propertiesScalarValuesValidation}
+                    />
                   }
                   {propertiesObjectValues[property] &&
-                    <BundleNodeObjectPropertyValues propertyName={property}
-                                                    propertyValues={propertiesObjectValues[property]} />
+                    <BundleNodeObjectPropertyValues
+                      propertyName={property}
+                      propertyValues={propertiesObjectValues[property]}
+                      propertyValuesValidation={propertiesObjectValuesValidation}
+                    />
                   }
                 </td>
               </tr>

@@ -1,8 +1,18 @@
 import { useState } from 'react';
 
-import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle"
+import DeepArrayMap from "@/src/app/lib/DeepArrayMap"
+import { PropertyValidationResult } from "@/src/app/lib/OcxNode"
 
-export default function BundleNodeScalarPropertyValues({propertyName, propertyValues} : {propertyName: string, propertyValues: string[]}) {
+import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle"
+import PropertyValidation from "@/src/app/bundles/components/PropertyValidation"
+
+interface BundleNodeScalarPropertyValuesProps {
+  propertyName: string;
+  propertyValues: string[];
+  propertyValuesValidation: DeepArrayMap<[string, string], PropertyValidationResult>;
+}
+
+export default function BundleNodeScalarPropertyValues({propertyName, propertyValues, propertyValuesValidation} : BundleNodeScalarPropertyValuesProps) {
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
 
@@ -18,11 +28,18 @@ export default function BundleNodeScalarPropertyValues({propertyName, propertyVa
       {showList &&
         <ul>
           {
-            propertyValues.sort().map((value: string) => (
-              <li key={value}>{value} &nbsp;
+            propertyValues.sort().map((value: string) => {
+              const validation = propertyValuesValidation.get([propertyName, value]);
+
+              return <li key={value}>
+                {value}
+                &nbsp;
                 <PropertyHighlightToggle property={propertyName} value={value} />
+                {
+                  validation && <PropertyValidation validationData={validation} />
+                }
               </li>
-            ))
+            })
           }
         </ul>
       }

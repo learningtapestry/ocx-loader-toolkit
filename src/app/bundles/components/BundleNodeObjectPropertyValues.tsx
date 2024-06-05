@@ -4,9 +4,19 @@ import { Prisma } from "@prisma/client"
 
 import JsonView from '@uiw/react-json-view';
 
-import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle"
+import DeepArrayMap from "@/src/app/lib/DeepArrayMap";
+import { PropertyValidationResult } from "@/src/app/lib/OcxNode";
 
-export default function BundleNodeObjectPropertyValues({propertyName, propertyValues} : {propertyName: string, propertyValues: Prisma.JsonObject[]}) {
+import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle";
+import PropertyValidation from "@/src/app/bundles/components/PropertyValidation";
+
+interface BundleNodeObjectPropertyValuesProps {
+  propertyName: string;
+  propertyValues: Prisma.JsonObject[];
+  propertyValuesValidation: DeepArrayMap<[string, Prisma.JsonObject], PropertyValidationResult>;
+}
+
+export default function BundleNodeObjectPropertyValues({propertyName, propertyValues, propertyValuesValidation} : BundleNodeObjectPropertyValuesProps) {
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
 
@@ -21,16 +31,21 @@ export default function BundleNodeObjectPropertyValues({propertyName, propertyVa
       {showList &&
         <ul>
           {
-            propertyValues.sort().map((value: Prisma.JsonObject) => (
-              <li key={JSON.stringify(value)}>
+            propertyValues.sort().map((value: Prisma.JsonObject) => {
+              const validation = propertyValuesValidation.get([propertyName, value]);
+
+              return <li key={JSON.stringify(value)}>
                 <PropertyHighlightToggle property={propertyName} value={value} />
+                {
+                  validation && <PropertyValidation validationData={validation} />
+                }
                 <JsonView
                   value={value}
                   displayObjectSize={false}
                   displayDataTypes={false}
                 />
               </li>
-            ))
+            })
           }
         </ul>
       }

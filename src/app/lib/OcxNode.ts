@@ -3,6 +3,8 @@ import { ErrorObject } from "ajv"
 
 import OcxBundle from "./OcxBundle";
 
+import validateNodeProperties from "@/src/app/lib/validation/validateNodeProperties"
+
 export interface NodePartData {
   "@id": string;
   "@type": string | string[];
@@ -25,9 +27,19 @@ export default class OcxNode {
 
   childrenNotFoundData: Prisma.JsonObject[] = [];
 
+  propertiesValidationData = {
+    propertiesValidationResultsByProperty: {} as {[key: string]: PropertyValidationResult},
+    missingProperties: [] as string[],
+    nonStandardProperties: [] as string[],
+    hasUnrecognizedType: false,
+    jsonIsValid: false
+  }
+
   constructor(prismaNode: PrismaNode, ocxBundle: OcxBundle) {
     this.prismaNode = prismaNode;
     this.ocxBundle = ocxBundle;
+
+    this.propertiesValidationData = validateNodeProperties(this.metadata, this.ocxTypes)
   }
 
   get metadata() {

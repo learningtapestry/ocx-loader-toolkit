@@ -1,6 +1,6 @@
 import { Bundle as PrismaBundle, Node as PrismaNode, PrismaClient } from "@prisma/client"
 
-import OcxNode from "./OcxNode"
+import OcxNode, { PropertyValidationResult } from "./OcxNode"
 
 import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
@@ -12,6 +12,7 @@ import absolutizeUrl from "@/src/app/ocx/loader/utils/absolutizeUrl"
 import { ParsedSitemap } from "@/src/app/ocx/loader/types"
 import { Prisma } from ".prisma/client"
 import { parseStringPromise } from "xml2js"
+import DeepArrayMap from "@/src/app/lib/DeepArrayMap"
 
 const METADATA_SELECTOR = 'script[type="application/ld+json"]';
 
@@ -25,13 +26,21 @@ export default class OcxBundle {
   allCombinedTypesNodeCount: { [key: string]: number } = {};
   allProperties: string[] = []; // all properties nodes metadata
   allPropertiesNodeCount: { [key: string]: number } = {};
+  allPropertiesNotValidNodeCount: { [key: string]: number } = {};
+  allPropertiesUnrecognizedNodeCount: { [key: string]: number } = {};
   allScalarPropertiesValues: { [key: string]: string[] } = {};
+  allScalarPropertiesValuesValidation = new DeepArrayMap<[string, string], PropertyValidationResult>();
   allObjectPropertiesValues: Record<string, Prisma.JsonObject[]> = {};
+  allObjectPropertiesValuesValidation = new DeepArrayMap<[string, Prisma.JsonObject], PropertyValidationResult>();
 
   propertiesByType: { [key: string]: string[] } = {};
   propertiesNodeCountByType: { [key: string]: { [key: string]: number } } = {};
+  propertiesNotValidNodeCountByType: { [key: string]: { [key: string]: number } } = {};
+  propertiesUnrecognizedNodeCountByType: { [key: string]: { [key: string]: number } } = {};
   scalarPropertiesValuesByType: { [key: string]: { [key: string]: string[] } } = {};
+  scalarPropertiesValuesValidationByType: { [key: string]: DeepArrayMap<[string, string], PropertyValidationResult> }= {};
   objectPropertiesValuesByType: { [key: string]: { [key: string]: Prisma.JsonObject[] } } = {};
+  objectPropertiesValuesValidationByType: { [key: string]: DeepArrayMap<[string, Prisma.JsonObject], PropertyValidationResult> } = {};
 
   constructor(prismaBundle: PrismaBundle, nodes: PrismaNode[]) {
     this.prismaBundle = prismaBundle;
@@ -93,13 +102,22 @@ export default class OcxBundle {
     this.allCombinedTypesNodeCount = {};
     this.allProperties = [];
     this.allPropertiesNodeCount = {};
+    this.allPropertiesNotValidNodeCount = {};
+    this.allPropertiesUnrecognizedNodeCount = {};
     this.allScalarPropertiesValues = {};
+    this.allScalarPropertiesValuesValidation.clear();
     this.allObjectPropertiesValues = {};
+    this.allObjectPropertiesValuesValidation.clear();
 
     this.propertiesByType = {};
     this.propertiesNodeCountByType = {};
+    this.propertiesNotValidNodeCountByType = {};
+    this.propertiesUnrecognizedNodeCountByType = {};
+
     this.scalarPropertiesValuesByType = {};
+    this.scalarPropertiesValuesValidationByType = {};
     this.objectPropertiesValuesByType = {};
+    this.objectPropertiesValuesValidationByType = {};
 
     for (const node of this.ocxNodes) {
       for (const type of node.ocxTypes as string[]) {
@@ -152,12 +170,51 @@ export default class OcxBundle {
           this.propertiesByType[node.ocxCombinedTypes].push(key);
         }
 
+        // collect all values and value validation data
+        const validationData = node.propertiesValidationData.propertiesValidationResultsByProperty[key];
+
+        if (!this.allPropertiesNotValidNodeCount[key]) {
+          this.allPropertiesNotValidNodeCount[key] = 0;
+        }
+        if (!this.allPropertiesUnrecognizedNodeCount[key]) {
+          this.allPropertiesUnrecognizedNodeCount[key] = 0;
+        }
+        if (!this.propertiesNotValidNodeCountByType[node.ocxCombinedTypes]) {
+          this.propertiesNotValidNodeCountByType[node.ocxCombinedTypes] = {};
+        }
+        if (!this.propertiesNotValidNodeCountByType[node.ocxCombinedTypes][key]) {
+          this.propertiesNotValidNodeCountByType[node.ocxCombinedTypes][key] = 0;
+        }if (!this.propertiesUnrecognizedNodeCountByType[node.ocxCombinedTypes]) {
+          this.propertiesUnrecognizedNodeCountByType[node.ocxCombinedTypes] = {};
+        }
+        if (!this.propertiesUnrecognizedNodeCountByType[node.ocxCombinedTypes][key]) {
+          this.propertiesUnrecognizedNodeCountByType[node.ocxCombinedTypes][key] = 0;
+        }
+
+        if (validationData && !validationData.isValid) {
+          if (validationData.isRecognizedProperty) {
+            this.allPropertiesNotValidNodeCount[key]++;
+
+            /// by type
+            this.propertiesNotValidNodeCountByType[node.ocxCombinedTypes][key]++;
+
+          } else {
+            this.allPropertiesUnrecognizedNodeCount[key]++;
+
+            // by type
+            this.propertiesUnrecognizedNodeCountByType[node.ocxCombinedTypes][key]++;
+          }
+        }
+
         if (typeof node.metadata[key] === 'string') {
           const value = node.metadata[key]! as string;
           if (!this.allScalarPropertiesValues[key]) this.allScalarPropertiesValues[key] = [];
           if (!this.allScalarPropertiesValues[key].includes(value)) {
             this.allScalarPropertiesValues[key].push(value);
           }
+
+          // NB this could overwrite a different result for a different type of node - a value can be valid for one type and invalid for another
+          this.allScalarPropertiesValuesValidation.set([key, value], validationData);
 
           // by type
           if (!this.scalarPropertiesValuesByType[node.ocxCombinedTypes]) {
@@ -169,12 +226,20 @@ export default class OcxBundle {
           if (!this.scalarPropertiesValuesByType[node.ocxCombinedTypes][key].includes(value)) {
             this.scalarPropertiesValuesByType[node.ocxCombinedTypes][key].push(value);
           }
+
+          if (!this.scalarPropertiesValuesValidationByType[node.ocxCombinedTypes]) {
+            this.scalarPropertiesValuesValidationByType[node.ocxCombinedTypes] = new DeepArrayMap<[string, string], PropertyValidationResult>();
+          }
+          this.scalarPropertiesValuesValidationByType[node.ocxCombinedTypes].set([key, value], validationData);
         } else {
           const value = node.metadata[key] as Prisma.JsonObject;
           if (!this.allObjectPropertiesValues[key]) this.allObjectPropertiesValues[key] = [];
           if (!this.allObjectPropertiesValues[key].find((v) => _.isEqual(v, value))) {
             this.allObjectPropertiesValues[key].push(value);
           }
+
+          // NB this could overwrite a different result for a different type of node - a value can be valid for one type and invalid for another
+          this.allObjectPropertiesValuesValidation.set([key, value], validationData);
 
           // by type
           if (!this.objectPropertiesValuesByType[node.ocxCombinedTypes]) {
@@ -186,6 +251,11 @@ export default class OcxBundle {
           if (!this.objectPropertiesValuesByType[node.ocxCombinedTypes][key].find((v) => _.isEqual(v, value))) {
             this.objectPropertiesValuesByType[node.ocxCombinedTypes][key].push(value);
           }
+
+          if (!this.objectPropertiesValuesValidationByType[node.ocxCombinedTypes]) {
+            this.objectPropertiesValuesValidationByType[node.ocxCombinedTypes] = new DeepArrayMap<[string, Prisma.JsonObject], PropertyValidationResult>();
+          }
+          this.objectPropertiesValuesValidationByType[node.ocxCombinedTypes].set([key, value], validationData);
         }
       }
     }

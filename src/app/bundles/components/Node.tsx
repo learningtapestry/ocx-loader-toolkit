@@ -65,7 +65,10 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
         &nbsp;
         <button onClick={() => setShowContent(!showContent)}>{toggleContentVerb} Content</button>
         &nbsp;
-        <button onClick={() => setShowMetadata(!showMetadata)}>{toggleMetadataVerb} Metadata</button>
+        <button
+          style={{color: node.propertiesValidationData.jsonIsValid ? 'black' : 'red'}}
+          onClick={() => setShowMetadata(!showMetadata)}
+        >{toggleMetadataVerb} Metadata</button>
       </h2>
 
       {
@@ -100,6 +103,14 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
               displayDataTypes={false}
             />
           </div>
+
+          Validation:
+
+          <JsonView
+            value={node.propertiesValidationData}
+            displayObjectSize={false}
+            displayDataTypes={false}
+          />
         </div>
       }
 

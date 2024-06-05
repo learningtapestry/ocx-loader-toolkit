@@ -149,6 +149,37 @@ describe('OcxBundle', () => {
       expect(ocxBundle.allProperties.length).toEqual(29);
       expect(Object.keys(ocxBundle.allScalarPropertiesValues).length).toEqual(20);
       expect(ocxBundle.allScalarPropertiesValues['name'].length).toEqual(115);
+
+      expect(ocxBundle.allPropertiesNotValidNodeCount['name']).toEqual(0);
+      expect(ocxBundle.allPropertiesUnrecognizedNodeCount['name']).toEqual(0);
+      expect(ocxBundle.propertiesNotValidNodeCountByType['oer:Unit']['name']).toEqual(0);
+      expect(ocxBundle.propertiesUnrecognizedNodeCountByType['oer:Unit']['name']).toEqual(0);
+
+      expect(ocxBundle.allScalarPropertiesValuesValidation.get(["name", "Just a Little Green"])?.isValid).toBe(true);
+      expect(ocxBundle.allObjectPropertiesValuesValidation.get([
+        "author",
+        {
+          "url": "https://illustrativemathematics.org/",
+          "name": "Illustrative Mathematics",
+          "@type": "http://schema.org/Organization",
+          "email": "email@illustrativemathematics.org"
+        }
+      ])?.isValid).toBe(false);
+
+      expect(ocxBundle.scalarPropertiesValuesValidationByType["oer:Assessment"].get([
+        "name",
+        "Pizza-making Party"
+      ])?.isValid).toBe(true);
+
+      expect(ocxBundle.objectPropertiesValuesValidationByType["oer:Assessment"].get([
+        "author",
+        {
+          "url": "https://illustrativemathematics.org/",
+          "name": "Illustrative Mathematics",
+          "@type": "http://schema.org/Organization",
+          "email": "email@illustrativemathematics.org"
+        }
+      ])?.isValid).toBe(false);
     });
 
     it('should load data from an OSE zip file', async () => {
