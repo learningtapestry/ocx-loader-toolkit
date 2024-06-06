@@ -6,6 +6,14 @@
   "properties": {
     "@id": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeId" },
     "@type": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeType" },
+    "@context": { "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string", "format": "uri"},
+          { "type": "object" }
+        ]
+      }
+    },
     "name": { "type": "string" },
     "url": { "type": "string", "format": "uri" },
     "alternateName": { "type": "string" },
