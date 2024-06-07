@@ -79,7 +79,7 @@
     "forTopic": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Topic" },
     "cc:license": {
       "oneOf": [
-        { "type": "string" },
+        { "type": "string", "format": "uri" },
         { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/License" }
       ]
     },
@@ -145,28 +145,114 @@
       ]
     },
     "Thing": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Thing",
+            "https://schema.org/Thing",
+            "Thing"
+          ]
+        }
+      }
     },
     "EducationalAudience": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/EducationalAudience",
+            "https://schema.org/EducationalAudience",
+            "EducationalAudience"
+          ]
+        }
+      }
     },
     "Organization": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Organization",
+            "https://schema.org/Organization",
+            "Organization"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     },
     "Person": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Person",
+            "https://schema.org/Person",
+            "Person"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     },
     "CreativeWork": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/CreativeWork",
+            "https://schema.org/CreativeWork",
+            "CreativeWork"
+          ]
+        }
+      }
     },
     "AlignmentObject": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/AlignmentObject",
+            "https://schema.org/AlignmentObject",
+            "AlignmentObject"
+          ]
+        }
+      }
     },
     "MediaObject": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/MediaObject",
+            "https://schema.org/MediaObject",
+            "MediaObject"
+          ]
+        }
+      }
     },
     "Language": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Language",
+            "https://schema.org/Language",
+            "Language"
+          ]
+        }
+      }
     },
     "oer:Assessment": {
       "type": "object"
