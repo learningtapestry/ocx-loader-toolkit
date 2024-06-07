@@ -28,6 +28,7 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
   let propertiesScalarValuesValidation = ocxBundle.allScalarPropertiesValuesValidation;
   let propertiesObjectValues = ocxBundle.allObjectPropertiesValues;
   let propertiesObjectValuesValidation = ocxBundle.allObjectPropertiesValuesValidation;
+  let nonStandardProperties = ocxBundle.allNonStandardProperties;
 
   const totalPropertiesNotValidCount = Object.values(ocxBundle.allPropertiesNotValidNodeCount).reduce((a, b) => a + b, 0);
   const totalPropertiesUnrecognizedCount = Object.values(ocxBundle.allPropertiesUnrecognizedNodeCount).reduce((a, b) => a + b, 0);
@@ -44,6 +45,7 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
     propertiesScalarValuesValidation = ocxBundle.scalarPropertiesValuesValidationByType[filterPropertiesForType];
     propertiesObjectValues = ocxBundle.objectPropertiesValuesByType[filterPropertiesForType];
     propertiesObjectValuesValidation = ocxBundle.objectPropertiesValuesValidationByType[filterPropertiesForType];
+    nonStandardProperties = ocxBundle.nonStandardPropertiesByType[filterPropertiesForType];
 
     propertiesNotValidCount = Object.values(ocxBundle.propertiesNotValidNodeCountByType[filterPropertiesForType]).reduce((a, b) => a + b, 0);
     propertiesUnrecognizedCount = Object.values(ocxBundle.propertiesUnrecognizedNodeCountByType[filterPropertiesForType]).reduce((a, b) => a + b, 0);
@@ -114,7 +116,9 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
           {
             properties.sort().map((property: string) => (
               <tr key={property}>
-                <td style={{ color: propertiesScalarValues[property] ? "black" : "blue", verticalAlign: "top" }}>{property} &nbsp;
+                <td style={{ color: propertiesScalarValues[property] ? "black" : "blue", verticalAlign: "top" }}>
+                  {nonStandardProperties.includes(property) && <span style={{color: "red", fontWeight: 'bold'}} title={"Non standard property"}>! &nbsp;</span>}
+                  {property} &nbsp;
                   <PropertyHighlightToggle property={property} />
                 </td>
                 <td style={{verticalAlign: "top"}}>{propertiesNodeCount[property]}</td>

@@ -32,6 +32,7 @@ export default class OcxBundle {
   allScalarPropertiesValuesValidation = new DeepArrayMap<[string, string], PropertyValidationResult>();
   allObjectPropertiesValues: Record<string, Prisma.JsonObject[]> = {};
   allObjectPropertiesValuesValidation = new DeepArrayMap<[string, Prisma.JsonObject], PropertyValidationResult>();
+  allNonStandardProperties = [] as string[];
 
   propertiesByType: { [key: string]: string[] } = {};
   propertiesNodeCountByType: { [key: string]: { [key: string]: number } } = {};
@@ -41,6 +42,7 @@ export default class OcxBundle {
   scalarPropertiesValuesValidationByType: { [key: string]: DeepArrayMap<[string, string], PropertyValidationResult> }= {};
   objectPropertiesValuesByType: { [key: string]: { [key: string]: Prisma.JsonObject[] } } = {};
   objectPropertiesValuesValidationByType: { [key: string]: DeepArrayMap<[string, Prisma.JsonObject], PropertyValidationResult> } = {};
+  nonStandardPropertiesByType: { [key: string]: string[] } = {};
 
   constructor(prismaBundle: PrismaBundle, nodes: PrismaNode[]) {
     this.prismaBundle = prismaBundle;
@@ -108,6 +110,7 @@ export default class OcxBundle {
     this.allScalarPropertiesValuesValidation.clear();
     this.allObjectPropertiesValues = {};
     this.allObjectPropertiesValuesValidation.clear();
+    this.allNonStandardProperties = [];
 
     this.propertiesByType = {};
     this.propertiesNodeCountByType = {};
@@ -118,6 +121,7 @@ export default class OcxBundle {
     this.scalarPropertiesValuesValidationByType = {};
     this.objectPropertiesValuesByType = {};
     this.objectPropertiesValuesValidationByType = {};
+    this.nonStandardPropertiesByType = {};
 
     for (const node of this.ocxNodes) {
       for (const type of node.ocxTypes as string[]) {
@@ -129,6 +133,19 @@ export default class OcxBundle {
           this.allTypesNodeCount[type] = 0;
         }
         this.allTypesNodeCount[type]++;
+      }
+
+      for (const property of node.propertiesValidationData.nonStandardProperties) {
+        if (!this.allNonStandardProperties.includes(property)) {
+          this.allNonStandardProperties.push(property);
+        }
+
+        if (!this.nonStandardPropertiesByType[node.ocxCombinedTypes]) {
+          this.nonStandardPropertiesByType[node.ocxCombinedTypes] = [];
+        }
+        if (!this.nonStandardPropertiesByType[node.ocxCombinedTypes].includes(property)) {
+          this.nonStandardPropertiesByType[node.ocxCombinedTypes].push(property);
+        }
       }
 
       if (!this.allCombinedTypes.includes(node.ocxCombinedTypes)) {

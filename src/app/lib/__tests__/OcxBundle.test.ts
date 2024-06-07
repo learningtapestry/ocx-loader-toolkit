@@ -164,7 +164,7 @@ describe('OcxBundle', () => {
           "@type": "http://schema.org/Organization",
           "email": "email@illustrativemathematics.org"
         }
-      ])?.isValid).toBe(false);
+      ])?.isValid).toBe(true);
 
       expect(ocxBundle.scalarPropertiesValuesValidationByType["oer:Assessment"].get([
         "name",
@@ -179,7 +179,10 @@ describe('OcxBundle', () => {
           "@type": "http://schema.org/Organization",
           "email": "email@illustrativemathematics.org"
         }
-      ])?.isValid).toBe(false);
+      ])?.isValid).toBe(true);
+
+      expect(ocxBundle.allNonStandardProperties.length).toEqual(10);
+      expect(ocxBundle.nonStandardPropertiesByType['oer:Unit'].length).toEqual(10);
     });
 
     it('should load data from an OSE zip file', async () => {
