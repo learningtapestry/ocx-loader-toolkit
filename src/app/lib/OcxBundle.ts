@@ -487,7 +487,7 @@ export default class OcxBundle {
 
     for (const node of nodes) {
       const metadata = node.metadata as Prisma.JsonObject;
-      const parts = metadata.hasPart as Prisma.JsonObject[];
+      const parts = (metadata.hasPart || []) as Prisma.JsonObject[];
 
       for (const childData of parts) {
         const ocxId = childData['@id'] as string;
