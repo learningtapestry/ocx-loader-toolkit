@@ -22,7 +22,7 @@
       ]
     },
     "oer:assessedBy": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/oer:Assessment" },
-    "gradingFormat": {
+    "oer:gradingFormat": {
       "oneOf": [
         { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/oer:GradeFormat" },
         { "type": "string" },
