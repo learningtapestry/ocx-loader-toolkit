@@ -8,8 +8,19 @@
   ],
   "properties": {
     "educationalUse": { "type": "string" },
-    "encoding": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/MediaObject" },
-
+    "encoding": {
+      "oneOf": [
+        {
+          "$ref": "https://k12ocx.github.io/ocx_node#/definitions/MediaObject"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "https://k12ocx.github.io/ocx_node#/definitions/MediaObject"
+          }
+        }
+      ]
+    },
     "oer:assessedBy": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/oer:Assessment" },
     "gradingFormat": {
       "oneOf": [
