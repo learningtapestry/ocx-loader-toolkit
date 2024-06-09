@@ -155,7 +155,7 @@ export default function BundleNodeProperties({ocxBundle, refetchBundle} : {ocxBu
                     style={{cursor: 'pointer', color: 'darkgray', width: 10, top: 2, position: 'relative'}}
                     onClick={() => onRemoveProperty(property)}
                   /> &nbsp;
-                  {nonStandardProperties.includes(property) && <span style={{color: "red", fontWeight: 'bold'}} title={"Non standard property"}>! &nbsp;</span>}
+                  {nonStandardProperties?.includes(property) && <span style={{color: "red", fontWeight: 'bold'}} title={"Non standard property"}>! &nbsp;</span>}
                   {property}
                 </td>
                 <td style={{verticalAlign: "top"}}>{propertiesNodeCount[property]}</td>
