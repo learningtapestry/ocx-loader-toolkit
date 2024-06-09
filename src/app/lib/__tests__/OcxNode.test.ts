@@ -344,4 +344,48 @@ describe('OcxNode', () => {
       }
     });
   });
+
+  describe('#renameProperty', () => {
+    it('should rename an existing property', async () => {
+      const oldMetadata = ocxNode1.metadata;
+
+      await ocxNode1.renameProperty(db, 'name', 'newName');
+
+      await reloadFromDb();
+
+      expect(ocxNode1.metadata.name).to.toBeUndefined();
+      expect(ocxNode1.metadata.newName).to.equal('name1');
+      expect(ocxNode1.metadata.alternateName).to.equal(oldMetadata.alternateName);
+    });
+
+    it('should do nothing if the property does not exist', async () => {
+      const oldMetadata = ocxNode1.metadata;
+
+      await ocxNode1.renameProperty(db, 'nonexistent', 'newName');
+
+      await reloadFromDb();
+
+      expect(ocxNode1.metadata).toStrictEqual(oldMetadata);
+    });
+  });
+
+  describe('#removeProperty', () => {
+    it('should remove an existing property', async () => {
+      await ocxNode1.removeProperty(db, 'name');
+
+      await reloadFromDb();
+
+      expect(ocxNode1.metadata.name).toBeUndefined();
+    });
+
+    it('should do nothing if the property does not exist', async () => {
+      const oldMetadata = ocxNode1.metadata;
+
+      await ocxNode1.removeProperty(db, 'nonexistent');
+
+      await reloadFromDb();
+
+      expect(ocxNode1.metadata).toStrictEqual(oldMetadata);
+    });
+  });
 });

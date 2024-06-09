@@ -8,10 +8,19 @@ import BundleNodeScalarPropertyValues from "./BundleNodeScalarPropertyValues"
 import PropertyHighlightToggle from "./PropertyHighlightToggle"
 import BundleNodeObjectPropertyValues from "./BundleNodeObjectPropertyValues"
 
-import { useUiStore } from "@/src/app/stores/UiStore";
+import renamePropertyInBundle from "@/src/app/bundles/mutations/renamePropertyInBundle"
+import removePropertyInBundle from "@/src/app/bundles/mutations/removePropertyInBundle"
 
-export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle}) {
+import { FaEdit, FaTrash } from "react-icons/fa"
+
+import { useUiStore } from "@/src/app/stores/UiStore";
+import { useMutation } from "@blitzjs/rpc"
+
+export default function BundleNodeProperties({ocxBundle, refetchBundle} : {ocxBundle: OcxBundle, refetchBundle: () => void}) {
   const resetPropertiesHighlights = useUiStore(state => state.resetPropertiesHighlights);
+
+  const [renamePropertyInBundleMutation] = useMutation(renamePropertyInBundle);
+  const [removePropertyInBundleMutation] = useMutation(removePropertyInBundle);
 
   const [showList, setShowList] = useState(false);
   const toggleListVerb = showList ? 'Hide' : 'Show';
@@ -51,12 +60,30 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
     propertiesUnrecognizedCount = Object.values(ocxBundle.propertiesUnrecognizedNodeCountByType[filterPropertiesForType]).reduce((a, b) => a + b, 0);
   }
 
+  const onRenameProperty = async (property: string) => {
+    const newName = window.prompt(`Rename property ${property}`, property);
+    const nodeType = filterPropertiesForType === 'All' ? undefined : filterPropertiesForType;
+
+    if (newName && newName !== property) {
+      await renamePropertyInBundleMutation({id: ocxBundle.prismaBundle.id, oldName: property, newName, nodeType});
+      refetchBundle();
+    }
+  }
+
+  const onRemoveProperty = async (property: string) => {
+    const nodeType = filterPropertiesForType === 'All' ? undefined : filterPropertiesForType;
+
+    if (window.confirm(`Are you sure you want to remove property ${property}?`)) {
+      await removePropertyInBundleMutation({id: ocxBundle.prismaBundle.id, name: property, nodeType});
+      refetchBundle();
+    }
+  }
+
   return (
     <>
       <h2>Properties: {allProperties.length}
         &nbsp; <button onClick={() => setShowList(!showList)}>{toggleListVerb} List</button>
         &nbsp; <button onClick={resetPropertiesHighlights}>Reset Highlights</button>
-
       </h2>
       <p>
         Properties values validation totals:
@@ -117,9 +144,19 @@ export default function BundleNodeProperties({ocxBundle} : {ocxBundle: OcxBundle
             properties.sort().map((property: string) => (
               <tr key={property}>
                 <td style={{ color: propertiesScalarValues[property] ? "black" : "blue", verticalAlign: "top" }}>
+                  <PropertyHighlightToggle property={property} /> &nbsp;
+                  <FaEdit
+                    title="Rename Property"
+                    style={{cursor: 'pointer', color: 'darkgray', width: 10, top: 2, position: 'relative'}}
+                    onClick={() => onRenameProperty(property)}
+                  /> &nbsp;
+                  <FaTrash
+                    title="Remove property"
+                    style={{cursor: 'pointer', color: 'darkgray', width: 10, top: 2, position: 'relative'}}
+                    onClick={() => onRemoveProperty(property)}
+                  /> &nbsp;
                   {nonStandardProperties.includes(property) && <span style={{color: "red", fontWeight: 'bold'}} title={"Non standard property"}>! &nbsp;</span>}
-                  {property} &nbsp;
-                  <PropertyHighlightToggle property={property} />
+                  {property}
                 </td>
                 <td style={{verticalAlign: "top"}}>{propertiesNodeCount[property]}</td>
                 <td style={{verticalAlign: "top"}}>

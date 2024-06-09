@@ -557,4 +557,20 @@ export default class OcxBundle {
 
     return this.prismaBundle;
   }
+
+  async renameProperty(db: PrismaClient, oldProperty: string, newProperty: string, nodeType: string | null = null) {
+    const nodes = nodeType ? this.ocxNodes.filter((node) => node.ocxCombinedTypes === nodeType) : this.ocxNodes;
+
+    await Promise.all(nodes.map((node) => node.renameProperty(db, oldProperty, newProperty)));
+
+    await this.reloadFromDb(db);
+  }
+
+  async removeProperty(db: PrismaClient, property: string, nodeType: string | null = null) {
+    const nodes = nodeType ? this.ocxNodes.filter((node) => node.ocxCombinedTypes === nodeType) : this.ocxNodes;
+
+    await Promise.all(nodes.map((node) => node.removeProperty(db, property)));
+
+    await this.reloadFromDb(db);
+  }
 }

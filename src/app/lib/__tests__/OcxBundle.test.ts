@@ -694,6 +694,127 @@ describe('OcxBundle', () => {
     }, 100000);
   });
 
+  describe('#renameProperty', () => {
+    const name = 'Grade 6 Unit 2';
+    const sitemapUrl = '';
+
+    let prismaBundle: Bundle;
+    let ocxBundle: OcxBundle;
+
+    beforeEach(async () => {
+      prismaBundle = await db.bundle.create({
+        data: {
+          name: name,
+          sitemapUrl: sitemapUrl,
+        }
+      });
+
+      ocxBundle = new OcxBundle(prismaBundle, []);
+
+      const zipData = fs.readFileSync(path.join(__dirname, 'fixtures', 'im_bundle.ocx.zip'));
+
+      await ocxBundle.importFromZipFile(db, zipData);
+    });
+
+    it('should rename the property in all nodes if not type is provided', async () => {
+      await ocxBundle.renameProperty(db, 'name', 'title');
+
+      const nodes = await db.node.findMany({
+        where: {
+          bundleId: prismaBundle.id
+        }
+      });
+
+      for (const node of nodes) {
+        const metadata = node.metadata as Prisma.JsonObject;
+
+        expect(metadata['name']).toBeUndefined();
+        expect(metadata['title']).toBeDefined();
+      }
+    });
+
+    it('should rename the property in all nodes of the provided type', async () => {
+      await ocxBundle.renameProperty(db, 'name', 'title', 'oer:Assessment');
+
+      const nodes = await db.node.findMany({
+        where: {
+          bundleId: prismaBundle.id
+        }
+      });
+
+      for (const node of nodes) {
+        const metadata = node.metadata as Prisma.JsonObject;
+
+        if (metadata['@type'] === 'oer:Assessment') {
+          expect(metadata['name']).toBeUndefined();
+          expect(metadata['title']).toBeDefined();
+        } else {
+          expect(metadata['name']).toBeDefined();
+          expect(metadata['title']).toBeUndefined();
+        }
+      }
+    });
+  });
+
+  describe('#removeProperty', () => {
+    const name = 'Grade 6 Unit 2';
+    const sitemapUrl = '';
+
+    let prismaBundle: Bundle;
+    let ocxBundle: OcxBundle;
+
+    beforeEach(async () => {
+      prismaBundle = await db.bundle.create({
+        data: {
+          name: name,
+          sitemapUrl: sitemapUrl,
+        }
+      });
+
+      ocxBundle = new OcxBundle(prismaBundle, []);
+
+      const zipData = fs.readFileSync(path.join(__dirname, 'fixtures', 'im_bundle.ocx.zip'));
+
+      await ocxBundle.importFromZipFile(db, zipData);
+    });
+
+    it('should remove the property in all nodes if no type is provided', async () => {
+      await ocxBundle.removeProperty(db, 'name');
+
+      const nodes = await db.node.findMany({
+        where: {
+          bundleId: prismaBundle.id
+        }
+      });
+
+      for (const node of nodes) {
+        const metadata = node.metadata as Prisma.JsonObject;
+
+        expect(metadata['name']).toBeUndefined();
+      }
+    });
+
+    it('should remove the property in all nodes of the provided type', async () => {
+      await ocxBundle.removeProperty(db, 'name', 'oer:Assessment');
+
+      const nodes = await db.node.findMany({
+        where: {
+          bundleId: prismaBundle.id
+        }
+      });
+
+      for (const node of nodes) {
+        const metadata = node.metadata as Prisma.JsonObject;
+
+        if (metadata['@type'] === 'oer:Assessment') {
+          expect(metadata['name']).toBeUndefined();
+        } else {
+          expect(metadata['name']).toBeDefined();
+        }
+      }
+    });
+  });
+
   describe('#assignParentsToNodes', () => {
     // TODO
   });

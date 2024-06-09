@@ -24,3 +24,15 @@ export const ImportBundleFromZipFileSchema = z.object({
   zipDataUrl: z.string(),
 });
 
+export const RenamePropertyInBundleSchema = z.object({
+  id: z.number(),
+  oldName: z.string(),
+  newName: z.string(),
+  nodeType: z.string().optional(),
+});
+
+export const RemovePropertyInBundleSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  nodeType: z.string().optional(),
+});

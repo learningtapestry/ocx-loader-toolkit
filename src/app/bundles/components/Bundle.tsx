@@ -46,7 +46,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         <h1>Bundle {bundle.name}</h1>
 
         <BundleNodeTypes ocxBundle={ocxBundle} />
-        <BundleNodeProperties ocxBundle={ocxBundle} />
+        <BundleNodeProperties ocxBundle={ocxBundle} refetchBundle={refetch} />
 
         {
           ocxBundle.rootNodes.map((node) => <Node key={node.ocxId} node={node} refetchBundle={refetch} />)

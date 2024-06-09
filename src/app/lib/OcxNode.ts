@@ -306,4 +306,37 @@ export default class OcxNode {
       }
     });
   }
+
+  async renameProperty(db: PrismaClient, oldName: string, newName: string) {
+    const metadata = this.metadata;
+    const newMetadata = {...metadata};
+
+    if (metadata[oldName]) {
+      newMetadata[newName] = metadata[oldName];
+      delete newMetadata[oldName];
+    }
+
+    await db.node.update({
+      where: { id: this.prismaNode.id },
+      data: {
+        metadata: newMetadata
+      }
+    });
+  }
+
+  async removeProperty(db: PrismaClient, name: string) {
+    const metadata = this.metadata;
+    const newMetadata = {...metadata};
+
+    if (metadata[name]) {
+      delete newMetadata[name];
+    }
+
+    await db.node.update({
+      where: { id: this.prismaNode.id },
+      data: {
+        metadata: newMetadata
+      }
+    });
+  }
 }
