@@ -42,7 +42,6 @@ describe('validateNodeProperties', () => {
 
       expect(result.missingProperties).toEqual([]);
       expect(result.nonStandardProperties).toEqual([
-        "@context",
         "forCourse",
         "identifier",
         "gradingformat",

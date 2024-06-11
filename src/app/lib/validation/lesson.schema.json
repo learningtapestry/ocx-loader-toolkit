@@ -1,21 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://k12ocx.github.io/lesson.json",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/lesson.schema.json",
   "title": "Lesson",
   "type": "object",
   "allOf": [
-    { "$ref": "https://k12ocx.github.io/ocx_node" }
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json" }
   ],
   "properties": {
     "courseCode": { "type": "string" },
     "coursePrerequisites": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/AlignmentObject" },
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Course" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/AlignmentObject" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/oer:Course" },
         { "type": "string" }
       ]
     },
-    "educationalLevel": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/DefinedTerm" },
+    "educationalLevel": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/DefinedTerm" },
     "position": { "type": "integer" }
   }
 }

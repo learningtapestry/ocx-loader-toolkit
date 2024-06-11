@@ -1,41 +1,41 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://k12ocx.github.io/assessment.json",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/assessment.schema.json",
   "title": "Assessment",
   "type": "object",
   "allOf": [
-    { "$ref": "https://k12ocx.github.io/ocx_node" }
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json" }
   ],
   "properties": {
     "educationalUse": { "type": "string" },
     "encoding": {
       "oneOf": [
         {
-          "$ref": "https://k12ocx.github.io/ocx_node#/definitions/MediaObject"
+          "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/MediaObject"
         },
         {
           "type": "array",
           "items": {
-            "$ref": "https://k12ocx.github.io/ocx_node#/definitions/MediaObject"
+            "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/MediaObject"
           }
         }
       ]
     },
-    "oer:assessedBy": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/oer:Assessment" },
+    "oer:assessedBy": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/oer:Assessment" },
     "oer:gradingFormat": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/oer:GradeFormat" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/oer:GradeFormat" },
         { "type": "string" },
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/asn:Rubric" }
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/asn:Rubric" }
       ]
     },
-    "ocx:material": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/ocx:AssociatedMaterial" },
+    "ocx:material": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/ocx:AssociatedMaterial" },
     "ocx:optionality": { "type": "string" },
     "ocx:totalPoints": { "type": "number" },
     "ocx:assignmentModality": { "type": "string" },
     "ocx:collaborationType": { "type": "string" },
-    "oer:forCourse": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/oer:Course" },
-    "doTask": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Task" },
-    "hasLearningObjective": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/LearningObjective" }
+    "oer:forCourse": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/oer:Course" },
+    "doTask": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Task" },
+    "hasLearningObjective": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/LearningObjective" }
   }
 }

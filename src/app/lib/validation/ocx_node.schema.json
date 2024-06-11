@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://k12ocx.github.io/ocx_node",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json",
   "title": "Ocx Node",
   "type": "object",
   "properties": {
-    "@id": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeId" },
-    "@type": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeType" },
+    "@id": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/NodeId" },
+    "@type": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/NodeType" },
     "@context": { "type": "array",
       "items": {
         "oneOf": [
@@ -18,54 +18,54 @@
     "url": { "type": "string", "format": "uri" },
     "alternateName": { "type": "string" },
     "description": { "type": "string" },
-    "about": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Thing" },
+    "about": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Thing" },
 
     "hasPart": { "type": "array",
       "items": {
-        "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeReference"
+        "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/NodeReference"
       }
     },
-    "isPartOf": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeReference" },
+    "isPartOf": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/NodeReference" },
 
     "accessibilitySummary": { "type": "string" },
-    "audience": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/EducationalAudience" },
+    "audience": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/EducationalAudience" },
     "author": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Person" }
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Person" }
       ]
     },
     "citation": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/CreativeWork" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/CreativeWork" },
         { "type": "string" }
       ]
     },
     "contributor": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Person" }
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Person" }
       ]
     },
     "dateCreated": { "type": "string", "format": "date" },
     "dateModified": { "type": "string", "format": "date" },
-    "educationalAlignment": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/AlignmentObject" },
+    "educationalAlignment": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/AlignmentObject" },
     "inLanguage": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Language" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Language" },
         { "type": "string" }
       ]
     },
     "isBasedOn": {
       "oneOf": [
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/CreativeWork" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/CreativeWork" },
         { "type": "string", "format": "uri" }
       ]
     },
     "keywords": { "type": "string" },
     "learningResourceType": { "type": "string" },
-    "provider": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
-    "publisher": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Organization" },
+    "provider": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+    "publisher": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Organization" },
     "timeRequired": {
       "oneOf": [
         { "type": "string" },
@@ -76,11 +76,11 @@
       "type": "array",
       "items": { "type": "string" }
     },
-    "forTopic": { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/Topic" },
+    "forTopic": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/Topic" },
     "cc:license": {
       "oneOf": [
         { "type": "string", "format": "uri" },
-        { "$ref": "https://k12ocx.github.io/ocx_node#/definitions/License" }
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/License" }
       ]
     },
     "cc:morePermissions": { "type": "string" },
@@ -135,7 +135,7 @@
           "type": "string"
         },
         "@type": {
-          "$ref": "https://k12ocx.github.io/ocx_node#/definitions/NodeType"
+          "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/app/lib/validation/ocx_node.schema.json#/definitions/NodeType"
         }
       },
       "required": [
@@ -279,6 +279,9 @@
       "type": "object"
     },
     "License": {
+      "type": "object"
+    },
+    "DefinedTerm": {
       "type": "object"
     }
   }
