@@ -108,6 +108,7 @@ model ExportDestination {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  name     String
   type     String // eg Canvas, Google Classroom, etc
   baseUrl  String
   metadata Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
