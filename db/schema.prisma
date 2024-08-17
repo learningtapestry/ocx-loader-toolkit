@@ -147,6 +147,6 @@ model NodeExport {
   bundleExport BundleExport @relation(fields: [bundleExportId], references: [id])
 
   idOnDestination         String
-  pathOnDestination       String
+  pathOnDestination       String?
   metadata                Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
 }

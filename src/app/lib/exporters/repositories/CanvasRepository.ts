@@ -22,6 +22,20 @@ export default class CanvasRepository {
     return callCanvas(baseUrl, accessToken, 'accounts/self/courses', 'POST', courseData);
   }
 
+  async createModule(course_id: number, name: string, position: number): Promise<Prisma.JsonObject> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    const moduleData = {
+      module: {
+        name,
+        position,
+        published: true
+      }
+    }
+
+    return await callCanvas(baseUrl, accessToken, `courses/${course_id}/modules`, 'POST', moduleData);
+  }
+
   async createAssignment(course_id: number, name: string, position: number): Promise<Prisma.JsonObject> {
     const { accessToken, baseUrl } = this.canvasConfig;
 

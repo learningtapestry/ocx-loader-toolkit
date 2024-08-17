@@ -28,4 +28,15 @@ describe('CanvasRepository', () => {
       expect(course.uuid).toBeDefined();
     });
   })
+
+  describe('#createModule', () => {
+    it('should create a module', async () => {
+      const courseId = 1;
+      const name = 'Test Module';
+
+      const newModule = await repository.createModule(courseId, name);
+
+      expect(newModule.name).toEqual(name);
+    });
+  })
 });

@@ -4,7 +4,7 @@ import db from "@/db/index"
 
 import { Bundle, ExportDestination, User, Node } from "@prisma/client"
 
-import OcxBundleExportCanvas, { exportOcxBundleToCanvas } from "../OcxBundleExportCanvas"
+import OcxBundleExportCanvas, { createExportOcxBundleToCanvas } from "../OcxBundleExportCanvas"
 
 import OcxBundle from "@/src/app/lib/OcxBundle"
 import OcxNode from "@/src/app/lib/OcxNode"
@@ -57,7 +57,7 @@ describe('OcxBundleExportCanvas', () => {
 
   describe('exportOcxBundleToCanvas', () => {
     it('should create a course on Canvas and an OcxBundleExport', async () => {
-      const ocxBundleExport = await exportOcxBundleToCanvas(db, ocxBundle, exportDestination, user, name, 'test1');
+      const ocxBundleExport = await createExportOcxBundleToCanvas(db, ocxBundle, exportDestination, user, name, 'test1');
 
       expect(ocxBundleExport).toBeDefined();
     });
@@ -69,7 +69,7 @@ describe('OcxBundleExportCanvas', () => {
     let ocxNode: OcxNode;
 
     beforeEach(async () => {
-      ocxBundleExport = await exportOcxBundleToCanvas(db, ocxBundle, exportDestination, user, name, 'test1');
+      ocxBundleExport = await createExportOcxBundleToCanvas(db, ocxBundle, exportDestination, user, name, 'test1');
 
       prismaNode = await db.node.create({
         data: {

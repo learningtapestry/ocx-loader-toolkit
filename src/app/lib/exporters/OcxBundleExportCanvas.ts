@@ -10,6 +10,33 @@ import OcxBundle from "@/src/app/lib/OcxBundle"
 import CanvasRepository from "./repositories/CanvasRepository"
 
 export default class OcxBundleExportCanvas extends OcxBundleExport {
+  async exportOcxNodeToModule(ocxNode: OcxNode, position) {
+    if (!this.canvasRepository) {
+      throw new Error('Canvas repository not initialized');
+    }
+
+    const canvasModule = await this.canvasRepository.createModule(this.bundleExportCanvasId, ocxNode.metadata.name, position);
+
+    const prismaNodeExport = await db.nodeExport.create({
+      data: {
+        idOnDestination: canvasModule.id!.toString(),
+        metadata: canvasModule,
+        node: {
+          connect: {
+            id: ocxNode.dbId
+          }
+        },
+        bundleExport: {
+          connect: {
+            id: this.prismaBundleExport.id
+          }
+        }
+      }
+    });
+
+    return new OcxNodeExport(prismaNodeExport);
+  }
+
   async exportOcxNodeToCanvas(ocxNode: OcxNode) {
     if (!this.canvasRepository) {
       throw new Error('Canvas repository not initialized');
@@ -37,9 +64,13 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
 
     return new OcxNodeExport(prismaNodeExport);
   }
+
+  get bundleExportCanvasId() {
+    return (this.prismaBundleExport.metadata! as Prisma.JsonObject).id as number;
+  }
 }
 
-export async function exportOcxBundleToCanvas(
+export async function createExportOcxBundleToCanvas(
   db: PrismaClient,
   ocxBundle: OcxBundle,
   destination: PrismaExportDestination,
@@ -79,5 +110,9 @@ export async function exportOcxBundleToCanvas(
     }
   });
 
-  return new OcxBundleExportCanvas(prismaBundleExport);
+  const ocxBundleExport = new OcxBundleExportCanvas(prismaBundleExport);
+
+  await ocxBundleExport.initPromise;
+
+  return ocxBundleExport;
 }
