@@ -26,9 +26,18 @@ export default class CanvasLegacyOpenSciEdExporter {
 
     const courseNode = this.ocxBundle.rootNodes[0];
 
+    let unitPosition = 1;
+
     // iterate on the oer:Unit nodes
     for (const unitNode of courseNode.children) {
-      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, 1);
+      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, unitPosition++);
+
+      let lessonPosition = 1;
+
+      // iterate on the oer:Lesson nodes
+      for (const lessonNode of unitNode.children) {
+        const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.metadata.id, lessonPosition++, 0);
+      }
     }
   }
 }

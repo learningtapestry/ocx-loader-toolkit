@@ -10,45 +10,37 @@ import OcxBundle from "@/src/app/lib/OcxBundle"
 import CanvasRepository from "./repositories/CanvasRepository"
 
 export default class OcxBundleExportCanvas extends OcxBundleExport {
-  async exportOcxNodeToModule(ocxNode: OcxNode, position) {
-    if (!this.canvasRepository) {
-      throw new Error('Canvas repository not initialized');
-    }
+  async exportOcxNodeToModule(ocxNode: OcxNode, position: number) {
+    const canvasModule = await this.canvasRepository!.createModule(this.bundleExportCanvasId, ocxNode.metadata.name as string, position);
 
-    const canvasModule = await this.canvasRepository.createModule(this.bundleExportCanvasId, ocxNode.metadata.name, position);
-
-    const prismaNodeExport = await db.nodeExport.create({
-      data: {
-        idOnDestination: canvasModule.id!.toString(),
-        metadata: canvasModule,
-        node: {
-          connect: {
-            id: ocxNode.dbId
-          }
-        },
-        bundleExport: {
-          connect: {
-            id: this.prismaBundleExport.id
-          }
-        }
-      }
-    });
-
-    return new OcxNodeExport(prismaNodeExport);
+    return this.createOcxNodeExport(ocxNode, canvasModule);
   }
 
-  async exportOcxNodeToCanvas(ocxNode: OcxNode) {
-    if (!this.canvasRepository) {
-      throw new Error('Canvas repository not initialized');
-    }
+  async exportOcxNodeToModuleSubHeader(ocxNode: OcxNode, moduleId: number, position: number, indent: number) {
+    const canvasModuleItem = await this.canvasRepository!.createModuleItem(
+      this.bundleExportCanvasId,
+      moduleId,
+      ocxNode.metadata.name as string,
+      'SubHeader',
+      null,
+      position,
+      indent
+    );
 
-    const canvasAssignment = await this.canvasRepository.createAssignment((this.prismaBundleExport.metadata! as Prisma.JsonObject).id as number, 'ocxNode.title', 1);
+    return this.createOcxNodeExport(ocxNode, canvasModuleItem);
+  }
 
+  async exportOcxNodeToActivity(ocxNode: OcxNode) {
+    const canvasAssignment = await this.canvasRepository!.createAssignment(this.bundleExportCanvasId, 'ocxNode.title', 1);
+
+    return this.createOcxNodeExport(ocxNode, canvasAssignment);
+  }
+
+  async createOcxNodeExport(ocxNode: OcxNode, metadata: Prisma.JsonObject) {
     const prismaNodeExport = await db.nodeExport.create({
       data: {
-        idOnDestination: canvasAssignment.id!.toString(),
-        pathOnDestination: canvasAssignment.html_url as string,
-        metadata: canvasAssignment,
+        idOnDestination: metadata.id!.toString(),
+        metadata,
         node: {
           connect: {
             id: ocxNode.dbId
@@ -66,7 +58,11 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
   }
 
   get bundleExportCanvasId() {
-    return (this.prismaBundleExport.metadata! as Prisma.JsonObject).id as number;
+    return this.metadata.id as number;
+  }
+
+  get metadata() {
+    return this.prismaBundleExport.metadata as Prisma.JsonObject;
   }
 }
 

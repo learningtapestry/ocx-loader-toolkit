@@ -34,7 +34,7 @@ describe('CanvasRepository', () => {
       const courseId = 1;
       const name = 'Test Module';
 
-      const newModule = await repository.createModule(courseId, name);
+      const newModule = await repository.createModule(courseId, name, 1);
 
       expect(newModule.name).toEqual(name);
     });

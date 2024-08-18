@@ -1,6 +1,8 @@
 import callCanvas from "./callCanvas";
 
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client";
+
+type ModuleItemType = 'File' | 'Page' | 'Discussion' | 'Assignment' | 'Quiz' | 'SubHeader' | 'ExternalUrl' | 'ExternalTool';
 
 export default class CanvasRepository {
   canvasConfig: { accessToken: string, baseUrl: string };
@@ -34,6 +36,27 @@ export default class CanvasRepository {
     }
 
     return await callCanvas(baseUrl, accessToken, `courses/${course_id}/modules`, 'POST', moduleData);
+  }
+
+  async createModuleItem(course_id: number, module_id: number,
+                         title: string,
+                         type: ModuleItemType,
+                         content_id: number | null,
+                         position: number,
+                         indent = 0): Promise<Prisma.JsonObject> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    const moduleItemData = {
+      module_item: {
+        title,
+        type,
+        content_id,
+        position,
+        indent
+      }
+    }
+
+    return callCanvas(baseUrl, accessToken, `courses/${course_id}/modules/${module_id}/items`, 'POST', moduleItemData);
   }
 
   async createAssignment(course_id: number, name: string, position: number): Promise<Prisma.JsonObject> {
