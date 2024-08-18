@@ -11,7 +11,7 @@ import CanvasRepository from "./repositories/CanvasRepository"
 
 export default class OcxBundleExportCanvas extends OcxBundleExport {
   async exportOcxNodeToModule(ocxNode: OcxNode, position: number) {
-    const canvasModule = await this.canvasRepository!.createModule(this.bundleExportCanvasId, ocxNode.metadata.name as string, position);
+    const canvasModule = await this.canvasRepository!.createModule(this.bundleExportCanvasId, ocxNode.ocxName, position);
 
     return this.createOcxNodeExport(ocxNode, canvasModule);
   }
@@ -20,7 +20,7 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
     const canvasModuleItem = await this.canvasRepository!.createModuleItem(
       this.bundleExportCanvasId,
       moduleId,
-      ocxNode.metadata.name as string,
+      ocxNode.ocxName,
       'SubHeader',
       null,
       position,
@@ -30,8 +30,20 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
     return this.createOcxNodeExport(ocxNode, canvasModuleItem);
   }
 
-  async exportOcxNodeToActivity(ocxNode: OcxNode) {
-    const canvasAssignment = await this.canvasRepository!.createAssignment(this.bundleExportCanvasId, 'ocxNode.title', 1);
+  async exportOcxNodeToAssignment(ocxNode: OcxNode, moduleId?: number, position?: number) {
+    const canvasAssignment = await this.canvasRepository!.createAssignment(this.bundleExportCanvasId, ocxNode.ocxName, 1);
+
+    if (moduleId && position) {
+      await this.canvasRepository!.createModuleItem(
+        this.bundleExportCanvasId,
+        moduleId,
+        ocxNode.ocxName,
+        'Assignment',
+        canvasAssignment.id as number,
+        position,
+        1
+      );
+    }
 
     return this.createOcxNodeExport(ocxNode, canvasAssignment);
   }

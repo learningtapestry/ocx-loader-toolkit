@@ -91,7 +91,7 @@ describe('OcxBundleExportCanvas', () => {
     });
 
     it('should create a node on Canvas and an OcxNodeExport', async () => {
-      const ocxNodeExport = await ocxBundleExport.exportOcxNodeToActivity(ocxNode);
+      const ocxNodeExport = await ocxBundleExport.exportOcxNodeToAssignment(ocxNode);
 
       expect(ocxNodeExport).toBeDefined();
     });

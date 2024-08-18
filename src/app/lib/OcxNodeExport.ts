@@ -10,4 +10,8 @@ export default class OcxNodeExport {
   get metadata() {
     return this.prismaNodeExport.metadata as Prisma.JsonObject;
   }
+
+  get canvasId() {
+    return this.metadata.id as number;
+  }
 }

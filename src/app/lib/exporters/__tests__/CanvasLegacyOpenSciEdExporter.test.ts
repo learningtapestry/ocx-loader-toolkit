@@ -79,6 +79,6 @@ describe('CanvasLegacyOpenSciEdExporter', () => {
           bundleExportId: ocxBundleExport!.prismaBundleExport.id
         }
       })).length).toBeGreaterThan(0);
-    });
+    }, 60000);
   });
 });

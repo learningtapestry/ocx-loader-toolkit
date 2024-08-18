@@ -46,6 +46,10 @@ export default class OcxNode {
     return this.prismaNode.metadata as Prisma.JsonObject;
   }
 
+  get ocxName() : string {
+    return this.metadata.name as string;
+  }
+
   get ocxId() : string {
     return this.metadata["@id"] as string;
   }

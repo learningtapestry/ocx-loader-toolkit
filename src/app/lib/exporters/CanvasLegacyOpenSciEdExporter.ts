@@ -26,17 +26,25 @@ export default class CanvasLegacyOpenSciEdExporter {
 
     const courseNode = this.ocxBundle.rootNodes[0];
 
-    let unitPosition = 1;
+    let canvasModulePosition = 1;
 
     // iterate on the oer:Unit nodes
     for (const unitNode of courseNode.children) {
-      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, unitPosition++);
+      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, canvasModulePosition++);
 
-      let lessonPosition = 1;
+      let canvasModuleItemPosition = 1;
 
       // iterate on the oer:Lesson nodes
       for (const lessonNode of unitNode.children) {
-        const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.metadata.id, lessonPosition++, 0);
+        const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.canvasId, canvasModuleItemPosition++, 0);
+
+        // iterate on the oer:Activity nodes
+        for (const activityNode of lessonNode.children) {
+          // legacy OSE OCX has googleClassroom data
+          activityNode.metadata.name ||= activityNode.metadata.googleClassroom?.postTitle?.en;
+
+          const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(activityNode, moduleExport.canvasId, canvasModuleItemPosition++);
+        }
       }
     }
   }
