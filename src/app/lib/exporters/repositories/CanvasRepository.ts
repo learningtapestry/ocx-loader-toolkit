@@ -1,4 +1,4 @@
-import callCanvas from "./callCanvas";
+import callCanvas, { uploadFileToCanvasCourse } from "./callCanvas";
 
 import { Prisma } from "@prisma/client";
 
@@ -59,13 +59,14 @@ export default class CanvasRepository {
     return callCanvas(baseUrl, accessToken, `courses/${course_id}/modules/${module_id}/items`, 'POST', moduleItemData);
   }
 
-  async createAssignment(course_id: number, name: string, position: number): Promise<Prisma.JsonObject> {
+  async createAssignment(course_id: number, name: string, position: number, description: string): Promise<Prisma.JsonObject> {
     const { accessToken, baseUrl } = this.canvasConfig;
 
     const assignmentData = {
       assignment: {
-        name: name,
-        position: position,
+        name,
+        position,
+        description,
         assignment_group_id: 1,
         points_possible: 100,
         submission_types: ['online_text_entry'],
@@ -76,5 +77,9 @@ export default class CanvasRepository {
     }
 
     return callCanvas(baseUrl, accessToken, `courses/${course_id}/assignments`, 'POST', assignmentData);
+  }
+
+  async uploadFileToCourse(course_id: number, blob: Blob, name = blob.name, parentFolderPath = '/'): Promise<Prisma.JsonObject> {
+    return (await uploadFileToCanvasCourse(this.canvasConfig.baseUrl, this.canvasConfig.accessToken, course_id, blob, name, parentFolderPath)).json();
   }
 }

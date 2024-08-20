@@ -41,9 +41,21 @@ export default class CanvasLegacyOpenSciEdExporter {
         // iterate on the oer:Activity nodes
         for (const activityNode of lessonNode.children) {
           // legacy OSE OCX has googleClassroom data
-          activityNode.metadata.name ||= activityNode.metadata.googleClassroom?.postTitle?.en;
+          activityNode.metadata.name = activityNode.metadata.googleClassroom?.postTitle?.en;
+          activityNode.metadata.instructions = activityNode.metadata.googleClassroom?.postInstructions?.en;
 
-          const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(activityNode, moduleExport.canvasId, canvasModuleItemPosition++);
+          let attachedFileBlob: Blob | undefined;
+          let fileName: string | undefined;
+
+          // TODO manage when there is content which should be uploaded as a file - for now, just a test
+          if (activityNode.metadata.googleClassroom?.materials?.[0]?.object.identifier === 'LT.L1.HO1') {
+            attachedFileBlob = new Blob(['This is a test file'], { type: 'text/plain' });
+            fileName = 'test.txt';
+          }
+
+          const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(
+            activityNode, moduleExport.canvasId, canvasModuleItemPosition++, attachedFileBlob, fileName
+          );
         }
       }
     }

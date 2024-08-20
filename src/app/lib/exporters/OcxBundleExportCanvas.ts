@@ -30,8 +30,34 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
     return this.createOcxNodeExport(ocxNode, canvasModuleItem);
   }
 
-  async exportOcxNodeToAssignment(ocxNode: OcxNode, moduleId?: number, position?: number) {
-    const canvasAssignment = await this.canvasRepository!.createAssignment(this.bundleExportCanvasId, ocxNode.ocxName, 1);
+  async exportOcxNodeToAssignment(ocxNode: OcxNode, moduleId?: number, position?: number, attachedFileBlob?: Blob, attachedFileName?: string) {
+    let instructions = ocxNode.metadata.instructions as string;
+
+    if (attachedFileBlob && attachedFileName) {
+      const uploadFileData = await this.canvasRepository!.uploadFileToCourse(this.bundleExportCanvasId, attachedFileBlob, attachedFileName);
+
+      const filePath = `/courses/${this.bundleExportCanvasId}/files/${uploadFileData.id}`;
+
+      // add the file link to the instructions, using html tags
+      instructions = `${instructions} <p><span>
+                                        <a
+                                          class="instructure_file_link instructure_scribd_file inline_disabled"
+                                          title="${attachedFileName}"
+                                          href="${filePath}?wrap=1"
+                                          target="_blank"
+                                          data-canvas-previewable="false"
+                                          data-api-endpoint="/api/v1${filePath}"
+                                          data-api-returntype="File"
+                                        >${attachedFileName}</a>
+                                      </span></p>`;
+    }
+
+    const canvasAssignment = await this.canvasRepository!.createAssignment(
+      this.bundleExportCanvasId,
+      ocxNode.ocxName,
+      1,
+      instructions
+    );
 
     if (moduleId && position) {
       await this.canvasRepository!.createModuleItem(

@@ -48,3 +48,34 @@ export default async function callCanvas(
     throw e;
   }
 }
+
+export async function uploadFileToCanvasCourse(baseUrl: string,
+                                     accessToken: string,
+                                     courseId: number,
+                                     blob: Blob,
+                                     name = blob.name,
+                                     parentFolderPath = '/'): Promise<Response> {
+  const fileUploadParams = await callCanvas(baseUrl, accessToken, `courses/${courseId}/files`, 'POST', {
+    name: name,
+    size: blob.size,
+    content_type: blob.type,
+    parent_folder_path: parentFolderPath
+  });
+
+  if (!fileUploadParams.upload_url) {
+    throw new Error('Upload failed');
+  }
+
+  const formData = new FormData();
+
+  Object.entries(fileUploadParams.upload_params).forEach(([key, value]) => {
+    formData.append(key, value as string);
+  });
+
+  formData.append('file', blob, name);
+
+  return await fetch(fileUploadParams.upload_url, {
+    method: 'POST',
+    body: formData
+  });
+}
