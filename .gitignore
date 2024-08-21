@@ -38,3 +38,4 @@ next-env.d.ts
 
 .vscode
 /src/node_modules/.vitest/results.json
+/config/secrets.ts

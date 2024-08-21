@@ -9,6 +9,16 @@ import OcxBundle from "@/src/app/lib/OcxBundle"
 
 import CanvasRepository from "./repositories/CanvasRepository"
 
+export type AttachmentData = {
+  blob: Blob;
+  name: string;
+}
+
+export type LinkData = {
+  url: string;
+  name: string;
+}
+
 export default class OcxBundleExportCanvas extends OcxBundleExport {
   async exportOcxNodeToModule(ocxNode: OcxNode, position: number) {
     const canvasModule = await this.canvasRepository!.createModule(this.bundleExportCanvasId, ocxNode.ocxName, position);
@@ -30,11 +40,11 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
     return this.createOcxNodeExport(ocxNode, canvasModuleItem);
   }
 
-  async exportOcxNodeToAssignment(ocxNode: OcxNode, moduleId?: number, position?: number, attachedFileBlob?: Blob, attachedFileName?: string) {
+  async exportOcxNodeToAssignment(ocxNode: OcxNode, attachments: AttachmentData[] = [], links: LinkData[] = [], moduleId?: number, position?: number) {
     let instructions = ocxNode.metadata.instructions as string;
 
-    if (attachedFileBlob && attachedFileName) {
-      const uploadFileData = await this.canvasRepository!.uploadFileToCourse(this.bundleExportCanvasId, attachedFileBlob, attachedFileName);
+    for (const { blob, name } of attachments) {
+      const uploadFileData = await this.canvasRepository!.uploadFileToCourse(this.bundleExportCanvasId, blob, name);
 
       const filePath = `/courses/${this.bundleExportCanvasId}/files/${uploadFileData.id}`;
 
@@ -42,14 +52,18 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
       instructions = `${instructions} <p><span>
                                         <a
                                           class="instructure_file_link instructure_scribd_file inline_disabled"
-                                          title="${attachedFileName}"
+                                          title="${name}"
                                           href="${filePath}?wrap=1"
                                           target="_blank"
                                           data-canvas-previewable="false"
                                           data-api-endpoint="/api/v1${filePath}"
                                           data-api-returntype="File"
-                                        >${attachedFileName}</a>
+                                        >${name}</a>
                                       </span></p>`;
+    }
+
+    for (const { url, name } of links) {
+      instructions = `${instructions} <p><a href="${url}" target="_blank">${name}</a></p>`;
     }
 
     const canvasAssignment = await this.canvasRepository!.createAssignment(

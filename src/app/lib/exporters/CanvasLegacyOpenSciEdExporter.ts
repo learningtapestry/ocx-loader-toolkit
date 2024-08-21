@@ -2,11 +2,14 @@
 
 import db from "@/db/index"
 
+import { google } from 'googleapis';
+import { googleApiKey } from "@/config/secrets"
+
 import { ExportDestination, User } from "@prisma/client"
 
 import OcxBundle from "@/src/app/lib/OcxBundle"
 
-import OcxBundleExportCanvas, {createExportOcxBundleToCanvas} from "@/src/app/lib/exporters/OcxBundleExportCanvas"
+import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "@/src/app/lib/exporters/OcxBundleExportCanvas"
 
 export default class CanvasLegacyOpenSciEdExporter {
   exportDestination: ExportDestination;
@@ -44,20 +47,91 @@ export default class CanvasLegacyOpenSciEdExporter {
           activityNode.metadata.name = activityNode.metadata.googleClassroom?.postTitle?.en;
           activityNode.metadata.instructions = activityNode.metadata.googleClassroom?.postInstructions?.en;
 
-          let attachedFileBlob: Blob | undefined;
-          let fileName: string | undefined;
+          const attachments: AttachmentData[] = [];
+          const links: LinkData[] = [];
 
-          // TODO manage when there is content which should be uploaded as a file - for now, just a test
-          if (activityNode.metadata.googleClassroom?.materials?.[0]?.object.identifier === 'LT.L1.HO1') {
-            attachedFileBlob = new Blob(['This is a test file'], { type: 'text/plain' });
-            fileName = 'test.txt';
+          for (const material of activityNode.metadata.googleClassroom?.materials || []) {
+            if ((material.version as string).includes('English')) {
+              if (material.object.url) {
+                if (material.object.type === 'material') {
+                  // if it's a form, skip it for now
+                  if (material.object.url.includes('google.com/forms')) {
+                    console.log('skipping form', material.object.url);
+
+                    continue;
+                  }
+
+                  console.log('downloading material', material.object.url);
+
+                  const {blob, mimeType} = await this.downloadFromGoogleDrive(material.object.url);
+                  const extension = mimeType?.split('/')[1] || 'pdf';
+
+                  const fileName = `${material.object.title}.${extension}`;
+
+                  attachments.push({
+                    blob,
+                    name: fileName
+                  });
+                }
+
+                if (material.object.type === 'video') {
+                  links.push({
+                    url: material.object.url,
+                    name: material.object.title
+                  });
+                }
+              }
+            }
           }
 
           const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(
-            activityNode, moduleExport.canvasId, canvasModuleItemPosition++, attachedFileBlob, fileName
+            activityNode, attachments, links, moduleExport.canvasId, canvasModuleItemPosition++
           );
         }
       }
+    }
+  }
+
+  async downloadFromGoogleDrive(originalUrl: string) {
+    const fileId = originalUrl.split('/')[5];
+
+    const auth = new google.auth.GoogleAuth({
+      credentials: googleApiKey,
+      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    });
+
+    const drive = google.drive({
+      version: 'v3',
+      auth
+    });
+
+    try {
+      // Fetch the file metadata to get the file name and mime type
+      const metadataResponse = await drive.files.get({
+        fileId,
+        fields: 'name, mimeType',
+      });
+
+      const fileName = metadataResponse.data.name;
+      const mimeType = metadataResponse.data.mimeType;
+
+      // Fetch the actual file content as a stream
+      const contentResponse = await drive.files.get(
+        { fileId, alt: 'media' },
+        { responseType: 'arraybuffer' }
+      );
+
+      const arrayBuffer = contentResponse.data;
+      const blob = new Blob([arrayBuffer as BlobPart], { type: mimeType as string });
+
+      return {
+        blob,
+        mimeType,
+      };
+    } catch (e) {
+      console.error('Error downloading file', e);
+
+      throw e;
     }
   }
 }
