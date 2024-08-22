@@ -33,12 +33,15 @@ export default class CanvasLegacyOpenSciEdExporter {
 
     // iterate on the oer:Unit nodes
     for (const unitNode of courseNode.children) {
+      unitNode.metadata.name = `Unit ${unitNode.metadata.alternateName}: ${unitNode.metadata.name}`;
       const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, canvasModulePosition++);
 
       let canvasModuleItemPosition = 1;
 
       // iterate on the oer:Lesson nodes
       for (const lessonNode of unitNode.children) {
+        lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;
+
         const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.canvasId, canvasModuleItemPosition++, 0);
 
         // iterate on the oer:Activity nodes
@@ -63,8 +66,7 @@ export default class CanvasLegacyOpenSciEdExporter {
 
                   console.log('downloading material', material.object.url);
 
-                  const {blob, mimeType} = await this.downloadFromGoogleDrive(material.object.url);
-                  const extension = mimeType?.split('/')[1] || 'pdf';
+                  const {blob, extension} = await this.downloadFromGoogleDrive(material.object.url);
 
                   const fileName = `${material.object.title}.${extension}`;
 
@@ -93,7 +95,7 @@ export default class CanvasLegacyOpenSciEdExporter {
   }
 
   async downloadFromGoogleDrive(originalUrl: string) {
-    const fileId = originalUrl.split('/')[5];
+    const fileId = originalUrl.includes('https://drive.google.com/open?id=') ? originalUrl.split('/open?id=')[1] : originalUrl.split('/')[5];
 
     const auth = new google.auth.GoogleAuth({
       credentials: googleApiKey,
@@ -115,23 +117,40 @@ export default class CanvasLegacyOpenSciEdExporter {
       const fileName = metadataResponse.data.name;
       const mimeType = metadataResponse.data.mimeType;
 
-      // Fetch the actual file content as a stream
-      const contentResponse = await drive.files.get(
-        { fileId, alt: 'media' },
-        { responseType: 'arraybuffer' }
-      );
+      if (mimeType === 'application/vnd.google-apps.document') {
+        const exportResponse = await drive.files.export(
+          { fileId, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+          { responseType: 'arraybuffer' }
+        );
 
-      const arrayBuffer = contentResponse.data;
-      const blob = new Blob([arrayBuffer as BlobPart], { type: mimeType as string });
+        const arrayBuffer = exportResponse.data;
+        const blob = new Blob([arrayBuffer as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 
-      return {
-        blob,
-        mimeType,
-      };
+        return {
+          blob,
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          extension: 'docx'
+        };
+      } else {
+        const contentResponse = await drive.files.get(
+          { fileId, alt: 'media' },
+          { responseType: 'arraybuffer' }
+        );
+
+        const arrayBuffer = contentResponse.data;
+        const blob = new Blob([arrayBuffer as BlobPart], { type: mimeType as string });
+
+        return {
+          blob,
+          mimeType,
+          extension: mimeType?.split('/')[1] || 'pdf'
+        };
+      }
     } catch (e) {
       console.error('Error downloading file', e);
 
       throw e;
     }
   }
+
 }

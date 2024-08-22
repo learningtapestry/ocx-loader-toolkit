@@ -68,7 +68,7 @@ export default class CanvasRepository {
         position,
         description,
         assignment_group_id: 1,
-        points_possible: 100,
+        points_possible: 0,
         submission_types: ['online_text_entry'],
         allowed_extensions: ['pdf'],
         due_at: new Date().toISOString(),
