@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client"
+
 export class HttpError extends Error {
   description: string = '';
   readonly path: string;
@@ -66,6 +68,15 @@ export async function uploadFileToCanvasCourse(baseUrl: string,
     throw new Error('Upload failed');
   }
 
+  return await finalizeCanvasFileUpload(fileUploadParams, blob, name);
+}
+
+export type CanvasFileUploadParams = {
+  upload_url: string,
+  upload_params: Prisma.JsonObject
+}
+
+export async function finalizeCanvasFileUpload(fileUploadParams: CanvasFileUploadParams, blob: Blob, name: string) {
   const formData = new FormData();
 
   Object.entries(fileUploadParams.upload_params).forEach(([key, value]) => {
@@ -79,3 +90,4 @@ export async function uploadFileToCanvasCourse(baseUrl: string,
     body: formData
   });
 }
+

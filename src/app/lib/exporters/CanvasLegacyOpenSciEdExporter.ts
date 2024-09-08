@@ -11,6 +11,9 @@ import OcxBundle from "@/src/app/lib/OcxBundle"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "@/src/app/lib/exporters/OcxBundleExportCanvas"
 
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+
 export default class CanvasLegacyOpenSciEdExporter {
   exportDestination: ExportDestination;
   ocxBundle: OcxBundle;
@@ -53,27 +56,32 @@ export default class CanvasLegacyOpenSciEdExporter {
           const attachments: AttachmentData[] = [];
           const links: LinkData[] = [];
 
+          let quizCreated = false;
+
           for (const material of activityNode.metadata.googleClassroom?.materials || []) {
             if ((material.version as string).includes('English')) {
               if (material.object.url) {
                 if (material.object.type === 'material') {
-                  // if it's a form, skip it for now
                   if (material.object.url.includes('google.com/forms')) {
-                    console.log('skipping form', material.object.url);
+                    console.log('loading test form', material.object.url);
 
-                    continue;
+                    const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'test_form_qti.zip');
+                    const qtiFileBlob = new Blob([await readFile(testFilePath)]);
+
+                    await this.ocxBundleExportCanvas.exportOcxNodeQtiFileToQuiz(activityNode, qtiFileBlob, moduleExport.canvasId, canvasModuleItemPosition++);
+                    quizCreated = true;
+                  } else {
+                    console.log('downloading material', material.object.url);
+
+                    const {blob, extension} = await this.downloadFromGoogleDrive(material.object.url);
+
+                    const fileName = `${material.object.title}.${extension}`;
+
+                    attachments.push({
+                      blob,
+                      name: fileName
+                    });
                   }
-
-                  console.log('downloading material', material.object.url);
-
-                  const {blob, extension} = await this.downloadFromGoogleDrive(material.object.url);
-
-                  const fileName = `${material.object.title}.${extension}`;
-
-                  attachments.push({
-                    blob,
-                    name: fileName
-                  });
                 }
 
                 if (material.object.type === 'video') {
@@ -86,9 +94,11 @@ export default class CanvasLegacyOpenSciEdExporter {
             }
           }
 
-          const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(
-            activityNode, attachments, links, moduleExport.canvasId, canvasModuleItemPosition++
-          );
+          if (!quizCreated) {
+            const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(
+              activityNode, attachments, links, moduleExport.canvasId, canvasModuleItemPosition++
+            );
+          }
         }
       }
     }

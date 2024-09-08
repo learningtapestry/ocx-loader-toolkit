@@ -82,4 +82,40 @@ export default class CanvasRepository {
   async uploadFileToCourse(course_id: number, blob: Blob, name = blob.name, parentFolderPath = '/'): Promise<Prisma.JsonObject> {
     return (await uploadFileToCanvasCourse(this.canvasConfig.baseUrl, this.canvasConfig.accessToken, course_id, blob, name, parentFolderPath)).json();
   }
+
+  async createContentMigration(course_id: number, migrationType: string, migrationSettings: Prisma.JsonObject, preAttachmentData: Prisma.JsonObject): Promise<Prisma.JsonObject> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    const contentMigrationData = {
+      migration_type: migrationType,
+      settings: migrationSettings,
+      pre_attachment: preAttachmentData
+    }
+
+    return callCanvas(baseUrl, accessToken, `courses/${course_id}/content_migrations`, 'POST', contentMigrationData);
+  }
+
+  async getQuizByName(course_id: number, quizName: string): Promise<Prisma.JsonObject> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    const quizzes = await callCanvas(baseUrl, accessToken, `courses/${course_id}/quizzes`, 'GET');
+
+    return quizzes.find((quiz: Prisma.JsonObject) => quiz.title === quizName);
+  }
+
+  async updateQuiz(course_id: number, quiz_id: number, quizData: Prisma.JsonObject): Promise<Prisma.JsonObject> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    const params = {
+      quiz: quizData
+    }
+
+    return callCanvas(baseUrl, accessToken, `courses/${course_id}/quizzes/${quiz_id}`, 'PUT', params);
+  }
+
+  async getProgress(progressUrl: string) {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    return callCanvas(baseUrl, accessToken, progressUrl, 'GET');
+  }
 }

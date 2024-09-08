@@ -9,6 +9,9 @@ import OcxBundle from "@/src/app/lib/OcxBundle"
 
 import CanvasRepository from "./repositories/CanvasRepository"
 
+import { CanvasFileUploadParams, finalizeCanvasFileUpload } from "@/src/app/lib/exporters/repositories/callCanvas"
+import QtiZip from "@/src/app/lib/exporters/QtiZip"
+
 export type AttachmentData = {
   blob: Blob;
   name: string;
@@ -38,6 +41,70 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
     );
 
     return this.createOcxNodeExport(ocxNode, canvasModuleItem);
+  }
+
+  async pollProgress(progressUrl: string, interval = 200) {
+    return new Promise((resolve, reject) => {
+      const poller = setInterval(async () => {
+        try {
+          const progressObject = await this.canvasRepository!.getProgress(progressUrl);
+
+          const progress = progressObject.completion;
+
+          if (progress >= 100) {
+            clearInterval(poller);
+            resolve('Operation complete!');
+          }
+        } catch (error) {
+          console.error('Error polling progress:', error);
+          clearInterval(poller);
+          reject(error);
+        }
+      }, interval);
+    });
+  }
+
+  async exportOcxNodeQtiFileToQuiz(ocxNode: OcxNode, qtiFile: Blob, moduleId: number, position: number) {
+    // create the content_migration on Canvas for this QTI quiz with type qti_converter
+    const contentMigration = await this.canvasRepository!.createContentMigration(
+      this.bundleExportCanvasId,
+      'qti_converter',
+      {
+        // insert_into_module_id: moduleId,
+        // insert_into_module_type: 'quiz',
+        // insert_into_position: position
+      },
+      {
+        name: 'QTI-Quiz.zip',
+        size: qtiFile.size,
+        content_type: 'application/zip',
+      }
+    );
+
+    const progressUrl = contentMigration.progress_url as string;
+
+    await finalizeCanvasFileUpload(contentMigration.pre_attachment! as CanvasFileUploadParams, qtiFile, 'qti.zip');
+
+    const quizName = await (new QtiZip(qtiFile)).getQuizTitle();
+
+    await this.pollProgress(progressUrl);
+
+    const quiz = await this.canvasRepository!.getQuizByName(this.bundleExportCanvasId, quizName);
+
+    const updatedQuiz = await this.canvasRepository!.updateQuiz(this.bundleExportCanvasId, quiz.id as number, {
+      title: ocxNode.ocxName,
+      description: ocxNode.metadata.instructions as string
+    });
+
+    const moduleItem = await this.canvasRepository!.createModuleItem(
+      this.bundleExportCanvasId,
+      moduleId,
+      ocxNode.ocxName,
+      'Quiz',
+      quiz.id as number,
+      position,
+      1
+    );
   }
 
   async exportOcxNodeToAssignment(ocxNode: OcxNode, attachments: AttachmentData[] = [], links: LinkData[] = [], moduleId?: number, position?: number) {

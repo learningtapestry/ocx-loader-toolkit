@@ -32,6 +32,7 @@
     "@hookform/resolvers": "2.9.11",
     "@prisma/client": "5.4.2",
     "@types/json-schema": "7.0.15",
+    "@types/yauzl": "2.10.3",
     "@uiw/react-json-view": "2.0.0-alpha.24",
     "ajv-formats": "3.0.1",
     "blitz": "2.0.10",
@@ -50,6 +51,9 @@
     "secure-password": "4.0.0",
     "slugify": "1.6.6",
     "xml2js": "0.6.2",
+    "xmldom-ts": "0.3.1",
+    "xpath-ts": "1.3.13",
+    "yauzl": "3.1.3",
     "zod": "3.22.4",
     "zustand": "4.5.2"
   },
