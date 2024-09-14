@@ -23,8 +23,6 @@ describe('SingleChoiceAssessmentItem', () => {
     expect(assessmentItem.toXML()).toContain('Madrid');
 
     expect(assessmentItem.toXML()).toContain('<correctResponse>');
-
-    // console.log(assessmentItem.toXML());
   });
 
   it('should add choices with images to the assessment item', () => {
