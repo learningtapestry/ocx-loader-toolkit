@@ -1,18 +1,56 @@
 import * as xmlbuilder2 from 'xmlbuilder2';
 
+type assetData = {
+  assetPath: string;
+  blob: Blob;
+}
+
 export default class SingleChoiceAssessmentItem {
   id: string;
   text: string;
-  choices: { text: string; image?: string; isCorrect?: boolean }[];
+  choices: { text: string; imageIndex?: number; isCorrect?: boolean }[];
+  images: Blob[];
 
   constructor(id: string, text: string) {
     this.id = id;
     this.text = text;
     this.choices = [];
+    this.images = [];
   }
 
-  addChoice(text: string, isCorrect?: boolean, image?: string): void {
-    this.choices.push({ text, isCorrect, image });
+  async addChoice(text: string, isCorrect?: boolean, image?: string | Blob) {
+    let imageBlob = null;
+
+    if (typeof image === 'string') {
+      const response = await fetch(image);
+      imageBlob = await response.blob();
+    } else if (image instanceof Blob) {
+      imageBlob = image;
+    }
+
+    let imageIndex;
+
+    if (imageBlob) {
+      this.images.push(imageBlob);
+      imageIndex = this.images.length - 1;
+    }
+
+    this.choices.push({ text, isCorrect, imageIndex });
+  }
+
+  imageUri(index: number): string {
+    const extension = this.images[index].type.split('/')[1];
+
+    return `assets/${this.id}_${index}.${extension}`;
+  }
+
+  getAssets(): assetData[] {
+    return this.images.map((imageBlob, index) => {
+      return {
+        assetPath: this.imageUri(index),
+        blob: imageBlob
+      }
+    })
   }
 
   toXML(): string {
@@ -34,7 +72,6 @@ export default class SingleChoiceAssessmentItem {
           '@baseType': 'float',
           '@cardinality': 'single',
           '@identifier': 'SCORE',
-          // Conditionally add correctResponse if a correct choice exists
           ...(this.choices.some((choice) => choice.isCorrect) && {
               correctResponse: {
                 value: this.choices.find((choice) => choice.isCorrect)?.text,
@@ -52,12 +89,12 @@ export default class SingleChoiceAssessmentItem {
               },
             },
             simpleChoice: this.choices.map((choice, index) => {
-              const choiceContent = choice.image
+              const choiceContent = typeof(choice.imageIndex) === 'number'
                 ? {
                     div: {
                       div: [
                         { div: choice.text },
-                        { img: { '@alt': choice.text, '@src': choice.image } }
+                        { img: { '@alt': choice.text, '@src': `../${this.imageUri(choice.imageIndex)}` } }
                       ],
                     },
                   }

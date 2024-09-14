@@ -82,7 +82,7 @@ export default class QtiRoot {
               'imsmd:language': this.language,
             },
             'imsmd:technical': {
-              'imsmd:format': ['text/x-imsqti-item-xml', 'image/jpg'],
+              'imsmd:format': ['text/x-imsqti-item-xml', 'image/jpg', 'image/jpeg'],
             },
           },
         },
@@ -98,16 +98,25 @@ export default class QtiRoot {
                 '@href': 'assessment_test.xml',
               },
             },
-            ...this.assessmentItems.map((item) => ({
-              '@href': `items/${item.id}.xml`,
-              '@identifier': `RES-${item.id}`,
-              '@type': 'imsqti_item_xmlv2p1',
-              metadata: {},
-              file: {
+            ...this.assessmentItems.map((item) => {
+              const resourceFiles = [
+                {
+                  '@href': `items/${item.id}.xml`,
+                },
+                ...item.getAssets().map((asset) => ({
+                  '@href': asset.assetPath,
+                }))
+              ];
+
+              return {
                 '@href': `items/${item.id}.xml`,
-              },
-            }))
-            ],
+                '@identifier': `RES-${item.id}`,
+                '@type': 'imsqti_item_xmlv2p1',
+                metadata: {},
+                file: resourceFiles,
+              };
+            }),
+          ],
         },
       },
     });
@@ -145,6 +154,7 @@ export default class QtiRoot {
 
     const zip = new JSZip();
     const items = zip.folder('items');
+    const assets = zip.folder('assets');
 
     zip.file('assessment_test.xml', assessmentTest.end({ prettyPrint: true }));
 
@@ -152,6 +162,11 @@ export default class QtiRoot {
 
     this.assessmentItems.forEach((item) => {
       items!.file(`${item.id}.xml`, item.toXML());
+      item.getAssets().forEach((asset) => {
+        const assetPathInsideAssets = asset.assetPath.split('/')[1];
+
+        assets!.file(assetPathInsideAssets, asset.blob.arrayBuffer());
+      });
     });
 
     // Generate zip file in memory

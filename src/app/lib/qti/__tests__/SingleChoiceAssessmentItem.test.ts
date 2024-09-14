@@ -13,10 +13,10 @@ describe('SingleChoiceAssessmentItem', () => {
     expect(assessmentItem).toBeTruthy();
   });
 
-  it('should add choices to the assessment item', () => {
-    assessmentItem.addChoice('Berlin');
-    assessmentItem.addChoice('Paris', true);
-    assessmentItem.addChoice('Madrid');
+  it('should add choices to the assessment item', async () => {
+    await assessmentItem.addChoice('Berlin');
+    await assessmentItem.addChoice('Paris', true);
+    await assessmentItem.addChoice('Madrid');
 
     expect(assessmentItem.toXML()).toContain('Berlin');
     expect(assessmentItem.toXML()).toContain('Paris');
@@ -25,15 +25,34 @@ describe('SingleChoiceAssessmentItem', () => {
     expect(assessmentItem.toXML()).toContain('<correctResponse>');
   });
 
-  it('should add choices with images to the assessment item', () => {
-    assessmentItem.addChoice('Berlin', false, 'berlin.jpg');
+  it('should add choices with images to the assessment item', async () => {
+    await assessmentItem.addChoice('Berlin', false, 'https://farm8.staticflickr.com/7377/9359257263_81b080a039_z_d.jpg');
 
     const xmlString = assessmentItem.toXML();
     expect(xmlString).toContain('<img');
-    expect(xmlString).toContain('src="berlin.jpg"');
+    expect(xmlString).toContain('0.jpeg"');
     expect(xmlString).toContain('alt="Berlin"');
 
     expect(xmlString).not.toContain('<correctResponse>');
+  });
+
+  describe('#getAssets', async () => {
+    it('should return an empty array if no choices have images', async () => {
+      await assessmentItem.addChoice('Berlin');
+       await assessmentItem.addChoice('Paris', true);
+       await assessmentItem.addChoice('Madrid');
+       const assets = await assessmentItem.getAssets();
+       expect(assets).toEqual([]);
+    });
+
+    it('should return an array of assetData objects if choices have images', async () => {
+      await assessmentItem.addChoice('Berlin', false, 'https://farm8.staticflickr.com/7377/9359257263_81b080a039_z_d.jpg');
+
+      const assets = await assessmentItem.getAssets();
+      expect(assets.length).toEqual(1);
+      expect(assets[0].assetPath).toEqual('assets/item-1_0.jpeg');
+      expect(assets[0].blob).toBeTruthy();
+    });
   });
 });
 
