@@ -11,8 +11,9 @@ import OcxBundle from "@/src/app/lib/OcxBundle"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "@/src/app/lib/exporters/OcxBundleExportCanvas"
 
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import GoogleFormToQtiConverter from "@/src/app/lib/qti/GoogleFormToQtiConverter"
 
 export default class CanvasLegacyOpenSciEdExporter {
   exportDestination: ExportDestination;
@@ -63,10 +64,26 @@ export default class CanvasLegacyOpenSciEdExporter {
               if (material.object.url) {
                 if (material.object.type === 'material') {
                   if (material.object.url.includes('google.com/forms')) {
-                    console.log('loading test form', material.object.url);
+                    console.log('loading form', material.object.url);
 
-                    const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'test_form_qti.zip');
-                    const qtiFileBlob = new Blob([await readFile(testFilePath)]);
+                    const formJson = await this.downloadGoogleForm(material.object.url);
+
+                    const formConverter = new GoogleFormToQtiConverter(formJson);
+
+                    const qtiObject = await formConverter.convertToQti();
+
+                    const qtiFileBlob = await qtiObject.generateQtiZip();
+
+
+                    // // save the form json file to the disk
+                    // const formFilePath = join(__dirname, '/__tests__/', 'fixtures', 'google_form.json');
+                    //
+                    // await writeFile(formFilePath, JSON.stringify(formJson, null, 2));
+                    //
+                    // // const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'test_form_qti.zip');
+                    // const testFilePath = join(__dirname, '..', 'qti', '/__tests__/', 'output', 'generated_test.qti.zip');
+                    // // const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'Archive.zip');
+                    // const qtiFileBlob = new Blob([await readFile(testFilePath)]);
 
                     await this.ocxBundleExportCanvas.exportOcxNodeQtiFileToQuiz(activityNode, qtiFileBlob, moduleExport.canvasId, canvasModuleItemPosition++);
                     quizCreated = true;
@@ -101,6 +118,28 @@ export default class CanvasLegacyOpenSciEdExporter {
           }
         }
       }
+    }
+  }
+
+  async downloadGoogleForm(originalUrl: string): Promise<any> {
+    const fileId =  originalUrl.split('/')[5];
+
+    const auth = new google.auth.GoogleAuth({
+      credentials: googleApiKey,
+      scopes: ['https://www.googleapis.com/auth/forms.body.readonly'], // Adjust scope if needed
+    });
+
+    const forms = google.forms({
+      version: 'v1',
+      auth,
+    });
+
+    try {
+      const res = await forms.forms.get({ formId: fileId });
+      return res.data;
+    } catch (e) {
+      console.error('Error downloading form:', e);
+      throw e;
     }
   }
 

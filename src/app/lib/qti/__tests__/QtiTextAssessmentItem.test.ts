@@ -35,6 +35,21 @@ describe('QtiTextAssessmentItem', () => {
     expect(assessmentItemElement.itemBody).toBeTruthy();
     expect(assessmentItemElement.itemBody[0].extendedTextInteraction).toBeTruthy();
     expect(assessmentItemElement.itemBody[0].extendedTextInteraction[0].prompt).toBeTruthy();
+    expect(assessmentItemElement.itemBody[0].extendedTextInteraction[0].$).toMatchObject({ expectedLines: '1' });
+  });
+
+  describe('when the expected response is long', () => {
+    beforeEach(() => {
+      assessmentItem = new QtiTextAssessmentItem('item-1', 'Write a short story', 'long');
+    });
+
+    it('should output the correct XML', async () => {
+      const xmlString = assessmentItem.toXML();
+      const xml = await parse(xmlString);
+      const assessmentItemElement = xml.assessmentItem;
+
+      expect(assessmentItemElement.itemBody[0].extendedTextInteraction[0].$).toMatchObject({ expectedLines: '5' });
+    });
   });
 
   it('should return an empty array for getAssets', async () => {

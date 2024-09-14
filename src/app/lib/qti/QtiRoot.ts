@@ -4,14 +4,14 @@ import JSZip from "jszip";
 import QtiAssessmentItem from "./QtiAssessmentItem";
 
 export default class QtiRoot {
-  private identifier: string;
-  private title: string;
-  private language: string = 'en';
+  identifier: string;
+  title: string;
+  language: string = 'en';
 
-  private assessmentId: string;
-  private assessmentSectionId: string;
+  assessmentId: string;
+  assessmentSectionId: string;
 
-  private assessmentItems: QtiAssessmentItem[] = [];
+  assessmentItems: QtiAssessmentItem[] = [];
 
   constructor(identifier: string, title: string) {
     this.identifier = identifier;

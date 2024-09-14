@@ -2,9 +2,14 @@ import * as xmlbuilder2 from 'xmlbuilder2';
 
 import QtiAssessmentItem, { AssetData } from "./QtiAssessmentItem";
 
+export type TextAssessmentItemType = 'short' | 'long';
+
 export default class QtiTextAssessmentItem extends QtiAssessmentItem {
-  constructor(id: string, text: string) {
+  private type: TextAssessmentItemType;
+
+  constructor(id: string, text: string, type: TextAssessmentItemType = 'short') {
     super(id, text);
+    this.type = type;
   }
 
   getAssets(): AssetData[] {
@@ -34,6 +39,8 @@ export default class QtiTextAssessmentItem extends QtiAssessmentItem {
         itemBody: {
           'extendedTextInteraction': {
             '@responseIdentifier': 'RESPONSE',
+            ...(this.type === 'long' && {'@expectedLines': 5}),
+            ...(this.type === 'short' && {'@expectedLines': 1}),
             prompt: {
               div: {
                 div: this.text,
