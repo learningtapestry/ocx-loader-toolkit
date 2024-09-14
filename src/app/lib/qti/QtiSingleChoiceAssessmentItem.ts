@@ -1,21 +1,14 @@
 import * as xmlbuilder2 from 'xmlbuilder2';
 
-type assetData = {
-  assetPath: string;
-  blob: Blob;
-}
+import QtiAssessmentItem, { AssetData} from "./QtiAssessmentItem"
 
-export default class SingleChoiceAssessmentItem {
-  id: string;
-  text: string;
+export default class QtiSingleChoiceAssessmentItem extends QtiAssessmentItem {
   choices: { text: string; imageIndex?: number; isCorrect?: boolean }[];
-  images: Blob[];
 
   constructor(id: string, text: string) {
-    this.id = id;
-    this.text = text;
+    super(id, text);
+
     this.choices = [];
-    this.images = [];
   }
 
   async addChoice(text: string, isCorrect?: boolean, image?: string | Blob) {
@@ -44,7 +37,7 @@ export default class SingleChoiceAssessmentItem {
     return `assets/${this.id}_${index}.${extension}`;
   }
 
-  getAssets(): assetData[] {
+  getAssets(): AssetData[] {
     return this.images.map((imageBlob, index) => {
       return {
         assetPath: this.imageUri(index),

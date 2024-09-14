@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 import QtiRoot from "../QtiRoot"
-import SingleChoiceAssessmentItem from "../SingleChoiceAssessmentItem"
+import QtiSingleChoiceAssessmentItem from "../QtiSingleChoiceAssessmentItem"
 
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
@@ -13,12 +13,12 @@ describe('QtiRoot', async () => {
   beforeEach(async () => {
     qtiRoot = new QtiRoot('test-identifier', 'Test Title');
 
-    const assessmentItem1 = new SingleChoiceAssessmentItem('item1', 'Question 1?');
+    const assessmentItem1 = new QtiSingleChoiceAssessmentItem('item1', 'Question 1?');
     await assessmentItem1.addChoice('Choice A');
     await assessmentItem1.addChoice('Choice B');
     await assessmentItem1.addChoice('Choice C');
 
-    const assessmentItem2 = new SingleChoiceAssessmentItem('item2', 'Question 2 with an image?');
+    const assessmentItem2 = new QtiSingleChoiceAssessmentItem('item2', 'Question 2 with an image?');
     await assessmentItem2.addChoice('Choice D', false, 'https://farm8.staticflickr.com/7377/9359257263_81b080a039_z_d.jpg');
     await assessmentItem2.addChoice('Choice E');
 

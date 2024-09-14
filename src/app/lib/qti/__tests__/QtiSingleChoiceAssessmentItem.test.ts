@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
-import SingleChoiceAssessmentItem from '../SingleChoiceAssessmentItem';
+import QtiSingleChoiceAssessmentItem from '../QtiSingleChoiceAssessmentItem';
 
-describe('SingleChoiceAssessmentItem', () => {
-  let assessmentItem: SingleChoiceAssessmentItem;
+describe('QtiSingleChoiceAssessmentItem', () => {
+  let assessmentItem: QtiSingleChoiceAssessmentItem;
 
   beforeEach(() => {
-    assessmentItem = new SingleChoiceAssessmentItem('item-1', 'What is the capital of France?');
+    assessmentItem = new QtiSingleChoiceAssessmentItem('item-1', 'What is the capital of France?');
   });
 
-  it('should create an instance of SingleChoiceAssessmentItem', () => {
+  it('should create an instance of QtiSingleChoiceAssessmentItem', () => {
     expect(assessmentItem).toBeTruthy();
   });
 

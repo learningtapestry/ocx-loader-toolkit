@@ -1,7 +1,7 @@
 import * as xmlbuilder2 from 'xmlbuilder2';
-import JSZip from "jszip"
+import JSZip from "jszip";
 
-import SingleChoiceAssessmentItem from "@/src/app/lib/qti/SingleChoiceAssessmentItem"
+import QtiAssessmentItem from "@/src/app/lib/qti/QtiAssessmentItem";
 
 export default class QtiRoot {
   private identifier: string;
@@ -11,7 +11,7 @@ export default class QtiRoot {
   private assessmentId: string;
   private assessmentSectionId: string;
 
-  private assessmentItems: SingleChoiceAssessmentItem[] = [];
+  private assessmentItems: QtiAssessmentItem[] = [];
 
   constructor(identifier: string, title: string) {
     this.identifier = identifier;
@@ -21,7 +21,7 @@ export default class QtiRoot {
     this.assessmentSectionId = this.generateRandomId();
   }
 
-  addAssessmentItem(assessmentItem: SingleChoiceAssessmentItem): void {
+  addAssessmentItem(assessmentItem: QtiAssessmentItem): void {
     this.assessmentItems.push(assessmentItem);
   }
 
