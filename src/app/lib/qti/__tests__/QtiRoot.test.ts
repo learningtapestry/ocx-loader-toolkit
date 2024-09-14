@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 import QtiRoot from "../QtiRoot"
 import QtiSingleChoiceAssessmentItem from "../QtiSingleChoiceAssessmentItem"
+import QtiTextAssessmentItem from "../QtiTextAssessmentItem"
 
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
@@ -22,8 +23,11 @@ describe('QtiRoot', async () => {
     await assessmentItem2.addChoice('Choice D', false, 'https://farm8.staticflickr.com/7377/9359257263_81b080a039_z_d.jpg');
     await assessmentItem2.addChoice('Choice E');
 
+    const assessmentItem3 = new QtiTextAssessmentItem('item3', 'Question 3 with text response?');
+
     qtiRoot.addAssessmentItem(assessmentItem1);
     qtiRoot.addAssessmentItem(assessmentItem2);
+    qtiRoot.addAssessmentItem(assessmentItem3);
   });
 
   describe('#createManifest', () => {
@@ -51,8 +55,12 @@ describe('QtiRoot', async () => {
 
       expect(zip.file('assessment_test.xml')).toBeTruthy();
       expect(zip.file('imsmanifest.xml')).toBeTruthy();
+
       expect(zip.file('items/item1.xml')).toBeTruthy();
       expect(zip.file('items/item2.xml')).toBeTruthy();
+      expect(zip.file('items/item3.xml')).toBeTruthy();
+
+      expect(zip.file('assets/item2_0.jpeg')).toBeTruthy();
 
       const outputDir = path.join(__dirname, 'output');
       const outputZipPath = path.join(outputDir, 'generated_test.qti.zip');

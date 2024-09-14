@@ -1,7 +1,7 @@
 import * as xmlbuilder2 from 'xmlbuilder2';
 import JSZip from "jszip";
 
-import QtiAssessmentItem from "@/src/app/lib/qti/QtiAssessmentItem";
+import QtiAssessmentItem from "./QtiAssessmentItem";
 
 export default class QtiRoot {
   private identifier: string;
