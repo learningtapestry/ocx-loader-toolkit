@@ -2,9 +2,6 @@
 
 import db from "@/db/index"
 
-import { google } from 'googleapis';
-import { googleApiKey } from "@/config/secrets"
-
 import { ExportDestination, User } from "@prisma/client"
 
 import OcxBundle from "@/src/app/lib/OcxBundle"
@@ -14,6 +11,7 @@ import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, Li
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import GoogleFormToQtiConverter from "@/src/app/lib/qti/GoogleFormToQtiConverter"
+import GoogleRepository from "@/src/app/lib/exporters/repositories/GoogleRepository"
 
 export default class CanvasLegacyOpenSciEdExporter {
   exportDestination: ExportDestination;
@@ -22,10 +20,13 @@ export default class CanvasLegacyOpenSciEdExporter {
 
   ocxBundleExportCanvas?: OcxBundleExportCanvas;
 
+  googleRepository: GoogleRepository;
+
   constructor(exportDestination: ExportDestination, ocxBundle: OcxBundle, user: User) {
     this.exportDestination = exportDestination;
     this.ocxBundle = ocxBundle;
     this.user = user;
+    this.googleRepository = new GoogleRepository();
   }
 
   async exportAll() {
@@ -66,7 +67,7 @@ export default class CanvasLegacyOpenSciEdExporter {
                   if (material.object.url.includes('google.com/forms')) {
                     console.log('loading form', material.object.url);
 
-                    const formJson = await this.downloadGoogleForm(material.object.url);
+                    const formJson = await this.googleRepository.downloadGoogleForm(material.object.url);
 
                     const formConverter = new GoogleFormToQtiConverter(formJson);
 
@@ -90,7 +91,7 @@ export default class CanvasLegacyOpenSciEdExporter {
                   } else {
                     console.log('downloading material', material.object.url);
 
-                    const {blob, extension} = await this.downloadFromGoogleDrive(material.object.url);
+                    const {blob, extension} = await this.googleRepository.downloadFromGoogleDrive(material.object.url);
 
                     const fileName = `${material.object.title}.${extension}`;
 
@@ -121,85 +122,6 @@ export default class CanvasLegacyOpenSciEdExporter {
     }
   }
 
-  async downloadGoogleForm(originalUrl: string): Promise<any> {
-    const fileId =  originalUrl.split('/')[5];
 
-    const auth = new google.auth.GoogleAuth({
-      credentials: googleApiKey,
-      scopes: ['https://www.googleapis.com/auth/forms.body.readonly'], // Adjust scope if needed
-    });
-
-    const forms = google.forms({
-      version: 'v1',
-      auth,
-    });
-
-    try {
-      const res = await forms.forms.get({ formId: fileId });
-      return res.data;
-    } catch (e) {
-      console.error('Error downloading form:', e);
-      throw e;
-    }
-  }
-
-  async downloadFromGoogleDrive(originalUrl: string) {
-    const fileId = originalUrl.includes('https://drive.google.com/open?id=') ? originalUrl.split('/open?id=')[1] : originalUrl.split('/')[5];
-
-    const auth = new google.auth.GoogleAuth({
-      credentials: googleApiKey,
-      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-    });
-
-    const drive = google.drive({
-      version: 'v3',
-      auth
-    });
-
-    try {
-      // Fetch the file metadata to get the file name and mime type
-      const metadataResponse = await drive.files.get({
-        fileId,
-        fields: 'name, mimeType',
-      });
-
-      const fileName = metadataResponse.data.name;
-      const mimeType = metadataResponse.data.mimeType;
-
-      if (mimeType === 'application/vnd.google-apps.document') {
-        const exportResponse = await drive.files.export(
-          { fileId, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
-          { responseType: 'arraybuffer' }
-        );
-
-        const arrayBuffer = exportResponse.data;
-        const blob = new Blob([arrayBuffer as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-
-        return {
-          blob,
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          extension: 'docx'
-        };
-      } else {
-        const contentResponse = await drive.files.get(
-          { fileId, alt: 'media' },
-          { responseType: 'arraybuffer' }
-        );
-
-        const arrayBuffer = contentResponse.data;
-        const blob = new Blob([arrayBuffer as BlobPart], { type: mimeType as string });
-
-        return {
-          blob,
-          mimeType,
-          extension: mimeType?.split('/')[1] || 'pdf'
-        };
-      }
-    } catch (e) {
-      console.error('Error downloading file', e);
-
-      throw e;
-    }
-  }
 
 }
