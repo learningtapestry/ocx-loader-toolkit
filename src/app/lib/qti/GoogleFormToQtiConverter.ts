@@ -1,6 +1,7 @@
 import QtiRoot from "./QtiRoot";
 import QtiChoiceAssessmentItem from "./QtiChoiceAssessmentItem";
 import QtiTextAssessmentItem from "./QtiTextAssessmentItem";
+import QtiTextItem from "./QtiTextItem"
 
 type FormImage = {
   contentUri: string;
@@ -84,7 +85,11 @@ export default class GoogleFormToQtiConverter {
   //   "title": "Something something"
   // },
   async addTextItem(item: GoogleFormItem) {
+    const textItem = item.textItem!;
 
+    const qtiTextItem = new QtiTextItem(item.itemId, item.title, textItem.image?.contentUri);
+
+    return this.qtiRoot.addAssessmentItem(qtiTextItem);
   }
 
   // example questionItem/choiceQuestion/RADIO:
@@ -167,8 +172,9 @@ export default class GoogleFormToQtiConverter {
   async addTextQuestion(item: GoogleFormItem) {
     const textQuestion = item.questionItem!.question.textQuestion!;
 
-    // TODO: if there is an image
-    const qtiTextItem = new QtiTextAssessmentItem(item.itemId, item.title, textQuestion.paragraph ? 'long' : 'short');
+    const qtiTextItem = new QtiTextAssessmentItem(item.itemId, item.title,
+      textQuestion.paragraph ? 'long' : 'short',
+      item.questionItem!.image?.contentUri);
     return this.qtiRoot.addAssessmentItem(qtiTextItem);
   }
 }

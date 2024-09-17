@@ -5,21 +5,13 @@ import QtiAssessmentItem, { AssetData} from "./QtiAssessmentItem"
 export default class QtiChoiceAssessmentItem extends QtiAssessmentItem {
   singleChoice: boolean;
   choices: { text: string; imageIndex?: number; isCorrect?: boolean }[];
-  questionImage: Promise<Blob | null>;
+
 
   constructor(id: string, text: string, singleChoice = true, image? : string | Blob) {
-    super(id, text);
+    super(id, text, image);
 
     this.singleChoice = singleChoice;
     this.choices = [];
-
-    if (typeof image === 'string') {
-      this.questionImage = fetch(image).then(response => response.blob());
-    } else if (image instanceof Blob) {
-      this.questionImage = Promise.resolve(image);
-    } else {
-      this.questionImage = Promise.resolve(null);
-    }
   }
 
   async addChoice(text: string, isCorrect?: boolean, image?: string | Blob) {
@@ -48,16 +40,6 @@ export default class QtiChoiceAssessmentItem extends QtiAssessmentItem {
     return `assets/${this.id}_${index}.${extension}`;
   }
 
-  async questionImageUri(): Promise<string | null> {
-    const blob = await this.questionImage;
-
-    if (!blob) return null;
-
-    const extension = blob.type.split('/')[1];
-
-    return `assets/${this.id}_question.${extension}`;
-  }
-
   async getAssets(): Promise<AssetData[]> {
     const assets = this.images.map((imageBlob, index) => {
       return {
@@ -66,16 +48,7 @@ export default class QtiChoiceAssessmentItem extends QtiAssessmentItem {
       };
     });
 
-    const blob = await this.questionImage;
-
-    if (blob) {
-      assets.push({
-        assetPath: (await this.questionImageUri())!,
-        blob: blob
-      });
-    }
-
-    return assets;
+    return assets.concat(await super.getAssets());
   }
 
   async toXML(): Promise<string> {
@@ -105,24 +78,12 @@ export default class QtiChoiceAssessmentItem extends QtiAssessmentItem {
         },
         itemBody: {
           choiceInteraction: {
-            '@maxChoices': this.singleChoice ? '1' : String(this.choices.length),
+            '@maxChoices': this.singleChoice ? '1' : '0',
             '@responseIdentifier': 'RESPONSE',
             '@shuffle': 'false',
-            prompt: {
-              div: {
-              div: [
-                { '#text': this.text },
-                ...(await this.questionImage ? [{
-                  img: {
-                    '@src': `../${await this.questionImageUri()}`,
-                    '@alt': 'Question image'
-                  }
-                }] : [])
-              ]
-              },
-            },
+            prompt: await this.promptBody(),
             simpleChoice: this.choices.map((choice, index) => {
-              const choiceContent = typeof(choice.imageIndex) === 'number'
+              const choiceContent: any = typeof(choice.imageIndex) === 'number'
                 ? {
                     div: {
                       div: [

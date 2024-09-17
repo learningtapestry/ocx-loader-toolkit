@@ -7,16 +7,14 @@ export type TextAssessmentItemType = 'short' | 'long';
 export default class QtiTextAssessmentItem extends QtiAssessmentItem {
   private type: TextAssessmentItemType;
 
-  constructor(id: string, text: string, type: TextAssessmentItemType = 'short') {
-    super(id, text);
+  constructor(id: string, text: string, type: TextAssessmentItemType = 'short', image?: string | Blob) {
+    super(id, text, image);
     this.type = type;
   }
 
-  async getAssets(): Promise<AssetData[]> {
-    return []; // Text questions don't have assets
-  }
-
   async toXML(): Promise<string> {
+    const image = await this.questionImage;
+
     const assessmentItem = xmlbuilder2.create({
       assessmentItem: {
         '@adaptive': 'false',
@@ -41,11 +39,7 @@ export default class QtiTextAssessmentItem extends QtiAssessmentItem {
             '@responseIdentifier': 'RESPONSE',
             ...(this.type === 'long' && {'@expectedLines': 5}),
             ...(this.type === 'short' && {'@expectedLines': 1}),
-            prompt: {
-              div: {
-                div: this.text,
-              },
-            },
+            prompt: await this.promptBody()
           },
         },
       },
