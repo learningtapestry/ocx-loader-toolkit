@@ -2,6 +2,7 @@ import QtiRoot from "./QtiRoot";
 import QtiChoiceAssessmentItem from "./QtiChoiceAssessmentItem";
 import QtiTextAssessmentItem from "./QtiTextAssessmentItem";
 import QtiTextItem from "./QtiTextItem"
+import QtiSliderAssessmentItem from "./QtiSliderAssessmentItem";
 
 type FormImage = {
   contentUri: string;
@@ -27,12 +28,18 @@ type ChoiceQuestion = {
   options: ChoiceOption[];
 }
 
+type ScaleQuestion = {
+  low: number;
+  high: number;
+}
+
 type QuestionItem = {
   question: {
     questionId: string;
     required?: boolean;
     textQuestion?: TextQuestion;
     choiceQuestion?: ChoiceQuestion;
+    scaleQuestion?: ScaleQuestion;
   },
   image?: FormImage;
 }
@@ -71,7 +78,7 @@ export default class GoogleFormToQtiConverter {
         else if (question.choiceQuestion) {
           if (question.choiceQuestion.type === 'CHECKBOX') await this.addChoiceQuestion(item, false);
           else if (question.choiceQuestion.type === 'RADIO') await this.addChoiceQuestion(item, true);
-        }
+        } else if (question.scaleQuestion) await this.addScaleQuestion(item);
       }
     }
 
@@ -176,5 +183,38 @@ export default class GoogleFormToQtiConverter {
       textQuestion.paragraph ? 'long' : 'short',
       item.questionItem!.image?.contentUri);
     return this.qtiRoot.addAssessmentItem(qtiTextItem);
+  }
+
+  // example scale question
+  // {
+  //   "itemId": "395bb529",
+  //   "title": "On a scale of 1-5 (5 being the best): How effectively did you use the feedback from your peers?",
+  //   "questionItem": {
+  //     "question": {
+  //       "questionId": "5009cd91",
+  //       "required": true,
+  //       "scaleQuestion": {
+  //         "low": 1,
+  //         "high": 5
+  //       }
+  //     }
+  //   }
+  // }
+  async addScaleQuestion(item: GoogleFormItem) {
+    const scaleQuestion = item.questionItem!.question.scaleQuestion!;
+
+    const qtiSliderItem = new QtiSliderAssessmentItem(
+      item.itemId,
+      item.title,
+      {
+        lowerBound: scaleQuestion.low,
+        upperBound: scaleQuestion.high,
+        step: 1
+      },
+      undefined,
+      item.questionItem!.image?.contentUri
+    );
+
+    return this.qtiRoot.addAssessmentItem(qtiSliderItem);
   }
 }
