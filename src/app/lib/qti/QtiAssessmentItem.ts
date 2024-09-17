@@ -14,6 +14,6 @@ export default abstract class QtiAssessmentItem {
     this.images = [];
   }
 
-  abstract toXML(): string;
-  abstract getAssets(): AssetData[];
+  abstract toXML(): Promise<string>;
+  abstract getAssets(): Promise<AssetData[]>;
 }

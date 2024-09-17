@@ -25,8 +25,26 @@ export default class QtiRoot {
     this.assessmentItems.push(assessmentItem);
   }
 
-  createManifest() {
-    // ... Implementation for creating imsmanifest.xml structure
+  async createManifest() {
+    const assessmentItemsData = await Promise.all(this.assessmentItems.map(async (item) => {
+      const resourceFiles = [
+        {
+          '@href': `items/${item.id}.xml`,
+        },
+        ...(await item.getAssets()).map((asset) => ({
+          '@href': asset.assetPath,
+        }))
+      ];
+
+      return {
+        '@href': `items/${item.id}.xml`,
+        '@identifier': `RES-${item.id}`,
+        '@type': 'imsqti_item_xmlv2p1',
+        metadata: {},
+        file: resourceFiles,
+      };
+    }));
+
     return xmlbuilder2.create({
       manifest: {
         '@xmlns': 'http://www.imsglobal.org/xsd/imscp_v1p1',
@@ -98,31 +116,14 @@ export default class QtiRoot {
                 '@href': 'assessment_test.xml',
               },
             },
-            ...this.assessmentItems.map((item) => {
-              const resourceFiles = [
-                {
-                  '@href': `items/${item.id}.xml`,
-                },
-                ...item.getAssets().map((asset) => ({
-                  '@href': asset.assetPath,
-                }))
-              ];
-
-              return {
-                '@href': `items/${item.id}.xml`,
-                '@identifier': `RES-${item.id}`,
-                '@type': 'imsqti_item_xmlv2p1',
-                metadata: {},
-                file: resourceFiles,
-              };
-            }),
+            ...assessmentItemsData
           ],
         },
       },
     });
   }
 
-  createAssessmentTest() {
+  async createAssessmentTest() {
     return xmlbuilder2.create({
       assessmentTest: {
         '@xmlns': 'http://www.imsglobal.org/xsd/imsqti_v2p1',
@@ -149,27 +150,31 @@ export default class QtiRoot {
   }
 
   async generateQtiZip(): Promise<Blob> {
-    const assessmentTest = this.createAssessmentTest();
-    const manifest = this.createManifest();
+    const assessmentTest = await this.createAssessmentTest();
+    const manifest = await this.createManifest();
 
     const zip = new JSZip();
-    const items = zip.folder('items');
-    const assets = zip.folder('assets');
+    const itemsFolder = zip.folder('items');
+    const assetsFolder = zip.folder('assets');
 
     zip.file('assessment_test.xml', assessmentTest.end({ prettyPrint: true }));
 
     zip.file('imsmanifest.xml', manifest.end({ prettyPrint: true }));
 
-    this.assessmentItems.forEach((item) => {
-      items!.file(`${item.id}.xml`, item.toXML());
-      item.getAssets().forEach((asset) => {
+    for (const item of this.assessmentItems) {
+      itemsFolder!.file(`${item.id}.xml`, await item.toXML());
+
+      const assets = await item.getAssets();
+
+      for (const asset of assets) {
         const assetPathInsideAssets = asset.assetPath.split('/')[1];
 
-        assets!.file(assetPathInsideAssets, asset.blob.arrayBuffer());
-      });
-    });
+        const arrayBuffer = await asset.blob.arrayBuffer();
 
-    // Generate zip file in memory
+        assetsFolder!.file(assetPathInsideAssets, arrayBuffer);
+      }
+    }
+
     return await zip.generateAsync({ type: 'blob' });
   }
 

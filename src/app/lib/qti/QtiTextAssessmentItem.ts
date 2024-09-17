@@ -12,11 +12,11 @@ export default class QtiTextAssessmentItem extends QtiAssessmentItem {
     this.type = type;
   }
 
-  getAssets(): AssetData[] {
+  async getAssets(): Promise<AssetData[]> {
     return []; // Text questions don't have assets
   }
 
-  toXML(): string {
+  async toXML(): Promise<string> {
     const assessmentItem = xmlbuilder2.create({
       assessmentItem: {
         '@adaptive': 'false',

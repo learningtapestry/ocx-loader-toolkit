@@ -24,7 +24,7 @@ describe('GoogleFormToQtiConverter', () => {
     expect(items.length).toBe(googleFormJson.items.length);
 
     for (const [index, item] of googleFormJson.items.entries()) {
-      expect(items[index]?.id).toBe(item.questionItem.question.questionId);
+      expect(items[index]?.id).toBe(item.itemId);
       expect(items[index]?.text).toBe(item.title);
     }
   });

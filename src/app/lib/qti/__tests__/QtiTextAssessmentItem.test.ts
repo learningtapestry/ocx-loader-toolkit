@@ -15,7 +15,7 @@ describe('QtiTextAssessmentItem', () => {
   });
 
   it('should output the correct XML', async () => {
-    const xmlString = assessmentItem.toXML();
+    const xmlString = await assessmentItem.toXML();
     const xml = await parse(xmlString);
     const assessmentItemElement = xml.assessmentItem;
 
@@ -44,7 +44,7 @@ describe('QtiTextAssessmentItem', () => {
     });
 
     it('should output the correct XML', async () => {
-      const xmlString = assessmentItem.toXML();
+      const xmlString = await assessmentItem.toXML();
       const xml = await parse(xmlString);
       const assessmentItemElement = xml.assessmentItem;
 

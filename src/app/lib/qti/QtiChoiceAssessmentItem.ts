@@ -2,13 +2,24 @@ import * as xmlbuilder2 from 'xmlbuilder2';
 
 import QtiAssessmentItem, { AssetData} from "./QtiAssessmentItem"
 
-export default class QtiSingleChoiceAssessmentItem extends QtiAssessmentItem {
+export default class QtiChoiceAssessmentItem extends QtiAssessmentItem {
+  singleChoice: boolean;
   choices: { text: string; imageIndex?: number; isCorrect?: boolean }[];
+  questionImage: Promise<Blob | null>;
 
-  constructor(id: string, text: string) {
+  constructor(id: string, text: string, singleChoice = true, image? : string | Blob) {
     super(id, text);
 
+    this.singleChoice = singleChoice;
     this.choices = [];
+
+    if (typeof image === 'string') {
+      this.questionImage = fetch(image).then(response => response.blob());
+    } else if (image instanceof Blob) {
+      this.questionImage = Promise.resolve(image);
+    } else {
+      this.questionImage = Promise.resolve(null);
+    }
   }
 
   async addChoice(text: string, isCorrect?: boolean, image?: string | Blob) {
@@ -37,16 +48,37 @@ export default class QtiSingleChoiceAssessmentItem extends QtiAssessmentItem {
     return `assets/${this.id}_${index}.${extension}`;
   }
 
-  getAssets(): AssetData[] {
-    return this.images.map((imageBlob, index) => {
+  async questionImageUri(): Promise<string | null> {
+    const blob = await this.questionImage;
+
+    if (!blob) return null;
+
+    const extension = blob.type.split('/')[1];
+
+    return `assets/${this.id}_question.${extension}`;
+  }
+
+  async getAssets(): Promise<AssetData[]> {
+    const assets = this.images.map((imageBlob, index) => {
       return {
         assetPath: this.imageUri(index),
         blob: imageBlob
-      }
-    })
+      };
+    });
+
+    const blob = await this.questionImage;
+
+    if (blob) {
+      assets.push({
+        assetPath: (await this.questionImageUri())!,
+        blob: blob
+      });
+    }
+
+    return assets;
   }
 
-  toXML(): string {
+  async toXML(): Promise<string> {
     const assessmentItem = xmlbuilder2.create({
       assessmentItem: {
         '@adaptive': 'false',
@@ -58,7 +90,7 @@ export default class QtiSingleChoiceAssessmentItem extends QtiAssessmentItem {
         '@xsi:schemaLocation': 'http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1.xsd',
         responseDeclaration: {
           '@baseType': 'identifier',
-          '@cardinality': 'single',
+          '@cardinality': this.singleChoice ? 'single' : 'multiple',
           '@identifier': 'RESPONSE',
         },
         outcomeDeclaration: {
@@ -69,16 +101,24 @@ export default class QtiSingleChoiceAssessmentItem extends QtiAssessmentItem {
               correctResponse: {
                 value: this.choices.find((choice) => choice.isCorrect)?.text,
               },
-    }),
+          }),
         },
         itemBody: {
           choiceInteraction: {
-            '@maxChoices': '1',
+            '@maxChoices': this.singleChoice ? '1' : String(this.choices.length),
             '@responseIdentifier': 'RESPONSE',
             '@shuffle': 'false',
             prompt: {
               div: {
-                div: this.text,
+              div: [
+                { '#text': this.text },
+                ...(await this.questionImage ? [{
+                  img: {
+                    '@src': `../${await this.questionImageUri()}`,
+                    '@alt': 'Question image'
+                  }
+                }] : [])
+              ]
               },
             },
             simpleChoice: this.choices.map((choice, index) => {
