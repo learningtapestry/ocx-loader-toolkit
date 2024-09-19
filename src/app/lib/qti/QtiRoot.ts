@@ -135,15 +135,15 @@ export default class QtiRoot {
           '@identifier': 'tp_1',
           '@navigationMode': 'linear',
           '@submissionMode': 'individual',
-          'assessmentSection': {
-            '@identifier': 'as_1',
-            '@title': 'Section 1',
-            '@visible': 'true',
+          // 'assessmentSection': {
+          //   '@identifier': 'as_1',
+          //   '@title': 'Section 1',
+          //   '@visible': 'true',
             'assessmentItemRef': this.assessmentItems.map((item) => ({
               '@identifier': item.id,
               '@href': `items/${item.id}.xml`,
             })),
-          },
+          // },
         },
       },
     });
