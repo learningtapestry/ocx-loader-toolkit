@@ -52,6 +52,7 @@ type GoogleFormItem = {
   itemId: string;
   title: string;
   textItem?: TextItem;
+  imageItem?: TextItem;
   questionItem?: QuestionItem;
 }
 
@@ -71,6 +72,7 @@ export default class GoogleFormToQtiConverter {
 
     for (const item of items as GoogleFormItem[]) {
       if (item.textItem) await this.addTextItem(item);
+      else if (item.imageItem) await this.addImageItem(item);
       else if (item.questionItem) {
         const question = item.questionItem.question;
 
@@ -97,6 +99,25 @@ export default class GoogleFormToQtiConverter {
     const qtiTextItem = new QtiTextItem(item.itemId, item.title, textItem.image?.contentUri);
 
     return this.qtiRoot.addAssessmentItem(qtiTextItem);
+  }
+
+  //  {
+  //   "itemId": "77f82e05",
+  //   "imageItem": {
+  //     "image": {
+  //       "contentUri": "https://lh3.googleusercontent.com/tHYhA4BM2wm6BjomQp7N54jVxmCy1M_EolJZMbNn_7_t3hQS6CiZ3w0gSZI7bf2-SjSazl-5ur5m1cj6D_2a5sjrLDhihKvWFCfAGNJlNxsLMk8qthvETZ9baM3HFjflxQ",
+  //       "properties": {
+  //         "alignment": "LEFT",
+  //         "width": 618
+  //       }
+  //     }
+  //   }
+  async addImageItem(item: GoogleFormItem) {
+    const imageItem = item.imageItem!;
+
+    const qtiImageItem = new QtiTextItem(item.itemId, item.title, imageItem.image?.contentUri);
+
+    return this.qtiRoot.addAssessmentItem(qtiImageItem);
   }
 
   // example questionItem/choiceQuestion/RADIO:
