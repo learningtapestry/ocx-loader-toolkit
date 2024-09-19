@@ -44,6 +44,11 @@ export default class QtiSliderAssessmentItem extends QtiAssessmentItem {
         '@title': this.text.substring(0, 50),
         '@adaptive': 'false',
         '@timeDependent': 'false',
+        instructureMetadata: {
+          instructureField: [
+            { '@name': 'question_type', '@value': 'multiple_choice_question' },
+          ],
+        },
         responseDeclaration: {
           '@identifier': 'RESPONSE',
           '@cardinality': 'single',

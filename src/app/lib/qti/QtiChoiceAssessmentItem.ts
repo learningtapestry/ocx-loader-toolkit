@@ -61,6 +61,11 @@ export default class QtiChoiceAssessmentItem extends QtiAssessmentItem {
         '@xmlns': 'http://www.imsglobal.org/xsd/imsqti_v2p1',
         '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
         '@xsi:schemaLocation': 'http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1.xsd',
+        instructureMetadata: {
+          instructureField: [
+            { '@name': 'question_type', '@value': this.singleChoice ? 'multiple_choice_question' : 'multiple_answers_question' },
+          ],
+        },
         responseDeclaration: {
           '@baseType': 'identifier',
           '@cardinality': this.singleChoice ? 'single' : 'multiple',
