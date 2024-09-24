@@ -198,7 +198,7 @@ export async function createExportOcxBundleToCanvas(
 
   const canvasRepository = new CanvasRepository({
     baseUrl: destination.baseUrl,
-    accessToken: (destination.metadata! as Prisma.JsonObject).token as string
+    accessToken: (destination.metadata! as Prisma.JsonObject).accessToken as string
   });
 
   const canvasCourse = await canvasRepository.createCourse(name, code);

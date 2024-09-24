@@ -56,7 +56,7 @@ describe('CanvasLegacyOpenSciEdExporter', () => {
         type: 'canvas',
         baseUrl: baseUrl,
         metadata: {
-          token: accessToken
+          accessToken: accessToken
         }
       }
     });
@@ -66,13 +66,13 @@ describe('CanvasLegacyOpenSciEdExporter', () => {
 
   describe('exportAll', () => {
     it('should export all nodes to Canvas', async () => {
-      await canvasLegacyOpenSciEdExporter.exportAll();
+      const courseUrl = await canvasLegacyOpenSciEdExporter.exportAll();
 
       const ocxBundleExport = canvasLegacyOpenSciEdExporter.ocxBundleExportCanvas;
 
       expect(ocxBundleExport).toBeDefined();
 
-      console.log(`course URL: ${baseUrl}/courses/${canvasLegacyOpenSciEdExporter.ocxBundleExportCanvas!.metadata.id}`);
+      console.log(`course URL: ${courseUrl}`);
 
       expect((await db.nodeExport.findMany({
         where: {

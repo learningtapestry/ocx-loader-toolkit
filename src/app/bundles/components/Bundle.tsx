@@ -6,16 +6,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
+
 import deleteBundle from "../mutations/deleteBundle";
 import importBundle from "../mutations/importBundle";
-import importBundleFromZipFile from "@/src/app/bundles/mutations/importBundleFromZipFile";
+import exportBundle from "../mutations/exportBundle"
+import importBundleFromZipFile from "../mutations/importBundleFromZipFile";
 import getBundle from "../queries/getBundle";
 
 import OcxBundle from "@/src/app/lib/OcxBundle";
 
 import Node from "./Node";
 import BundleNodeTypes from "./BundleNodeTypes"
-import BundleNodeProperties from "@/src/app/bundles/components/BundleNodeProperties"
+import BundleNodeProperties from "./BundleNodeProperties"
+import ExportDialog from "./ExportDialog"
 
 import { useUiStore } from "@/src/app/stores/UiStore"
 
@@ -26,19 +29,41 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
   const [importBundleFromZipFileMutation] = useMutation(importBundleFromZipFile);
-  const [bundle, {refetch}] = useQuery(getBundle, {id: bundleId}, {
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  } );
+  const [exportBundleMutation] = useMutation(exportBundle);
+  const [bundle, { refetch }] = useQuery(
+    getBundle,
+    { id: bundleId },
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    }
+  );
 
   const [showSitemap, setShowSitemap] = useState(false);
-  const toggleSitemapVerb = showSitemap ? 'Hide' : 'Show';
+  const toggleSitemapVerb = showSitemap ? "Hide" : "Show";
+
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [selectedExportDestination, setSelectedExportDestination] = useState<number | null>(null);
 
   const ocxBundle = new OcxBundle(bundle, bundle.nodes);
 
   useEffect(() => {
     setNodeTypes(ocxBundle.allCombinedTypes);
   }, [ocxBundle.allCombinedTypes]);
+
+  const handleExport = async (exportDestinationId: number) => {
+    try {
+      const courseUrl = await exportBundleMutation({
+        id: bundle.id,
+        exportDestinationId: exportDestinationId,
+      })
+      alert("Bundle exported successfully to " + courseUrl);
+      setIsExportDialogOpen(false);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to export bundle.");
+    }
+  }
 
   return (
     <>
@@ -48,30 +73,29 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         <BundleNodeTypes ocxBundle={ocxBundle} />
         <BundleNodeProperties ocxBundle={ocxBundle} refetchBundle={refetch} />
 
-        {
-          ocxBundle.rootNodes.map((node) => <Node key={node.ocxId} node={node} refetchBundle={refetch} />)
-        }
+        {ocxBundle.rootNodes.map((node) => (
+          <Node key={node.ocxId} node={node} refetchBundle={refetch} />
+        ))}
 
-        {
-          bundle.parsedSitemap && (
-            <div>
-              <h2>Parsed Sitemap <button onClick={() => setShowSitemap(!showSitemap)}>{toggleSitemapVerb} Sitemap</button></h2>
+        {bundle.parsedSitemap && (
+          <div>
+            <h2>
+              Parsed Sitemap{" "}
+              <button onClick={() => setShowSitemap(!showSitemap)}>
+                {toggleSitemapVerb} Sitemap
+              </button>
+            </h2>
 
-              {showSitemap &&
-                <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>
-              }
-            </div>
-          )
-        }
+            {showSitemap && <pre>{JSON.stringify(bundle.parsedSitemap, null, 2)}</pre>}
+          </div>
+        )}
 
-        {
-          (ocxBundle.prismaBundle.errors as Prisma.JsonObject[])?.length > 0 && (
-            <div style={{color: 'red'}}>
-              <h2>Errors</h2>
-              <pre>{JSON.stringify(ocxBundle.prismaBundle.errors, null, 2)}</pre>
-            </div>
-          )
-        }
+        {(ocxBundle.prismaBundle.errors as Prisma.JsonObject[])?.length > 0 && (
+          <div style={{ color: "red" }}>
+            <h2>Errors</h2>
+            <pre>{JSON.stringify(ocxBundle.prismaBundle.errors, null, 2)}</pre>
+          </div>
+        )}
 
         <Link href={`/bundles/${bundle.id}/edit`}>Edit</Link>
 
@@ -139,8 +163,29 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
             fileInput.click();
           }}
           style={{ marginLeft: "0.5rem" }}
-        >Import zip</button>
+        >
+          Import zip
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsExportDialogOpen(true)}
+          style={{ marginLeft: "0.5rem" }}
+        >
+          Export Bundle
+        </button>
+
+        <ExportDialog
+          isOpen={isExportDialogOpen}
+          onClose={() => setIsExportDialogOpen(false)}
+          onExport={handleExport}
+        />
       </div>
     </>
-  );
-};
+  )
+}
+
+interface Destination {
+  id: number
+  name: string
+}

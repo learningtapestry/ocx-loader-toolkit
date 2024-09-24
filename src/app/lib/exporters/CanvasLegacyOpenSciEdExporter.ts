@@ -22,6 +22,9 @@ export default class CanvasLegacyOpenSciEdExporter {
 
   googleRepository: GoogleRepository;
 
+  // New field to store the course URL
+  courseUrl: string | null = null;
+
   constructor(exportDestination: ExportDestination, ocxBundle: OcxBundle, user: User) {
     this.exportDestination = exportDestination;
     this.ocxBundle = ocxBundle;
@@ -29,8 +32,20 @@ export default class CanvasLegacyOpenSciEdExporter {
     this.googleRepository = new GoogleRepository();
   }
 
-  async exportAll() {
-    this.ocxBundleExportCanvas = await createExportOcxBundleToCanvas(db, this.ocxBundle, this.exportDestination, this.user, 'TODO', 'TODO');
+  async exportAll(): Promise<string | null> {
+    this.ocxBundleExportCanvas = await createExportOcxBundleToCanvas(
+      db,
+      this.ocxBundle,
+      this.exportDestination,
+      this.user,
+      'TODO', // Replace with actual course name
+      'TODO'  // Replace with actual course code
+    );
+
+    // Assuming `createExportOcxBundleToCanvas` returns metadata that includes the course ID
+    const courseId = this.ocxBundleExportCanvas.bundleExportCanvasId;
+    const baseUrl = this.exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
+    this.courseUrl = `${baseUrl}/courses/${courseId}`;
 
     const courseNode = this.ocxBundle.rootNodes[0];
 
@@ -120,6 +135,9 @@ export default class CanvasLegacyOpenSciEdExporter {
         }
       }
     }
+
+    // Return the stored course URL
+    return this.courseUrl;
   }
 
 

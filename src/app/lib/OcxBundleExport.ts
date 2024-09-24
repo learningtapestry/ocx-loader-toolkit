@@ -29,7 +29,7 @@ export default class OcxBundleExport {
 
     this.canvasRepository ||= new CanvasRepository({
       baseUrl: this.exportDestination.baseUrl,
-      accessToken: (this.exportDestination.metadata! as Prisma.JsonObject).token as string
+      accessToken: (this.exportDestination.metadata! as Prisma.JsonObject).accessToken as string
     });
 
     return 'initialized';
