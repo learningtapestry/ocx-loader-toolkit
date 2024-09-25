@@ -16,6 +16,8 @@ COPY . .
 # Build the application
 RUN yarn build
 
+RUN yarn prisma generate
+
 # Expose port 3000 to the outside world
 EXPOSE 3000
 
