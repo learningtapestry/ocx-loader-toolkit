@@ -34,6 +34,7 @@ export const EditBundle = ({ bundleId }: { bundleId: number }) => {
                   ...values,
                   id: bundle.id,
                 });
+                // @ts-ignore
                 await setQueryData(updated);
                 router.refresh();
               } catch (error: any) {

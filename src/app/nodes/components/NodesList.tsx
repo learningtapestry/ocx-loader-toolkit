@@ -6,6 +6,7 @@ import getNodes from "../queries/getNodes";
 import { useSearchParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { Route } from "next";
+import { Prisma } from ".prisma/client"
 
 const ITEMS_PER_PAGE = 100;
 
@@ -36,7 +37,7 @@ export const NodesList = () => {
       <ul>
         {nodes.map((node) => (
           <li key={node.id}>
-            <Link href={`/nodes/${node.id}`}>{node.name}</Link>
+            <Link href={`/nodes/${node.id}`}>{(node.metadata as Prisma.JsonObject).name as string}</Link>
           </li>
         ))}
       </ul>

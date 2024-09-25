@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { invoke } from "src/app/blitz-server";
 import getNode from "../../queries/getNode";
 import { EditNode } from "../../components/EditNode";
+import { Prisma } from ".prisma/client"
 
 type EditNodePageProps = {
   params: { nodeId: string };
@@ -13,7 +14,7 @@ export async function generateMetadata({
 }: EditNodePageProps): Promise<Metadata> {
   const Node = await invoke(getNode, { id: Number(params.nodeId) });
   return {
-    title: `Edit Node ${Node.id} - ${Node.name}`,
+    title: `Edit Node ${Node.id} - ${(Node.metadata as Prisma.JsonObject).name as string}`,
   };
 }
 

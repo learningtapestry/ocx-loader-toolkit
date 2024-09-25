@@ -12,7 +12,7 @@ describe ('OcxBundleExport', () => {
       const exportDestination = {
         baseUrl: 'http://localhost:3000',
         metadata: {
-          token: '1234567890'
+          accessToken: '1234567890'
         }
       } as any;
 

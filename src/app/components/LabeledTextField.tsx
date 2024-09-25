@@ -117,4 +117,6 @@ export const LabeledTextArea = forwardRef<HTMLTextAreaElement, LabeledTextAreaPr
   }
 )
 
-export default LabeledTextField
+LabeledTextArea.displayName = "LabeledTextArea";
+
+export default LabeledTextField;

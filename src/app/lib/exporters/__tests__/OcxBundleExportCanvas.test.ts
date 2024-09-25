@@ -49,7 +49,7 @@ describe('OcxBundleExportCanvas', () => {
         type: 'canvas',
         baseUrl: baseUrl,
         metadata: {
-          token: accessToken
+          accessToken: accessToken
         }
       }
     });

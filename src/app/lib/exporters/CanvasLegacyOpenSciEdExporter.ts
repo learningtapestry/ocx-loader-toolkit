@@ -13,6 +13,21 @@ import { join } from 'path';
 import GoogleFormToQtiConverter from "@/src/app/lib/qti/GoogleFormToQtiConverter"
 import GoogleRepository from "@/src/app/lib/exporters/repositories/GoogleRepository"
 
+type GoogleClassroomMaterial = {
+  version: string;
+  object: {
+    title: string;
+    url: string;
+    type: string;
+  };
+}
+
+type GoogleClassroomData = {
+  postTitle: { en: string };
+  postInstructions: { en: string };
+  materials: GoogleClassroomMaterial[];
+}
+
 export default class CanvasLegacyOpenSciEdExporter {
   exportDestination: ExportDestination;
   ocxBundle: OcxBundle;
@@ -66,16 +81,18 @@ export default class CanvasLegacyOpenSciEdExporter {
 
         // iterate on the oer:Activity nodes
         for (const activityNode of lessonNode.children) {
+          const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData;
+
           // legacy OSE OCX has googleClassroom data
-          activityNode.metadata.name = activityNode.metadata.googleClassroom?.postTitle?.en;
-          activityNode.metadata.instructions = activityNode.metadata.googleClassroom?.postInstructions?.en;
+          activityNode.metadata.name = googleClassroomData?.postTitle?.en;
+          activityNode.metadata.instructions = googleClassroomData?.postInstructions?.en;
 
           const attachments: AttachmentData[] = [];
           const links: LinkData[] = [];
 
           let quizCreated = false;
 
-          for (const material of activityNode.metadata.googleClassroom?.materials || []) {
+          for (const material of googleClassroomData?.materials || []) {
             if ((material.version as string).includes('English')) {
               if (material.object.url) {
                 if (material.object.type === 'material') {

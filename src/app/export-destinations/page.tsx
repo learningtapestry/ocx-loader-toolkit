@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
-import { ExportDestinationsList } from "./components/exportDestinationsList"
+import { ExportDestinationsList } from "./components/ExportDestinationsList"
 
 export const metadata: Metadata = {
   title: "ExportDestinations",
