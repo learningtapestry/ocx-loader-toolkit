@@ -20,11 +20,6 @@ export const EditExportDestination = ({ exportDestinationId }: { exportDestinati
   const [updateExportDestinationMutation] = useMutation(updateExportDestination)
   const router = useRouter()
 
-  const exportDestinationWithStringifiedMetadata = {
-    ...exportDestination,
-    metadata: JSON.stringify(exportDestination.metadata, null, 2),
-  }
-
   return (
     <>
       <div>
@@ -34,7 +29,7 @@ export const EditExportDestination = ({ exportDestinationId }: { exportDestinati
           <ExportDestinationForm
             submitText="Update ExportDestination"
             schema={UpdateExportDestinationSchema}
-            initialValues={exportDestinationWithStringifiedMetadata}
+            initialValues={exportDestination}
             onSubmit={async (values) => {
               try {
                 const updated = await updateExportDestinationMutation({
