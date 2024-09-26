@@ -5,9 +5,11 @@ import { googleApiKey } from "@/config/secrets";
 export default class GoogleRepository {
   auth: GoogleAuth;
 
-  constructor() {
+  constructor(apiKey?: any) {
+    const credentials = (!apiKey || Object.keys(apiKey).length === 0) ? googleApiKey : apiKey;
+
     this.auth = new google.auth.GoogleAuth({
-      credentials: googleApiKey,
+      credentials,
       scopes: ['https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/forms.body.readonly'],
     });
   }

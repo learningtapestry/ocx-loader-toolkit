@@ -75,6 +75,7 @@ model Bundle {
   name       String
   sitemapUrl String
   sourceAccessToken String?
+  sourceAccessData Json @default("{}")
 
   parsedSitemap Json?
   nodes         Node[]
