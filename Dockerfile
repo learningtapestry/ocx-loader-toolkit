@@ -14,9 +14,11 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Build the application
-RUN yarn build
 
 RUN yarn prisma generate
+
+RUN yarn build
+
 
 # Expose port 3000 to the outside world
 EXPOSE 3000
