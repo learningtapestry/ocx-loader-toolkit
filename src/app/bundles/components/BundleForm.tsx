@@ -22,6 +22,13 @@ export function BundleForm<S extends z.ZodType<any, any>>(props: FormProps<S>) {
         placeholder="Sitemap Url"
         type="text"
       />
+
+      <LabeledTextField
+        name="sourceAccessToken"
+        label="Source Access Token"
+        placeholder="Source Access Token"
+        type="text"
+      />
     </Form>
   );
 }
