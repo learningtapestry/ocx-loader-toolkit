@@ -325,7 +325,7 @@ export default class CanvasExporter {
       return;
     }
 
-    const module = await this.createOrUpdateResource(
+    const canvasModule = await this.createOrUpdateResource(
       node,
       `courses/${root.exportData.canvasId}/modules`,
       { module: { name: hexHtmlToString(node.fullName), position } },
@@ -334,12 +334,12 @@ export default class CanvasExporter {
 
     // node.exportData.canvasId = module.id;
 
-    if (!module) {
+    if (!canvasModule) {
       return;
     }
 
-    if (position != module.position) {
-      console.log(`Actual position: ${module.position}`);
+    if (position != canvasModule.position) {
+      console.log(`Actual position: ${canvasModule.position}`);
     }
 
     let childPosition = node.educationalUse === EducationalUse.Section

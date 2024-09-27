@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ocx-loader
+
+  app:
+    build: .
+    ports:
+      - "3015:3000"
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/ocx-loader
+      SESSION_SECRET_KEY: "abcdedfghijklmnopqrstuvwxyz0123456789"
+    depends_on:
+      - db
+
+volumes:
+  db-data:

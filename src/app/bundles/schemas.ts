@@ -36,3 +36,8 @@ export const RemovePropertyInBundleSchema = z.object({
   name: z.string(),
   nodeType: z.string().optional(),
 });
+
+export const ExportBundleSchema = z.object({
+  id: z.number(),
+  exportDestinationId: z.number(),
+});

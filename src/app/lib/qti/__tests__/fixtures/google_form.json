@@ -1,0 +1,47 @@
+{
+  "formId": "1hn1vhP50py7MkIgiM0LnvIU8RCbM-vatYkRBq1oXgQ4",
+  "info": {
+    "title": "L1.3 Navigation Exit Ticket",
+    "documentTitle": "L1.3 Navigation Exit Ticket"
+  },
+  "settings": {},
+  "revisionId": "00000002",
+  "responderUri": "https://docs.google.com/forms/d/e/1FAIpQLSfGCZ1PZ5uLuHoBOusuFeCxZ0f8uUh9NKyIdIxTMaKF4BRi7Q/viewform",
+  "items": [
+    {
+      "itemId": "697c49a6",
+      "title": "First Name",
+      "questionItem": {
+        "question": {
+          "questionId": "3f1a0fa5",
+          "required": true,
+          "textQuestion": {}
+        }
+      }
+    },
+    {
+      "itemId": "1742f0e1",
+      "title": "Last Name",
+      "questionItem": {
+        "question": {
+          "questionId": "2a5e2472",
+          "required": true,
+          "textQuestion": {}
+        }
+      }
+    },
+    {
+      "itemId": "196bce38",
+      "title": "Look at your Notice and Wonder chart and your initial diagram. What is one idea you want to bring to our class discussion next time to help us explain the phenomenon?",
+      "questionItem": {
+        "question": {
+          "questionId": "40f6fb61",
+          "required": true,
+          "textQuestion": {
+            "paragraph": true
+          }
+        }
+      }
+    }
+  ]
+}
