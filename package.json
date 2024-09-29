@@ -40,6 +40,7 @@
     "extract-zip": "2.0.1",
     "formik": "2.4.5",
     "googleapis": "142.0.0",
+    "json-edit-react": "1.16.3",
     "jszip": "3.10.1",
     "next": "14.1.4",
     "nock": "13.5.4",

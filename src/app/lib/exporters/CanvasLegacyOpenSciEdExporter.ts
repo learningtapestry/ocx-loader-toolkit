@@ -44,7 +44,7 @@ export default class CanvasLegacyOpenSciEdExporter {
     this.exportDestination = exportDestination;
     this.ocxBundle = ocxBundle;
     this.user = user;
-    this.googleRepository = new GoogleRepository();
+    this.googleRepository = new GoogleRepository(ocxBundle.prismaBundle.sourceAccessData);
   }
 
   async exportAll(): Promise<string | null> {
