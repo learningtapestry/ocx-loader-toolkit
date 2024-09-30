@@ -13,7 +13,7 @@ export const ExportDestination = ({ exportDestinationId }: { exportDestinationId
   return (
     <>
       <div>
-        <h1>Project {exportDestination.id}</h1>
+        <h1>{exportDestination.name}</h1>
         <pre>{JSON.stringify(exportDestination, null, 2)}</pre>
 
         <Link href={`/export-destinations/${exportDestination.id}/edit`}>Edit</Link>
