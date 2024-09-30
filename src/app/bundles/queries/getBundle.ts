@@ -15,7 +15,8 @@ export default resolver.pipe(
     const bundle = await db.bundle.findFirst({
       where: { id },
       include: {
-        nodes: true
+        nodes: true,
+        exports: true,
       }
     });
 

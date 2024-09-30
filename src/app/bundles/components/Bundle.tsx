@@ -11,6 +11,7 @@ import deleteBundle from "../mutations/deleteBundle";
 import importBundle from "../mutations/importBundle";
 import exportBundle from "../mutations/exportBundle"
 import importBundleFromZipFile from "../mutations/importBundleFromZipFile";
+import importLegacyOSEUnit from "../mutations/importLegacyOSEUnit";
 import getBundle from "../queries/getBundle";
 
 import OcxBundle from "@/src/app/lib/OcxBundle";
@@ -29,6 +30,7 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const [deleteBundleMutation] = useMutation(deleteBundle);
   const [importBundleMutation] = useMutation(importBundle);
   const [importBundleFromZipFileMutation] = useMutation(importBundleFromZipFile);
+  const [importLegacyOSEUnitMutation] = useMutation(importLegacyOSEUnit);
   const [exportBundleMutation] = useMutation(exportBundle);
   const [bundle, { refetch }] = useQuery(
     getBundle,
@@ -97,83 +99,113 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
           </div>
         )}
 
-        <Link href={`/bundles/${bundle.id}/edit`}>Edit</Link>
+        <div>
+          <Link href={`/bundles/${bundle.id}/edit`}>Edit</Link>
 
-        <button
-          type="button"
-          onClick={async () => {
-            const updatedBundle = await importBundleMutation({ id: bundle.id })
-            await setQueryData(getBundle, { id: bundle.id }, updatedBundle)
-          }}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Load Data
-        </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const updatedBundle = await importBundleMutation({ id: bundle.id })
+              await setQueryData(getBundle, { id: bundle.id }, updatedBundle)
+            }}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            Load Data
+          </button>
 
-        <button
-          type="button"
-          onClick={async () => {
-            if (window.confirm("This will be deleted")) {
-              await deleteBundleMutation({ id: bundle.id });
-              router.push("/bundles");
-            }
-          }}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Delete
-        </button>
-
-        <button
-          type="button"
-          onClick={async () => {
-            const zip = await ocxBundle.exportZip();
-
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(zip);
-            link.download = 'bundle.ocx.zip';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }}
-          style={{ marginLeft: "0.5rem" }}
-        >Download zip</button>
-
-        <button
-          type="button"
-          onClick={async () => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.zip';
-
-            fileInput.addEventListener('change', async () => {
-              const file = fileInput.files?.[0];
-
-              if (file) {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-
-                reader.onload = async () => {
-                  const updatedBundle = await importBundleFromZipFileMutation({ id: bundle.id, zipDataUrl: reader.result as string});
-                  await setQueryData(getBundle, { id: bundle.id }, updatedBundle);
-                }
+          <button
+            type="button"
+            onClick={async () => {
+              if (window.confirm("This will be deleted")) {
+                await deleteBundleMutation({ id: bundle.id });
+                router.push("/bundles");
               }
-            });
+            }}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            Delete
+          </button>
 
-            fileInput.click();
-          }}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Import zip
-        </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const zip = await ocxBundle.exportZip();
 
-        <button
-          type="button"
-          onClick={() => setIsExportDialogOpen(true)}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Export Bundle
-        </button>
+              const link = document.createElement('a');
+              link.href = window.URL.createObjectURL(zip);
+              link.download = 'bundle.ocx.zip';
+
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+            style={{ marginLeft: "0.5rem" }}
+          >Download zip</button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              const fileInput = document.createElement('input');
+              fileInput.type = 'file';
+              fileInput.accept = '.zip';
+
+              fileInput.addEventListener('change', async () => {
+                const file = fileInput.files?.[0];
+
+                if (file) {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+
+                  reader.onload = async () => {
+                    const updatedBundle = await importBundleFromZipFileMutation({ id: bundle.id, zipDataUrl: reader.result as string});
+                    await setQueryData(getBundle, { id: bundle.id }, updatedBundle);
+                  }
+                }
+              });
+
+              fileInput.click();
+            }}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            Import zip
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              const url = prompt('Enter the URL of the legacy OSE OCX');
+
+              if (url) {
+                await importLegacyOSEUnitMutation({id: bundle.id, unitUrl: url });
+
+                window.location.reload();
+              }
+            }}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            Import Legacy OSE
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsExportDialogOpen(true)}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            Export Bundle
+          </button>
+        </div>
+
+        <div>
+          <h2>Exports</h2>
+          <ul>
+            {bundle.exports.map((exportedBundle) => (
+              <li key={exportedBundle.id}>
+                <a href={exportedBundle.exportUrl || '#'} target="_blank" rel="noreferrer">{exportedBundle.exportUrl || 'no url'}</a>
+              </li>
+            ))}
+          </ul>
+
+        </div>
 
         <ExportDialog
           isOpen={isExportDialogOpen}

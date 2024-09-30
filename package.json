@@ -38,6 +38,7 @@
     "blitz": "2.0.10",
     "cheerio": "1.0.0-rc.12",
     "extract-zip": "2.0.1",
+    "fetch-cookie": "3.0.1",
     "formik": "2.4.5",
     "googleapis": "142.0.0",
     "json-edit-react": "1.16.3",

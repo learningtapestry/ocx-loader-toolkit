@@ -153,6 +153,17 @@ export default class CanvasLegacyOpenSciEdExporter {
       }
     }
 
+    await db.bundleExport.update(
+      {
+        where: {
+          id: this.ocxBundleExportCanvas.prismaBundleExport.id
+        },
+        data: {
+          exportUrl: this.courseUrl
+        }
+      }
+    );
+
     // Return the stored course URL
     return this.courseUrl;
   }

@@ -26,6 +26,11 @@ export const ImportBundleFromZipFileSchema = z.object({
   zipDataUrl: z.string(),
 });
 
+export const ImportLegacyOSEUnitSchema = z.object({
+  id: z.number(),
+  unitUrl: z.string(),
+});
+
 export const RenamePropertyInBundleSchema = z.object({
   id: z.number(),
   oldName: z.string(),
