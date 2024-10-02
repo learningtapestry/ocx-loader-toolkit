@@ -23,6 +23,12 @@ export default async function Home() {
               </a>
             </div>
 
+            <div>
+              <a href={"/canvas-instances"} className={styles.button}>
+                <strong>Canvas Instances</strong>
+              </a>
+            </div>
+
             <LogoutButton />
 
             <div>

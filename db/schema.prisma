@@ -7,7 +7,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
@@ -25,7 +25,8 @@ model User {
   tokens   Token[]
   sessions Session[]
 
-  bundleExports BundleExport[]
+  exportDestinations ExportDestination[]
+  bundleExports      BundleExport[]
 }
 
 model Session {
@@ -72,10 +73,10 @@ model Bundle {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name       String
-  sitemapUrl String
+  name              String
+  sitemapUrl        String
   sourceAccessToken String?
-  sourceAccessData Json @default("{}")
+  sourceAccessData  Json    @default("{}")
 
   parsedSitemap Json?
   nodes         Node[]
@@ -116,6 +117,12 @@ model ExportDestination {
   baseUrl  String
   metadata Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
 
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
+
+  canvasInstanceId Int?
+  canvasInstance   CanvasInstance? @relation(fields: [canvasInstanceId], references: [id])
+
   bundleExports BundleExport[]
 }
 
@@ -128,11 +135,11 @@ model BundleExport {
   userId              Int
   bundleId            Int
 
-  name                String
+  name String
 
   exportDestination ExportDestination @relation(fields: [exportDestinationId], references: [id])
-  user              User @relation(fields: [userId], references: [id])
-  bundle            Bundle @relation(fields: [bundleId], references: [id])
+  user              User              @relation(fields: [userId], references: [id])
+  bundle            Bundle            @relation(fields: [bundleId], references: [id])
 
   nodeExports NodeExport[]
   metadata    Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
@@ -146,12 +153,26 @@ model NodeExport {
   updatedAt DateTime @updatedAt
 
   nodeId Int
-  node Node @relation(fields: [nodeId], references: [id])
+  node   Node @relation(fields: [nodeId], references: [id])
 
   bundleExportId Int
-  bundleExport BundleExport @relation(fields: [bundleExportId], references: [id])
+  bundleExport   BundleExport @relation(fields: [bundleExportId], references: [id])
 
-  idOnDestination         String
-  pathOnDestination       String?
-  metadata                Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
+  idOnDestination   String
+  pathOnDestination String?
+  metadata          Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
+}
+
+model CanvasInstance {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name    String
+  baseUrl String
+
+  clientId     String
+  clientSecret String
+
+  exportDestinations ExportDestination[]
 }
