@@ -14,6 +14,9 @@ export default function Page() {
       <p>
         <Link href={"/export-destinations/new"}>Create ExportDestination</Link>
       </p>
+      <p>
+        <Link href={"/export-destinations/new-canvas-oauth2"}>New Canvas OAuth2</Link>
+      </p>
       <Suspense fallback={<div>Loading...</div>}>
         <ExportDestinationsList />
       </Suspense>
