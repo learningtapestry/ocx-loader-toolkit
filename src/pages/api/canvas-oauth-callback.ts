@@ -49,7 +49,7 @@ export default api(async (req, res) => {
     return
   }
 
-  const { access_token } = await response.json()
+  const { access_token, refresh_token, expires_in } = await response.json()
 
   const exportDestination = await db.exportDestination.create({
     data: {
@@ -60,6 +60,8 @@ export default api(async (req, res) => {
       userId,
       metadata: {
         accessToken: access_token,
+        refreshToken: refresh_token,
+        accessTokenExpiry: new Date(Date.now() + expires_in * 1000),
       },
     },
   })

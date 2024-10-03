@@ -55,7 +55,7 @@ export async function uploadFileToCanvasCourse(baseUrl: string,
                                      accessToken: string,
                                      courseId: number,
                                      blob: Blob,
-                                     name = blob.name,
+                                     name = (blob as File).name,
                                      parentFolderPath = '/'): Promise<Response> {
   const fileUploadParams = await callCanvas(baseUrl, accessToken, `courses/${courseId}/files`, 'POST', {
     name: name,

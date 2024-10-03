@@ -5,7 +5,7 @@ export const CreateExportDestinationSchema = z.object({
   type: z.string().min(1, "Type is required"),
   baseUrl: z.string().url("Invalid URL format"),
   metadata: z.any(),
-  canvasInstanceId: z.number().optional(),
+  canvasInstanceId: z.number().optional().nullable(),
 })
 
 export const UpdateExportDestinationSchema = CreateExportDestinationSchema.extend({

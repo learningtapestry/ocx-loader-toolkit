@@ -9,6 +9,17 @@ export interface LabeledSelectProps extends PropsWithoutRef<JSX.IntrinsicElement
   options: { value: string; label: string }[]
 }
 
+function getErrorMessage(error: any): string | undefined {
+  if (!error) return undefined
+  if (typeof error === 'string') return error
+  if (Array.isArray(error)) return error.map(getErrorMessage).join(', ')
+  if (error.message) return error.message
+  if (typeof error === 'object') {
+    return Object.values(error).map(getErrorMessage).filter(Boolean).join(', ')
+  }
+  return undefined
+}
+
 export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
   ({ name, label, outerProps, labelProps, options, ...props }, ref) => {
     const {
@@ -16,9 +27,7 @@ export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
       formState: { isSubmitting, errors },
     } = useFormContext()
 
-    const error = Array.isArray(errors[name])
-      ? errors[name].join(", ")
-      : errors[name]?.message || errors[name]
+    const errorMessage = getErrorMessage(errors[name])
 
     return (
       <div {...outerProps}>
@@ -50,9 +59,9 @@ export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
             )}
           />
         </label>
-        {error && (
+        {errorMessage && (
           <div role="alert" style={{ color: "red" }}>
-            {error}
+            {errorMessage}
           </div>
         )}
       </div>

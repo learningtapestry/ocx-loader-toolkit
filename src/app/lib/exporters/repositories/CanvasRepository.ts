@@ -79,7 +79,7 @@ export default class CanvasRepository {
     return callCanvas(baseUrl, accessToken, `courses/${course_id}/assignments`, 'POST', assignmentData);
   }
 
-  async uploadFileToCourse(course_id: number, blob: Blob, name = blob.name, parentFolderPath = '/'): Promise<Prisma.JsonObject> {
+  async uploadFileToCourse(course_id: number, blob: Blob, name = (blob as File).name, parentFolderPath = '/'): Promise<Prisma.JsonObject> {
     return (await uploadFileToCanvasCourse(this.canvasConfig.baseUrl, this.canvasConfig.accessToken, course_id, blob, name, parentFolderPath)).json();
   }
 
