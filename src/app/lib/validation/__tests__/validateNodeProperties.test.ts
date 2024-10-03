@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 import { Bundle } from "@prisma/client";
-import OcxBundle from "@/src/app/lib/OcxBundle";
+import OcxBundle from "src/app/lib/OcxBundle";
 import db from "db";
 
 import fs from 'fs';

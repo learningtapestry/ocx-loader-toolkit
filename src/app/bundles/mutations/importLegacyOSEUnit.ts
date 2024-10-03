@@ -3,7 +3,7 @@ import { ImportLegacyOSEUnitSchema } from "../schemas"
 
 import db from "db";
 
-import OpenSciEdLegacyOcxBundle from "@/src/app/lib/LegacyOpenSciEdOcxBundle"
+import OpenSciEdLegacyOcxBundle from "src/app/lib/LegacyOpenSciEdOcxBundle"
 
 export default resolver.pipe(
   resolver.zod(ImportLegacyOSEUnitSchema),

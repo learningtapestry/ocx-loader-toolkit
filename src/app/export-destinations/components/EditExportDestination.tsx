@@ -6,7 +6,7 @@ import { UpdateExportDestinationSchema } from "../schemas"
 import { ExportDestinationForm } from "./ExportDestinationForm"
 import { useMutation, useQuery } from "@blitzjs/rpc"
 import { useRouter } from "next/navigation"
-import { FORM_ERROR } from "@/src/app/components/Form"
+import { FORM_ERROR } from "src/app/components/Form"
 
 export const EditExportDestination = ({ exportDestinationId }: { exportDestinationId: number }) => {
   const [exportDestination, { setQueryData }] = useQuery(

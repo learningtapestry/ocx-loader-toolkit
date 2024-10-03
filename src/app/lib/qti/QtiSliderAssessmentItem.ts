@@ -1,6 +1,6 @@
 import * as xmlbuilder2 from 'xmlbuilder2';
 
-import QtiAssessmentItem from "@/src/app/lib/qti/QtiAssessmentItem";
+import QtiAssessmentItem from "src/app/lib/qti/QtiAssessmentItem";
 
 export interface SliderAttributes {
   lowerBound: number;

@@ -4,11 +4,11 @@ import { Prisma } from "@prisma/client"
 
 import JsonView from '@uiw/react-json-view';
 
-import DeepArrayMap from "@/src/app/lib/DeepArrayMap";
-import { PropertyValidationResult } from "@/src/app/lib/OcxNode";
+import DeepArrayMap from "src/app/lib/DeepArrayMap";
+import { PropertyValidationResult } from "src/app/lib/OcxNode";
 
-import PropertyHighlightToggle from "@/src/app/bundles/components/PropertyHighlightToggle";
-import PropertyValidation from "@/src/app/bundles/components/PropertyValidation";
+import PropertyHighlightToggle from "src/app/bundles/components/PropertyHighlightToggle";
+import PropertyValidation from "src/app/bundles/components/PropertyValidation";
 
 interface BundleNodeObjectPropertyValuesProps {
   propertyName: string;

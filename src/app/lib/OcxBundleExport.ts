@@ -1,11 +1,11 @@
-import db from "@/db/index"
+import db from "db"
 
 import {
   BundleExport as PrismaBundleExport,
   ExportDestination as PrismaExportDestination, Prisma,
 } from "@prisma/client"
 
-import CanvasRepository from "@/src/app/lib/exporters/repositories/CanvasRepository"
+import CanvasRepository from "src/app/lib/exporters/repositories/CanvasRepository"
 
 export default class OcxBundleExport {
   prismaBundleExport: PrismaBundleExport;

@@ -3,8 +3,8 @@ import { CanvasOAuth2Form } from "./CanvasOAuth2Form"
 import { useMutation } from "@blitzjs/rpc"
 import generateCanvasOAuth2ExportDestinationUrl from "../mutations/generateCanvasOAuth2ExportDestinationUrl"
 import { useRouter } from "next/navigation"
-import { FORM_ERROR } from "@/src/app/components/Form"
-import { CanvasOAuth2ExportDestinationSchema } from "@/src/app/export-destinations/schemas"
+import { FORM_ERROR } from "src/app/components/Form"
+import { CanvasOAuth2ExportDestinationSchema } from "src/app/export-destinations/schemas"
 
 export function NewCanvasOAuth2ExportDestination() {
   const [generateCanvasOAuth2ExportDestinationUrlMutation] = useMutation(generateCanvasOAuth2ExportDestinationUrl)

@@ -1,17 +1,17 @@
 // exporter using the legacy OSE OCX with googleClassroom data
 
-import db from "@/db/index"
+import db from "db"
 
 import { ExportDestination, User } from "@prisma/client"
 
-import OcxBundle from "@/src/app/lib/OcxBundle"
+import OcxBundle from "src/app/lib/OcxBundle"
 
-import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "@/src/app/lib/exporters/OcxBundleExportCanvas"
+import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "src/app/lib/exporters/OcxBundleExportCanvas"
 
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
-import GoogleFormToQtiConverter from "@/src/app/lib/qti/GoogleFormToQtiConverter"
-import GoogleRepository from "@/src/app/lib/exporters/repositories/GoogleRepository"
+import GoogleFormToQtiConverter from "src/app/lib/qti/GoogleFormToQtiConverter"
+import GoogleRepository from "src/app/lib/exporters/repositories/GoogleRepository"
 
 type GoogleClassroomMaterial = {
   version: string;

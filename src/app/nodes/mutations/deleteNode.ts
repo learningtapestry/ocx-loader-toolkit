@@ -4,8 +4,8 @@ import db from "db";
 
 import { DeleteNodeSchema } from "../schemas";
 
-import OcxNode from "@/src/app/lib/OcxNode"
-import OcxBundle from "@/src/app/lib/OcxBundle"
+import OcxNode from "src/app/lib/OcxNode"
+import OcxBundle from "src/app/lib/OcxBundle"
 
 export default resolver.pipe(
   resolver.zod(DeleteNodeSchema),

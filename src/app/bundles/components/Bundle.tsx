@@ -14,14 +14,14 @@ import importBundleFromZipFile from "../mutations/importBundleFromZipFile";
 import importLegacyOSEUnit from "../mutations/importLegacyOSEUnit";
 import getBundle from "../queries/getBundle";
 
-import OcxBundle from "@/src/app/lib/OcxBundle";
+import OcxBundle from "src/app/lib/OcxBundle";
 
 import Node from "./Node";
 import BundleNodeTypes from "./BundleNodeTypes"
 import BundleNodeProperties from "./BundleNodeProperties"
 import ExportDialog from "./ExportDialog"
 
-import { useUiStore } from "@/src/app/stores/UiStore"
+import { useUiStore } from "src/app/stores/UiStore"
 
 export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const setNodeTypes = useUiStore(state => state.setNodeTypes);

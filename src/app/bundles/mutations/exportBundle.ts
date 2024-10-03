@@ -3,8 +3,8 @@ import { ExportBundleSchema } from "../schemas";
 
 import db from "db";
 
-import OcxBundle from "@/src/app/lib/OcxBundle";
-import CanvasLegacyOpenSciEdExporter from "@/src/app/lib/exporters/CanvasLegacyOpenSciEdExporter";
+import OcxBundle from "src/app/lib/OcxBundle";
+import CanvasLegacyOpenSciEdExporter from "src/app/lib/exporters/CanvasLegacyOpenSciEdExporter";
 
 export default resolver.pipe(
   resolver.zod(ExportBundleSchema),
@@ -35,7 +35,7 @@ export default resolver.pipe(
       throw new Error("User not found");
     }
 
-    if (exportDestination.type === "canvas") {
+    if (exportDestination.type === "canvas" || exportDestination.type === "canvas-oauth2") {
 
       const exporter = new CanvasLegacyOpenSciEdExporter(
         exportDestination,

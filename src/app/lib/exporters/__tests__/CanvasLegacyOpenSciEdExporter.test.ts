@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
-import db from "@/db/index"
+import db from "db"
 import { Bundle, ExportDestination, User } from "@prisma/client"
 
 import fs from 'fs';
@@ -11,7 +11,7 @@ dotenv.config({ path: '.env.test.local' });
 
 import CanvasLegacyOpenSciEdExporter from "../CanvasLegacyOpenSciEdExporter"
 
-import OcxBundle from "@/src/app/lib/OcxBundle"
+import OcxBundle from "src/app/lib/OcxBundle"
 
 describe('CanvasLegacyOpenSciEdExporter', () => {
   const name = 'OSE LEGACY TEST';

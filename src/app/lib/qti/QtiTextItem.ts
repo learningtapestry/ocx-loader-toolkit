@@ -1,6 +1,6 @@
 import * as xmlbuilder2 from 'xmlbuilder2';
 
-import QtiAssessmentItem, { AssetData } from "@/src/app/lib/qti/QtiAssessmentItem"
+import QtiAssessmentItem, { AssetData } from "src/app/lib/qti/QtiAssessmentItem"
 
 export default class QtiTextItem extends QtiAssessmentItem {
 

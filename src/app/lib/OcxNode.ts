@@ -3,7 +3,7 @@ import { ErrorObject } from "ajv"
 
 import OcxBundle from "./OcxBundle";
 
-import validateNodeProperties from "@/src/app/lib/validation/validateNodeProperties"
+import validateNodeProperties from "src/app/lib/validation/validateNodeProperties"
 
 export interface NodePartData {
   "@id": string;

@@ -1,19 +1,19 @@
 import { useState } from 'react';
 
-import OcxBundle from "@/src/app/lib/OcxBundle";
+import OcxBundle from "src/app/lib/OcxBundle";
 
-import ColorDotWithNumber from "@/src/app/components/ColorDotWithNumber"
+import ColorDotWithNumber from "src/app/components/ColorDotWithNumber"
 
 import BundleNodeScalarPropertyValues from "./BundleNodeScalarPropertyValues"
 import PropertyHighlightToggle from "./PropertyHighlightToggle"
 import BundleNodeObjectPropertyValues from "./BundleNodeObjectPropertyValues"
 
-import renamePropertyInBundle from "@/src/app/bundles/mutations/renamePropertyInBundle"
-import removePropertyInBundle from "@/src/app/bundles/mutations/removePropertyInBundle"
+import renamePropertyInBundle from "src/app/bundles/mutations/renamePropertyInBundle"
+import removePropertyInBundle from "src/app/bundles/mutations/removePropertyInBundle"
 
 import { FaEdit, FaTrash } from "react-icons/fa"
 
-import { useUiStore } from "@/src/app/stores/UiStore";
+import { useUiStore } from "src/app/stores/UiStore";
 import { useMutation } from "@blitzjs/rpc"
 
 export default function BundleNodeProperties({ocxBundle, refetchBundle} : {ocxBundle: OcxBundle, refetchBundle: () => void}) {

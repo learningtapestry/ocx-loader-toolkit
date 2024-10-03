@@ -1,4 +1,4 @@
-import { useUiStore } from "@/src/app/stores/UiStore"
+import { useUiStore } from "src/app/stores/UiStore"
 import { Prisma } from "@prisma/client"
 
 export default function PropertyHighlightToggle({ property, value }: { property: string, value?: Prisma.JsonValue }) {

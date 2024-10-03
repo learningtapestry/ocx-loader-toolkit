@@ -3,7 +3,7 @@ import { ImportBundleSchema } from "../schemas";
 
 import db from "db";
 
-import OcxBundle from "@/src/app/lib/OcxBundle"
+import OcxBundle from "src/app/lib/OcxBundle"
 
 export default resolver.pipe(
   resolver.zod(ImportBundleSchema),

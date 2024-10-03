@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import OcxBundle from "@/src/app/lib/OcxBundle";
+import OcxBundle from "src/app/lib/OcxBundle";
 
-import { useUiStore } from "@/src/app/stores/UiStore"
+import { useUiStore } from "src/app/stores/UiStore"
 
 export default function BundleNodeTypes({ocxBundle} : {ocxBundle: OcxBundle}) {
   const nodeTypesColors = useUiStore(state => state.nodeTypesColors);

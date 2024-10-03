@@ -1,4 +1,4 @@
-import OcxBundle from "@/src/app/lib/OcxBundle"
+import OcxBundle from "src/app/lib/OcxBundle"
 
 export default class OpenSciEdLegacyTransformer {
   sourceOcxBundle: OcxBundle;

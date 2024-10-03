@@ -7,12 +7,12 @@ import JSZip from 'jszip';
 import slugify from 'slugify';
 import _ from 'lodash';
 
-import parseSitemap from "@/src/app/ocx/loader/utils/parseSitemap"
-import absolutizeUrl from "@/src/app/ocx/loader/utils/absolutizeUrl"
-import { ParsedSitemap } from "@/src/app/ocx/loader/types"
+import parseSitemap from "src/app/ocx/loader/utils/parseSitemap"
+import absolutizeUrl from "src/app/ocx/loader/utils/absolutizeUrl"
+import { ParsedSitemap } from "src/app/ocx/loader/types"
 import { Prisma } from ".prisma/client"
 import { parseStringPromise } from "xml2js"
-import DeepArrayMap from "@/src/app/lib/DeepArrayMap"
+import DeepArrayMap from "src/app/lib/DeepArrayMap"
 
 const METADATA_SELECTOR = 'script[type="application/ld+json"]';
 

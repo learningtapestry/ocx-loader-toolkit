@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 
-import OcxNode from "@/src/app/lib/OcxNode"
+import OcxNode from "src/app/lib/OcxNode"
 
 import XMLViewer from 'react-xml-viewer';
 import JsonView from '@uiw/react-json-view';
 
 import { useMutation } from "@blitzjs/rpc"
-import setNodeParent from "@/src/app/nodes/mutations/setNodeParent"
-import fixNodeIsPartOf from "@/src/app/nodes/mutations/fixNodeIsPartOf"
-import deleteNode from "@/src/app/nodes/mutations/deleteNode"
-import removeChildrenNotFound from "@/src/app/nodes/mutations/removeChildrenNotFound"
+import setNodeParent from "src/app/nodes/mutations/setNodeParent"
+import fixNodeIsPartOf from "src/app/nodes/mutations/fixNodeIsPartOf"
+import deleteNode from "src/app/nodes/mutations/deleteNode"
+import removeChildrenNotFound from "src/app/nodes/mutations/removeChildrenNotFound"
 
-import { useUiStore } from "@/src/app/stores/UiStore"
+import { useUiStore } from "src/app/stores/UiStore"
 import { Prisma } from "@prisma/client"
 import _ from "lodash"
 

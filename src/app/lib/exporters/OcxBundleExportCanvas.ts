@@ -1,16 +1,17 @@
 import { Prisma, PrismaClient, User, ExportDestination as PrismaExportDestination  } from "@prisma/client"
-import db from "@/db/index"
+import db from "db"
 
-import OcxBundleExport from '@/src/app/lib/OcxBundleExport';
+import OcxBundleExport from "src/app/lib/OcxBundleExport";
 
-import OcxNode from "@/src/app/lib/OcxNode"
-import OcxNodeExport from "@/src/app/lib/OcxNodeExport"
-import OcxBundle from "@/src/app/lib/OcxBundle"
+import OcxNode from "src/app/lib/OcxNode"
+import OcxNodeExport from "src/app/lib/OcxNodeExport"
+import OcxBundle from "src/app/lib/OcxBundle"
 
 import CanvasRepository from "./repositories/CanvasRepository"
 
-import { CanvasFileUploadParams, finalizeCanvasFileUpload } from "@/src/app/lib/exporters/repositories/callCanvas"
-import QtiZip from "@/src/app/lib/exporters/QtiZip"
+import { CanvasFileUploadParams, finalizeCanvasFileUpload } from "src/app/lib/exporters/repositories/callCanvas"
+import QtiZip from "src/app/lib/exporters/QtiZip"
+import ExportDestinationService from "src/app/lib/ExportDestinationService"
 
 export type AttachmentData = {
   blob: Blob;
@@ -188,17 +189,16 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
 export async function createExportOcxBundleToCanvas(
   db: PrismaClient,
   ocxBundle: OcxBundle,
-  destination: PrismaExportDestination,
+  exportDestination: PrismaExportDestination,
   user: User,
   name: string,
   code: string
 ) {
-  // export to Canvas
-  // if successful, create a new BundleExport record
+  const exportDestinationService = new ExportDestinationService(exportDestination);
 
   const canvasRepository = new CanvasRepository({
-    baseUrl: destination.baseUrl,
-    accessToken: (destination.metadata! as Prisma.JsonObject).accessToken as string
+    baseUrl: exportDestination.baseUrl,
+    accessToken: await exportDestinationService.getToken()
   });
 
   const canvasCourse = await canvasRepository.createCourse(name, code);
@@ -209,7 +209,7 @@ export async function createExportOcxBundleToCanvas(
       name: name,
       exportDestination: {
         connect: {
-          id: destination.id
+          id: exportDestination.id
         }
       },
       bundle: {

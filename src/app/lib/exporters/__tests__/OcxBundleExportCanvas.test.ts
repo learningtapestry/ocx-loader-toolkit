@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest"
 
-import db from "@/db/index"
+import db from "db"
 
 import { Bundle, ExportDestination, User, Node } from "@prisma/client"
 
 import OcxBundleExportCanvas, { createExportOcxBundleToCanvas } from "../OcxBundleExportCanvas"
 
-import OcxBundle from "@/src/app/lib/OcxBundle"
-import OcxNode from "@/src/app/lib/OcxNode"
+import OcxBundle from "src/app/lib/OcxBundle"
+import OcxNode from "src/app/lib/OcxNode"
 
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.test.local' });

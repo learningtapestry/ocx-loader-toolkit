@@ -4,7 +4,7 @@ import { CreateExportDestinationSchema } from "../schemas"
 import { useMutation } from "@blitzjs/rpc"
 import createExportDestination from "../mutations/createExportDestination"
 import { useRouter } from "next/navigation"
-import { FORM_ERROR } from "@/src/app/components/Form"
+import { FORM_ERROR } from "src/app/components/Form"
 
 export function New__ModelName() {
   const [createExportDestinationMutation] = useMutation(createExportDestination)
