@@ -18,3 +18,8 @@ const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzS
 })
 
 export {api, getBlitzContext, useAuthenticatedBlitzContext, invoke}
+
+
+// TODO: for production move this to a separate worker
+import { startWorkers } from "src/app/jobs/exportBundleJob"
+startWorkers().then(() => console.log("Export bundle workers started"))
