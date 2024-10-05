@@ -11,7 +11,7 @@ import OcxBundle from "../OcxBundle";
 import db from "db";
 import { Bundle, Prisma, Node } from "@prisma/client"
 
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 describe('OcxBundle', () => {
   beforeEach(async () => {

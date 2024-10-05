@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 import db from "db"
-import { Bundle, ExportDestination, User } from "@prisma/client"
+import { Bundle, BundleExport, ExportDestination, User } from "@prisma/client"
 
 import fs from 'fs';
 import path from 'path';
@@ -26,6 +26,7 @@ describe('CanvasLegacyOpenSciEdExporter', () => {
   let user: User;
   let canvasLegacyOpenSciEdExporter: CanvasLegacyOpenSciEdExporter;
   let exportDestination: ExportDestination;
+  let bundleExport: BundleExport
 
   beforeEach(async () => {
     await db.$reset();
@@ -61,7 +62,31 @@ describe('CanvasLegacyOpenSciEdExporter', () => {
       }
     });
 
-    canvasLegacyOpenSciEdExporter = new CanvasLegacyOpenSciEdExporter(exportDestination, ocxBundle, user);
+    bundleExport = await db.bundleExport.create({
+      data: {
+        name: name,
+        metadata: {
+          courseCode: 'test1'
+        },
+        exportDestination: {
+          connect: {
+            id: exportDestination.id
+          }
+        },
+        bundle: {
+          connect: {
+            id: prismaBundle.id
+          }
+        },
+        user: {
+          connect: {
+            id: user.id
+          }
+        }
+      }
+    });
+
+    canvasLegacyOpenSciEdExporter = new CanvasLegacyOpenSciEdExporter(bundleExport);
   });
 
   describe('exportAll', () => {

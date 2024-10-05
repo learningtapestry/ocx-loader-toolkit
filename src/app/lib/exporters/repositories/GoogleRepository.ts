@@ -1,6 +1,6 @@
 import { google, forms_v1 } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
-import { googleApiKey } from "@/config/secrets";
+import { googleApiKey } from "config/secrets";
 
 export default class GoogleRepository {
   auth: GoogleAuth;

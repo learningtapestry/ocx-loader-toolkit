@@ -1,4 +1,10 @@
-import { Prisma, PrismaClient, User, ExportDestination as PrismaExportDestination  } from "@prisma/client"
+import {
+  Prisma,
+  PrismaClient,
+  User,
+  BundleExport,
+  ExportDestination
+} from "@prisma/client"
 import db from "db"
 
 import OcxBundleExport from "src/app/lib/OcxBundleExport";
@@ -188,12 +194,17 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
 
 export async function createExportOcxBundleToCanvas(
   db: PrismaClient,
-  ocxBundle: OcxBundle,
-  exportDestination: PrismaExportDestination,
-  user: User,
-  name: string,
-  code: string
+  bundleExport: BundleExport,
 ) {
+  const name = bundleExport.name;
+  const courseCode = (bundleExport.metadata as any).courseCode as string;
+
+  const exportDestination = await db.exportDestination.findUnique({
+    where: {
+      id: bundleExport.exportDestinationId
+    }
+  })! as ExportDestination;
+
   const exportDestinationService = new ExportDestinationService(exportDestination);
 
   const canvasRepository = new CanvasRepository({
@@ -201,7 +212,7 @@ export async function createExportOcxBundleToCanvas(
     accessToken: await exportDestinationService.getToken()
   });
 
-  const canvasCourse = await canvasRepository.createCourse(name, code);
+  const canvasCourse = await canvasRepository.createCourse(name, courseCode);
 
   const prismaBundleExport = await db.bundleExport.create({
     data: {
@@ -214,12 +225,12 @@ export async function createExportOcxBundleToCanvas(
       },
       bundle: {
         connect: {
-          id: ocxBundle.prismaBundle.id
+          id: bundleExport.bundleId
         }
       },
       user: {
         connect: {
-          id: user.id
+          id: bundleExport.userId
         }
       }
     }

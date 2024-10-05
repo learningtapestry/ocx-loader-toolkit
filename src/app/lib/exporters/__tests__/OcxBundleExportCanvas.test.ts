@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest"
 
 import db from "db"
 
-import { Bundle, ExportDestination, User, Node } from "@prisma/client"
+import { Node, BundleExport } from "@prisma/client"
 
 import OcxBundleExportCanvas, { createExportOcxBundleToCanvas } from "../OcxBundleExportCanvas"
 
@@ -17,33 +17,30 @@ describe('OcxBundleExportCanvas', () => {
   const baseUrl = process.env.CANVAS_BASE_URL as string;
 
   const name = 'Test Course';
+  const courseCode = 'test1';
   const sitemapUrl = 'https://raw.githubusercontent.com/illustrativemathematics/static-ocx/main/build/cms_im-PR1334/ed-node-244422/sitemap.xml';
 
-  let prismaBundle: Bundle;
+  let bundleExport: BundleExport;
   let ocxBundle: OcxBundle;
-  let exportDestination: ExportDestination;
-  let user: User;
 
   beforeEach(async () => {
     await db.$reset();
 
-    user = await db.user.create({
+    const user = await db.user.create({
       data: {
         email: 'test@test.com',
         name: 'Test User',
       }
     });
 
-    prismaBundle = await db.bundle.create({
+    const prismaBundle = await db.bundle.create({
       data: {
         name: name,
         sitemapUrl: sitemapUrl,
       }
     });
 
-    ocxBundle = new OcxBundle(prismaBundle, []);
-
-    exportDestination = await db.exportDestination.create({
+    const exportDestination = await db.exportDestination.create({
       data: {
         name: 'Canvas',
         type: 'canvas',
@@ -53,11 +50,37 @@ describe('OcxBundleExportCanvas', () => {
         }
       }
     });
+
+    bundleExport = await db.bundleExport.create({
+      data: {
+        name: name,
+        metadata: {
+          courseCode
+        },
+        exportDestination: {
+          connect: {
+            id: exportDestination.id
+          }
+        },
+        bundle: {
+          connect: {
+            id: prismaBundle.id
+          }
+        },
+        user: {
+          connect: {
+            id: user.id
+          }
+        }
+      }
+    });
+
+    ocxBundle = new OcxBundle(prismaBundle, []);
   });
 
   describe('exportOcxBundleToCanvas', () => {
     it('should create a course on Canvas and an OcxBundleExport', async () => {
-      const ocxBundleExport = await createExportOcxBundleToCanvas(db, ocxBundle, exportDestination, user, name, 'test1');
+      const ocxBundleExport = await createExportOcxBundleToCanvas(db, bundleExport);
 
       expect(ocxBundleExport).toBeDefined();
     });
@@ -69,7 +92,7 @@ describe('OcxBundleExportCanvas', () => {
     let ocxNode: OcxNode;
 
     beforeEach(async () => {
-      ocxBundleExport = await createExportOcxBundleToCanvas(db, ocxBundle, exportDestination, user, name, 'test1');
+      ocxBundleExport = await createExportOcxBundleToCanvas(db, bundleExport);
 
       prismaNode = await db.node.create({
         data: {
@@ -81,7 +104,7 @@ describe('OcxBundleExportCanvas', () => {
           url: 'https://example.com',
           bundle: {
             connect: {
-              id: prismaBundle.id
+              id: bundleExport.bundleId
             }
           }
         }

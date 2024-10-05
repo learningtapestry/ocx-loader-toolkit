@@ -1,4 +1,4 @@
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 import Course from './Course';
 import CourseNode from './CourseNode';

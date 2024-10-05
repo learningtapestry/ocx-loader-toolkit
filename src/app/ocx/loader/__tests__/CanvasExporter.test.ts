@@ -1,6 +1,6 @@
 import {describe, it, expect} from "vitest";
 
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 import { setupRecorder } from "nock-record";
 const record = setupRecorder();

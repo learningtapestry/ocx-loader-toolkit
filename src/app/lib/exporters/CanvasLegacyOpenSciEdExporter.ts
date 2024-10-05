@@ -2,7 +2,7 @@
 
 import db from "db"
 
-import { ExportDestination, User } from "@prisma/client"
+import { BundleExport, ExportDestination, User } from "@prisma/client"
 
 import OcxBundle from "src/app/lib/OcxBundle"
 
@@ -29,40 +29,56 @@ type GoogleClassroomData = {
 }
 
 export default class CanvasLegacyOpenSciEdExporter {
-  exportDestination: ExportDestination;
-  ocxBundle: OcxBundle;
-  user: User;
+  prismaBundleExport: BundleExport;
 
   ocxBundleExportCanvas?: OcxBundleExportCanvas;
 
-  googleRepository: GoogleRepository;
-
-  // New field to store the course URL
   courseUrl: string | null = null;
 
-  constructor(exportDestination: ExportDestination, ocxBundle: OcxBundle, user: User) {
-    this.exportDestination = exportDestination;
-    this.ocxBundle = ocxBundle;
-    this.user = user;
-    this.googleRepository = new GoogleRepository(ocxBundle.prismaBundle.sourceAccessData);
+  constructor(prismaBundleExport: BundleExport) {
+    this.prismaBundleExport = prismaBundleExport;
   }
 
   async exportAll(): Promise<string | null> {
+    await db.bundleExport.update({
+      where: {
+        id: this.prismaBundleExport.id
+      },
+      data: {
+        state: 'exporting'
+      }
+    });
+
     this.ocxBundleExportCanvas = await createExportOcxBundleToCanvas(
       db,
-      this.ocxBundle,
-      this.exportDestination,
-      this.user,
-      'TODO', // Replace with actual course name
-      'TODO'  // Replace with actual course code
+      this.prismaBundleExport
     );
+
+    const exportDestination = await db.exportDestination.findUnique({
+      where: {
+        id: this.prismaBundleExport.exportDestinationId
+      }
+    })! as ExportDestination;
+
+    const bundle = (await db.bundle.findUnique({
+      where: {
+        id: this.prismaBundleExport.bundleId
+      },
+      include: {
+        nodes: true
+      }
+    }))!;
+
+    const ocxBundle = new OcxBundle(bundle, bundle.nodes);
+
+    const googleRepository = new GoogleRepository(bundle.sourceAccessData);
 
     // Assuming `createExportOcxBundleToCanvas` returns metadata that includes the course ID
     const courseId = this.ocxBundleExportCanvas.bundleExportCanvasId;
-    const baseUrl = this.exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
+    const baseUrl = exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
     this.courseUrl = `${baseUrl}/courses/${courseId}`;
 
-    const courseNode = this.ocxBundle.rootNodes[0];
+    const courseNode = ocxBundle.rootNodes[0];
 
     let canvasModulePosition = 1;
 
@@ -99,7 +115,7 @@ export default class CanvasLegacyOpenSciEdExporter {
                   if (material.object.url.includes('google.com/forms')) {
                     console.log('loading form', material.object.url);
 
-                    const formJson = await this.googleRepository.downloadGoogleForm(material.object.url);
+                    const formJson = await googleRepository.downloadGoogleForm(material.object.url);
 
                     const formConverter = new GoogleFormToQtiConverter(formJson);
 
@@ -123,7 +139,7 @@ export default class CanvasLegacyOpenSciEdExporter {
                   } else {
                     console.log('downloading material', material.object.url);
 
-                    const {blob, extension} = await this.googleRepository.downloadFromGoogleDrive(material.object.url);
+                    const {blob, extension} = await googleRepository.downloadFromGoogleDrive(material.object.url);
 
                     const fileName = `${material.object.title}.${extension}`;
 
@@ -159,7 +175,8 @@ export default class CanvasLegacyOpenSciEdExporter {
           id: this.ocxBundleExportCanvas.prismaBundleExport.id
         },
         data: {
-          exportUrl: this.courseUrl
+          exportUrl: this.courseUrl,
+          state: 'exported'
         }
       }
     );
@@ -167,7 +184,4 @@ export default class CanvasLegacyOpenSciEdExporter {
     // Return the stored course URL
     return this.courseUrl;
   }
-
-
-
 }

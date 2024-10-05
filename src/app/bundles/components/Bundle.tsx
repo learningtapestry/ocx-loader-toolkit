@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Prisma } from "@prisma/client"
+import { BundleExport, Prisma } from "@prisma/client"
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -55,11 +55,11 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
 
   const handleExport = async (exportDestinationId: number) => {
     try {
-      const courseUrl = await exportBundleMutation({
+      const bundleExport : BundleExport = await exportBundleMutation({
         id: bundle.id,
         exportDestinationId: exportDestinationId,
       })
-      alert("Bundle exported successfully to " + courseUrl);
+      alert("Bundle export started: " + bundleExport.id);
       setIsExportDialogOpen(false);
     } catch (error) {
       console.error(error);
@@ -198,9 +198,10 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
         <div>
           <h2>Exports</h2>
           <ul>
-            {bundle.exports.map((exportedBundle) => (
-              <li key={exportedBundle.id}>
-                <a href={exportedBundle.exportUrl || '#'} target="_blank" rel="noreferrer">{exportedBundle.exportUrl || 'no url'}</a>
+            {bundle.exports.map((bundleExport) => (
+              <li key={bundleExport.id}>
+                {bundleExport.state} -
+                <a href={bundleExport.exportUrl || '#'} target="_blank" rel="noreferrer">{bundleExport.exportUrl || 'no url'}</a>
               </li>
             ))}
           </ul>

@@ -144,6 +144,8 @@ model BundleExport {
   nodeExports NodeExport[]
   metadata    Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
 
+  state    String @default("pending") // pending, exporting, completed, failed
+
   exportUrl String?
 }
 
