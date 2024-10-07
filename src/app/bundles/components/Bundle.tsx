@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BundleExport, Prisma } from "@prisma/client"
 
 import Link from "next/link";
@@ -20,8 +20,11 @@ import Node from "./Node";
 import BundleNodeTypes from "./BundleNodeTypes"
 import BundleNodeProperties from "./BundleNodeProperties"
 import ExportDialog from "./ExportDialog"
+import ExportUpdateModal from "./ExportUpdateModal";
 
 import { useUiStore } from "src/app/stores/UiStore"
+
+import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
 export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const setNodeTypes = useUiStore(state => state.setNodeTypes);
@@ -45,7 +48,10 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const toggleSitemapVerb = showSitemap ? "Hide" : "Show";
 
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [selectedExportDestination, setSelectedExportDestination] = useState<number | null>(null);
+  const [isExportUpdateModalOpen, setIsExportUpdateModalOpen] = useState(false);
+  const [exportProgress, setExportProgress] = useState({ status: '', progress: 0, totalActivities: 0 });
+  const [exportUrl, setExportUrl] = useState('');
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   const ocxBundle = new OcxBundle(bundle, bundle.nodes);
 
@@ -53,13 +59,43 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
     setNodeTypes(ocxBundle.allCombinedTypes);
   }, [ocxBundle.allCombinedTypes]);
 
+  useEffect(() => {
+    return () => {
+      eventSourceRef.current?.close();
+    };
+  }, []);
+
   const handleExport = async (exportDestinationId: number) => {
     try {
       const bundleExport : BundleExport = await exportBundleMutation({
         id: bundle.id,
         exportDestinationId: exportDestinationId,
       })
-      alert("Bundle export started: " + bundleExport.id);
+
+      setIsExportUpdateModalOpen(true);
+      setExportProgress({ status: 'exporting', progress: 0, totalActivities: 0 });
+
+      eventSourceRef.current = new EventSource(`/api/bundle-export-updates?bundleExportId=${bundleExport.id}`);
+      eventSourceRef.current.onmessage = (event) => {
+        const data = JSON.parse(event.data) as BundleExportUpdate;
+
+        console.log(data);
+
+        if (data.status === "exported") {
+          setExportProgress(prev => ({ ...prev, status: 'exported' }));
+          setExportUrl(data.exportUrl || '');
+          eventSourceRef.current?.close();
+        } else if (data.status === "failed") {
+          setExportProgress(prev => ({ ...prev, status: 'failed' }));
+          eventSourceRef.current?.close();
+        } else if (data.status === "exporting") {
+          setExportProgress({
+            status: 'exporting',
+            progress: data.progress,
+            totalActivities: data.totalActivities
+          });
+        }
+      }
       setIsExportDialogOpen(false);
     } catch (error) {
       console.error(error);
@@ -212,6 +248,13 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
           isOpen={isExportDialogOpen}
           onClose={() => setIsExportDialogOpen(false)}
           onExport={handleExport}
+        />
+
+        <ExportUpdateModal
+          isOpen={isExportUpdateModalOpen}
+          onClose={() => setIsExportUpdateModalOpen(false)}
+          exportProgress={exportProgress}
+          exportUrl={exportUrl}
         />
       </div>
     </>

@@ -45,7 +45,7 @@ describe ('OcxBundleExport', () => {
           },
           user: {
             connect: {
-              id: user.id,
+              id: user!.id,
             },
           },
         },

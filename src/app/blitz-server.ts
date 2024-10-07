@@ -19,7 +19,13 @@ const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzS
 
 export {api, getBlitzContext, useAuthenticatedBlitzContext, invoke}
 
+// initialize the background job queue
+import { initPgBoss, startWorkers } from "src/app/jobs/exportBundleJob"
 
-// TODO: for production move this to a separate worker
-import { startWorkers } from "src/app/jobs/exportBundleJob"
-startWorkers().then(() => console.log("Export bundle workers started"))
+initPgBoss();
+
+// in production we start the workers in a separate process
+if (process.env.NODE_ENV === "development") {
+  startWorkers().then(() => console.log("Export bundle workers started"))
+}
+

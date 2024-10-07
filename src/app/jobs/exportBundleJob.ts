@@ -7,10 +7,13 @@ export type ExportBundleJobData = {
   bundleExportId: number;
 };
 
-export async function startWorkers() {
+export async function initPgBoss() {
   await boss.start();
-
   await boss.createQueue('export-bundle')
+}
+
+export async function startWorkers() {
+  await initPgBoss();
 
   console.log("Starting workers");
 

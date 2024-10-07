@@ -5,6 +5,8 @@ const boss = new PgBoss({
   // You can add additional pg-boss configuration options here
 });
 
+console.log('boss initialized with DATABASE_URL:', process.env.DATABASE_URL);
+
 export default boss;
 
 

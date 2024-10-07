@@ -214,29 +214,16 @@ export async function createExportOcxBundleToCanvas(
 
   const canvasCourse = await canvasRepository.createCourse(name, courseCode);
 
-  const prismaBundleExport = await db.bundleExport.create({
+  const updatedBundleExport = await db.bundleExport.update({
+    where: {
+      id: bundleExport.id
+    },
     data: {
-      metadata: canvasCourse,
-      name: name,
-      exportDestination: {
-        connect: {
-          id: exportDestination.id
-        }
-      },
-      bundle: {
-        connect: {
-          id: bundleExport.bundleId
-        }
-      },
-      user: {
-        connect: {
-          id: bundleExport.userId
-        }
-      }
+      metadata: canvasCourse
     }
   });
 
-  const ocxBundleExport = new OcxBundleExportCanvas(prismaBundleExport);
+  const ocxBundleExport = new OcxBundleExportCanvas(updatedBundleExport);
 
   await ocxBundleExport.initPromise;
 

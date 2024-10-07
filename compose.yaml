@@ -14,9 +14,28 @@ services:
       - "3015:3000"
     environment:
       DATABASE_URL: postgres://user:password@db:5432/ocx-loader
+      REDIS_URL: redis://redis:6379
       SESSION_SECRET_KEY: "abcdedfghijklmnopqrstuvwxyz0123456789"
+      NODE_ENV: production
     depends_on:
       - db
+      - redis
+
+  worker:
+    build: .
+    command: yarn worker
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/ocx-loader
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
 
 volumes:
   db-data:

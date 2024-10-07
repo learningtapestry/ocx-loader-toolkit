@@ -13,6 +13,8 @@ import { join } from 'path';
 import GoogleFormToQtiConverter from "src/app/lib/qti/GoogleFormToQtiConverter"
 import GoogleRepository from "src/app/lib/exporters/repositories/GoogleRepository"
 
+import { publishBundleExportUpdate } from "@/src/app/jobs/BundleExportUpdate"
+
 type GoogleClassroomMaterial = {
   version: string;
   object: {
@@ -81,6 +83,20 @@ export default class CanvasLegacyOpenSciEdExporter {
     const courseNode = ocxBundle.rootNodes[0];
 
     let canvasModulePosition = 1;
+
+    const totalActivityNodes = courseNode.children.reduce((acc, unitNode) => {
+      return acc + unitNode.children.reduce((acc2, lessonNode) => {
+        return acc2 + lessonNode.children.length;
+      }, 0);
+    }, 0);
+
+    let activityNodesExported = 0;
+
+    publishBundleExportUpdate(this.prismaBundleExport.id, {
+      status: 'exporting',
+      progress: activityNodesExported,
+      totalActivities: totalActivityNodes
+    });
 
     // iterate on the oer:Unit nodes
     for (const unitNode of courseNode.children) {
@@ -165,6 +181,14 @@ export default class CanvasLegacyOpenSciEdExporter {
               activityNode, attachments, links, moduleExport.canvasId, canvasModuleItemPosition++
             );
           }
+
+          activityNodesExported++;
+
+          publishBundleExportUpdate(this.prismaBundleExport.id, {
+            status: 'exporting',
+            progress: activityNodesExported,
+            totalActivities: totalActivityNodes
+          });
         }
       }
     }
@@ -180,6 +204,15 @@ export default class CanvasLegacyOpenSciEdExporter {
         }
       }
     );
+
+    publishBundleExportUpdate(this.prismaBundleExport.id, {
+      status: 'exported',
+      progress: totalActivityNodes,
+      totalActivities: totalActivityNodes,
+      exportUrl: this.courseUrl
+    });
+
+    console.log(`course exported - URL: ${this.courseUrl}`);
 
     // Return the stored course URL
     return this.courseUrl;
