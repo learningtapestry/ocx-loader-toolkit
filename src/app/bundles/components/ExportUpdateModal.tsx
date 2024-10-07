@@ -68,7 +68,7 @@ const ExportUpdateModal: React.FC<ExportUpdateModalProps> = ({
               href={exportUrl}
               target="_blank"
               rel="noreferrer"
-              style={{ display: "block", marginBottom: "1rem" }}
+              style={{ display: "block", marginBottom: "1rem", color: "blue" }}
             >
               View Export
             </a>
