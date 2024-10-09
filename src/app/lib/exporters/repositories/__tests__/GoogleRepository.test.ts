@@ -2,6 +2,8 @@ import {describe, it, expect} from "vitest";
 
 import GoogleRepository from "../GoogleRepository";
 
+// import { googleApiKeyProduction } from "config/secrets";
+
 describe('GoogleRepository', () => {
   describe('extractFileId', () => {
     const googleRepository = new GoogleRepository();
@@ -25,4 +27,16 @@ describe('GoogleRepository', () => {
       expect(() => googleRepository.extractFileId('invalid-url')).toThrowError('Could not extract file ID from URL: invalid-url');
     });
   });
+
+  // this test is too slow to run it all the time
+  // describe('downloadFromGoogleDrive', () => {
+  //   const googleRepository = new GoogleRepository(googleApiKeyProduction);
+  //
+  //   it('should download a large presentation', async () => {
+  //     const file = await googleRepository.downloadFromGoogleDrive('https://docs.google.com/presentation/d/1IfJZ-d8Wsp_ghs6UZuZ0YCkWeX-QRoQ6xKuMG7AP2A4/edit?usp=drive_link');
+  //
+  //     expect(file.blob).toBeDefined();
+  //     expect(file.extension).toEqual('pptx');
+  //   });
+  // }, 30000);
 });

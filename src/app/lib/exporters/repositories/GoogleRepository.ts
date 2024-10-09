@@ -14,7 +14,6 @@ export default class GoogleRepository {
     });
   }
 
-
   extractFileId(originalUrl: string): string {
     const match = originalUrl.match(/\/d\/([^/?]+)|open\?id=([^/?&]+)/);
     if (match) {
@@ -59,20 +58,12 @@ export default class GoogleRepository {
       const fileName = metadataResponse.data.name;
       const mimeType = metadataResponse.data.mimeType;
 
-      if (mimeType === 'application/vnd.google-apps.document') {
-        const exportResponse = await drive.files.export(
-          { fileId, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
-          { responseType: 'arraybuffer' }
-        );
-
-        const arrayBuffer = exportResponse.data;
-        const blob = new Blob([arrayBuffer as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-
-        return {
-          blob,
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          extension: 'docx'
-        };
+      if (
+        mimeType === 'application/vnd.google-apps.document' ||
+        mimeType === 'application/vnd.google-apps.presentation' ||
+        mimeType === 'application/vnd.google-apps.spreadsheet'
+      ) {
+        return this.downloadWithExportLink(originalUrl);
       } else {
         const contentResponse = await drive.files.get(
           { fileId, alt: 'media' },
@@ -90,6 +81,77 @@ export default class GoogleRepository {
       }
     } catch (e) {
       console.error('Error downloading file', e);
+      throw e;
+    }
+  }
+
+  /**
+   * Downloads a Google Drive file using its export link.
+   * @param originalUrl The original Google Drive URL of the file.
+   * @returns The downloaded file content along with its MIME type and extension.
+   * @throws Will throw an error if the file cannot be downloaded.
+   */
+  async downloadWithExportLink(originalUrl: string): Promise<{ blob: Blob; mimeType: string; extension: string }> {
+    const fileId = this.extractFileId(originalUrl);
+    const drive = google.drive({
+      version: 'v3',
+      auth: this.auth,
+    });
+
+    try {
+      // Fetch the file metadata, including export links
+      const fileMetadata = await drive.files.get({
+        fileId,
+        fields: 'name, mimeType, exportLinks',
+      });
+
+      const mimeType = fileMetadata.data.mimeType;
+      const name = fileMetadata.data.name;
+      let exportMimeType: string;
+      let extension: string;
+
+      console.log(`downloadWithExportLink ${name} with MIME type ${mimeType}`);
+
+      // Determine the export MIME type and file extension based on the original MIME type
+      switch (mimeType) {
+        case 'application/vnd.google-apps.document':
+          exportMimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          extension = 'docx';
+          break;
+        case 'application/vnd.google-apps.presentation':
+          exportMimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+          extension = 'pptx';
+          break;
+        case 'application/vnd.google-apps.spreadsheet':
+          exportMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          extension = 'xlsx';
+          break;
+        default:
+          exportMimeType = 'application/pdf';
+          extension = 'pdf';
+      }
+
+      const exportLink = fileMetadata.data.exportLinks![exportMimeType];
+
+      if (!exportLink) {
+        throw new Error(`Export link not found for MIME type ${exportMimeType}`);
+      }
+
+      const contentResponse = await fetch(exportLink!, {
+        headers: {
+          Authorization: `Bearer ${await this.auth.getAccessToken()}`,
+        }
+      });
+
+      const blob = await contentResponse.blob();
+
+      return {
+        blob,
+        mimeType: exportMimeType,
+        extension,
+      };
+    } catch (e) {
+      console.error('Error downloading with export link:', e);
       throw e;
     }
   }
