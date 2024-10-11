@@ -7,7 +7,9 @@ import {
 } from "@prisma/client"
 import db from "db"
 
-import OcxBundleExport from "src/app/lib/OcxBundleExport";
+import prettyBytes from "pretty-bytes"
+
+import OcxBundleExport from "src/app/lib/OcxBundleExport"
 
 import OcxNode from "src/app/lib/OcxNode"
 import OcxNodeExport from "src/app/lib/OcxNodeExport"
@@ -50,7 +52,7 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
     return this.createOcxNodeExport(ocxNode, canvasModuleItem);
   }
 
-  async pollProgress(progressUrl: string, interval = 200) {
+  async pollProgressUntilFinished(progressUrl: string, interval = 200) {
     return new Promise((resolve, reject) => {
       const poller = setInterval(async () => {
         try {
@@ -72,6 +74,11 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
   }
 
   async exportOcxNodeQtiFileToQuiz(ocxNode: OcxNode, qtiFile: Blob, moduleId: number, position: number) {
+    console.log(
+      `[${this.prismaBundleExport.id}] Exporting QTI file to Canvas quiz:`,
+      ocxNode.ocxName,
+    )
+
     // create the content_migration on Canvas for this QTI quiz with type qti_converter
     const contentMigration = await this.canvasRepository!.createContentMigration(
       this.bundleExportCanvasId,
@@ -94,7 +101,7 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
 
     const quizName = await (new QtiZip(qtiFile)).getQuizTitle();
 
-    await this.pollProgress(progressUrl);
+    await this.pollProgressUntilFinished(progressUrl);
 
     const quiz = await this.canvasRepository!.getQuizByName(this.bundleExportCanvasId, quizName);
 
@@ -115,10 +122,23 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
   }
 
   async exportOcxNodeToAssignment(ocxNode: OcxNode, attachments: AttachmentData[] = [], links: LinkData[] = [], moduleId?: number, position?: number) {
+    console.log(`[${this.prismaBundleExport.id}] Exporting assignment:`, ocxNode.ocxName);
+
     let instructions = ocxNode.metadata.instructions as string;
 
     for (const { blob, name } of attachments) {
+      // // only for faster testing
+      // if (blob.size > 2 * 1024 * 1024) {
+      //   console.log(`[${this.prismaBundleExport.id}] Skipping attachment: ${name} / ${prettyBytes(blob.size)}`);
+      //
+      //   continue
+      // }
+
+      console.log(
+        `[${this.prismaBundleExport.id}] Uploading attachment: ${name} / ${prettyBytes(blob.size)}`,
+      );
       const uploadFileData = await this.canvasRepository!.uploadFileToCourse(this.bundleExportCanvasId, blob, name);
+      console.log(`[${this.prismaBundleExport.id}] Uploaded: ${name}`);
 
       const filePath = `/courses/${this.bundleExportCanvasId}/files/${uploadFileData.id}`;
 
@@ -158,6 +178,8 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
         1
       );
     }
+
+    console.log(`[${this.prismaBundleExport.id}] Assignment created:`, ocxNode.ocxName);
 
     return this.createOcxNodeExport(ocxNode, canvasAssignment);
   }

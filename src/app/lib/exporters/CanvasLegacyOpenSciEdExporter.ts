@@ -42,6 +42,8 @@ export default class CanvasLegacyOpenSciEdExporter {
   }
 
   async exportAll(): Promise<string | null> {
+    console.log(`[${this.prismaBundleExport.id}] exportAll started`);
+
     await db.bundleExport.update({
       where: {
         id: this.prismaBundleExport.id
@@ -129,7 +131,7 @@ export default class CanvasLegacyOpenSciEdExporter {
               if (material.object.url) {
                 if (material.object.type === 'material') {
                   if (material.object.url.includes('google.com/forms')) {
-                    console.log('loading form', material.object.url);
+                    console.log(`[${this.prismaBundleExport.id}] loading form`, material.object.url);
 
                     const formJson = await googleRepository.downloadGoogleForm(material.object.url);
 
@@ -153,7 +155,7 @@ export default class CanvasLegacyOpenSciEdExporter {
                     await this.ocxBundleExportCanvas.exportOcxNodeQtiFileToQuiz(activityNode, qtiFileBlob, moduleExport.canvasId, canvasModuleItemPosition++);
                     quizCreated = true;
                   } else {
-                    console.log('downloading material', material.object.url);
+                    console.log(`[${this.prismaBundleExport.id}] downloading material`, material.object.url);
 
                     const {blob, extension} = await googleRepository.downloadFromGoogleDrive(material.object.url);
 
@@ -212,7 +214,7 @@ export default class CanvasLegacyOpenSciEdExporter {
       exportUrl: this.courseUrl
     });
 
-    console.log(`course exported - URL: ${this.courseUrl}`);
+    console.log(`[${this.prismaBundleExport.id}] course exported - URL: ${this.courseUrl}`);
 
     // Return the stored course URL
     return this.courseUrl;

@@ -32,7 +32,14 @@ export async function startWorkers() {
     if (bundleExport.exportDestination.type === "canvas" || bundleExport.exportDestination.type === "canvas-oauth2") {
       const exporter = new CanvasLegacyOpenSciEdExporter(bundleExport);
 
-      await exporter.exportAll();
+      try {
+        await exporter.exportAll();
+      } catch (e) {
+        console.error(`[${bundleExport.id}] Error exporting bundle:`, e);
+
+        throw e;
+      }
+
     } else {
       throw new Error("Export destination not supported");
     }

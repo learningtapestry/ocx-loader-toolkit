@@ -39,10 +39,10 @@ export default class CanvasRepository {
   }
 
   async createModuleItem(course_id: number, module_id: number,
-                         title: string,
-                         type: ModuleItemType,
-                         content_id: number | null,
-                         position: number,
+    title: string,
+    type: ModuleItemType,
+    content_id: number | null,
+    position: number,
                          indent = 0): Promise<Prisma.JsonObject> {
     const { accessToken, baseUrl } = this.canvasConfig;
 
