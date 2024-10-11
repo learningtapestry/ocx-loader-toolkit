@@ -35,6 +35,7 @@
     "@types/ioredis": "5.0.0",
     "@types/json-schema": "7.0.15",
     "@types/jszip": "3.4.1",
+    "@types/node-fetch": "2.6.11",
     "@types/pretty-bytes": "5.2.0",
     "@types/yauzl": "2.10.3",
     "@uiw/react-json-view": "2.0.0-alpha.27",
