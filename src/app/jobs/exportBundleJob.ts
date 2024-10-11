@@ -2,6 +2,7 @@ import db from "db";
 import CanvasLegacyOpenSciEdExporter from "src/app/lib/exporters/CanvasLegacyOpenSciEdExporter";
 
 import boss from "./pgBoss";
+import airbrake from "@/config/airbrake"
 
 export type ExportBundleJobData = {
   bundleExportId: number;
@@ -36,6 +37,8 @@ export async function startWorkers() {
         await exporter.exportAll();
       } catch (e) {
         console.error(`[${bundleExport.id}] Error exporting bundle:`, e);
+
+        await airbrake?.notify(e);
 
         throw e;
       }

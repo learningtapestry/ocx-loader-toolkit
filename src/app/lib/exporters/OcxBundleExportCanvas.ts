@@ -6,6 +6,7 @@ import {
   ExportDestination
 } from "@prisma/client"
 import db from "db"
+import airbrake from "@/config/airbrake"
 
 import prettyBytes from "pretty-bytes"
 
@@ -66,6 +67,9 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
           }
         } catch (error) {
           console.error('Error polling progress:', error);
+
+          airbrake?.notify(error);
+
           clearInterval(poller);
           reject(error);
         }

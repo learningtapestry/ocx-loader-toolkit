@@ -1,4 +1,6 @@
 import db from "db";
+import airbrake from "@/config/airbrake";
+
 import { createSession } from "better-sse";
 import { api } from "src/app/blitz-server";
 import { subscribeToBundleExportUpdates } from "src/app/jobs/BundleExportUpdate";
@@ -39,6 +41,7 @@ export default api(async (req, res, ctx) => {
 
   } catch (error) {
     console.error("Error in SSE handler:", error);
+    airbrake?.notify(error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

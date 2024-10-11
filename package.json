@@ -25,6 +25,7 @@
     ]
   },
   "dependencies": {
+    "@airbrake/node": "2.1.8",
     "@blitzjs/auth": "2.1.1",
     "@blitzjs/next": "2.1.1",
     "@blitzjs/rpc": "2.1.1",
