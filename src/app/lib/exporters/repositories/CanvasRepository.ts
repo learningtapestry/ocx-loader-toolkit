@@ -98,9 +98,21 @@ export default class CanvasRepository {
   async getQuizByName(course_id: number, quizName: string): Promise<Prisma.JsonObject> {
     const { accessToken, baseUrl } = this.canvasConfig;
 
-    const quizzes = await callCanvas(baseUrl, accessToken, `courses/${course_id}/quizzes`, 'GET');
+    // the order is from the first created to the last, so in case of duplicated name start from the most recent
+    const quizzes = (await callCanvas(baseUrl, accessToken, `courses/${course_id}/quizzes`, 'GET')).reverse();
 
-    return quizzes.find((quiz: Prisma.JsonObject) => quiz.title === quizName);
+    let quiz = quizzes.find((quiz: Prisma.JsonObject) => quiz.title === quizName);
+
+    if (!quiz) {
+      console.log(`[] Quiz with name ${quizName} not found, using the last quiz`);
+      console.log(quizzes.map((quiz: Prisma.JsonObject) => [quiz.title, quiz.id]));
+
+      // TODO can there be pagination here?
+      // the last one in the original array should be the right one
+      quiz = quizzes[0];
+    }
+
+    return quiz
   }
 
   async updateQuiz(course_id: number, quiz_id: number, quizData: Prisma.JsonObject): Promise<Prisma.JsonObject> {
