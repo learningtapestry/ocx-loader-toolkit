@@ -43,7 +43,7 @@ export default async function callCanvas(
     });
 
     if (!response.ok) {
-      throw new HttpError(`url: ${url}`, response.statusText, path, response.status);
+      throw new HttpError(`${method} url: ${url}`, response.statusText, path, response.status);
     }
 
     return response;
@@ -60,11 +60,13 @@ export default async function callCanvas(
 
       await new Promise(r => setTimeout(r, 1000));
 
+      // if this fails again, the exception will propagate
       const response = await fetchWithAuthorization();
 
       return await response.json();
+    } else {
+      throw e;
     }
-    throw e;
   }
 }
 

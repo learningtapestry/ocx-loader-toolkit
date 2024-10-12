@@ -104,7 +104,7 @@ export default class CanvasRepository {
     let quiz = quizzes.find((quiz: Prisma.JsonObject) => quiz.title === quizName);
 
     if (!quiz) {
-      console.log(`[] Quiz with name ${quizName} not found, using the last quiz`);
+      console.log(`Quiz with name ${quizName} not found, using the last quiz`);
       console.log(quizzes.map((quiz: Prisma.JsonObject) => [quiz.title, quiz.id]));
 
       // TODO can there be pagination here?

@@ -121,6 +121,11 @@ export default class CanvasLegacyOpenSciEdExporter {
           activityNode.metadata.name = googleClassroomData?.postTitle?.en;
           activityNode.metadata.instructions = googleClassroomData?.postInstructions?.en;
 
+          console.log(`[${this.prismaBundleExport.id}] -- Start exporting activity`, activityNode.metadata.name);
+
+          // // only test the one which is not working
+          // if (!activityNode.metadata.name.includes('Packets')) continue;
+
           const attachments: AttachmentData[] = [];
           const links: LinkData[] = [];
 
