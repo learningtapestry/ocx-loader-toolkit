@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client"
-import airbrake from "@/config/airbrake"
+import airbrake from "config/airbrake"
 
 export class HttpError extends Error {
   description: string = '';

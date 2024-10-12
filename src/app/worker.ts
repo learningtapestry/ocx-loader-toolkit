@@ -1,4 +1,4 @@
-import airbrake from "@/config/airbrake"
+import airbrake from "config/airbrake"
 
 import { startWorkers } from "./jobs/exportBundleJob";
 

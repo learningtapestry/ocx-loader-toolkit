@@ -6,7 +6,7 @@ import {
   ExportDestination
 } from "@prisma/client"
 import db from "db"
-import airbrake from "@/config/airbrake"
+import airbrake from "config/airbrake"
 
 import prettyBytes from "pretty-bytes"
 

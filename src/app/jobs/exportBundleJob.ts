@@ -2,7 +2,7 @@ import db from "db";
 import CanvasLegacyOpenSciEdExporter from "src/app/lib/exporters/CanvasLegacyOpenSciEdExporter";
 
 import boss from "./pgBoss";
-import airbrake from "@/config/airbrake"
+import airbrake from "config/airbrake"
 
 export type ExportBundleJobData = {
   bundleExportId: number;

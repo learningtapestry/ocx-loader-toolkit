@@ -13,7 +13,7 @@ import { join } from 'path';
 import GoogleFormToQtiConverter from "src/app/lib/qti/GoogleFormToQtiConverter"
 import GoogleRepository from "src/app/lib/exporters/repositories/GoogleRepository"
 
-import { publishBundleExportUpdate } from "@/src/app/jobs/BundleExportUpdate"
+import { publishBundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
 type GoogleClassroomMaterial = {
   version: string;

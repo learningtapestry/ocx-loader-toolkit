@@ -1,5 +1,5 @@
 import db from "db";
-import airbrake from "@/config/airbrake";
+import airbrake from "config/airbrake";
 
 import { createSession } from "better-sse";
 import { api } from "src/app/blitz-server";

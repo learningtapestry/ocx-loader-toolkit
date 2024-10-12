@@ -1,11 +1,10 @@
 import { withBlitz } from "@blitzjs/next";
 import dotenv from 'dotenv';
-import { NextConfig } from 'next';
 
 // Load environment variables from .env file
 dotenv.config();
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   experimental: {
     typedRoutes: true,
   },

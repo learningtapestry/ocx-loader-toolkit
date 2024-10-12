@@ -3,7 +3,7 @@ import { getSession } from "@blitzjs/auth"
 
 import db from "db";
 
-import { StateEncoder } from "@/src/app/export-destinations/mutations/generateCanvasOAuth2ExportDestinationUrl"
+import { StateEncoder } from "src/app/export-destinations/mutations/generateCanvasOAuth2ExportDestinationUrl"
 
 export default api(async (req, res) => {
   const { code, state } = req.query
