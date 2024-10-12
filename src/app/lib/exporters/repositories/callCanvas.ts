@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client"
+import airbrake from "@/config/airbrake"
 
 export class HttpError extends Error {
   description: string = '';
@@ -31,7 +32,7 @@ export default async function callCanvas(
     ? path
     : new URL(`api/v1/${path}?per_page=100`, baseUrl);
 
-  try {
+  const fetchWithAuthorization = async () => {
     const response = await fetch(url, {
       body: method === 'GET' ? undefined : JSON.stringify(body),
       method: method,
@@ -42,11 +43,27 @@ export default async function callCanvas(
     });
 
     if (!response.ok) {
-      throw new HttpError('', response.statusText, path, response.status);
+      throw new HttpError(`url: ${url}`, response.statusText, path, response.status);
     }
+
+    return response;
+  }
+
+  try {
+    const response = await fetchWithAuthorization();
 
     return await response.json();
   } catch (e: any) {
+    if (e instanceof HttpError) {
+      console.log("Retrying once due to HttpError:", e);
+      airbrake?.notify(e);
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      const response = await fetchWithAuthorization();
+
+      return await response.json();
+    }
     throw e;
   }
 }
