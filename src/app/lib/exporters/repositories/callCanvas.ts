@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client"
+import { CanvasInstance, Prisma } from "@prisma/client"
 import airbrake from "config/airbrake"
 
 export class HttpError extends Error {
@@ -110,3 +110,18 @@ export async function finalizeCanvasFileUpload(fileUploadParams: CanvasFileUploa
   });
 }
 
+export async function getOAuth2Token(canvasInstance: CanvasInstance, code: string, baseUrl: string) {
+  return fetch(`${canvasInstance.baseUrl}/login/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      grant_type: 'authorization_code',
+      client_id: canvasInstance.clientId,
+      client_secret: canvasInstance.clientSecret,
+      redirect_uri: `${baseUrl}/api/canvas-oauth-callback`,
+      code: code,
+    }),
+  });
+}

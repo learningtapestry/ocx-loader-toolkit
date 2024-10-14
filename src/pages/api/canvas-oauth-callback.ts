@@ -4,6 +4,7 @@ import { getSession } from "@blitzjs/auth"
 import db from "db";
 
 import { StateEncoder } from "src/app/export-destinations/mutations/generateCanvasOAuth2ExportDestinationUrl"
+import { getOAuth2Token } from "@/src/app/lib/exporters/repositories/callCanvas"
 
 export default api(async (req, res) => {
   const { code, state } = req.query
@@ -30,19 +31,7 @@ export default api(async (req, res) => {
   }
 
   // get the Canvas access token
-  const response = await fetch(`${canvasInstance.baseUrl}/login/oauth2/token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      grant_type: "authorization_code",
-      client_id: canvasInstance.clientId,
-      client_secret: canvasInstance.clientSecret,
-      redirect_uri: `${baseUrl}/api/canvas-oauth-callback`,
-      code,
-    }),
-  })
+  const response = await getOAuth2Token(canvasInstance, code, baseUrl)
 
   if (!response.ok) {
     res.status(400).json({ error: "Failed to get Canvas access token" })
