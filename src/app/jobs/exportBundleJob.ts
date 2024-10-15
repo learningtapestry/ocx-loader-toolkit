@@ -1,5 +1,5 @@
 import db from "db";
-import CanvasLegacyOpenSciEdExporter from "src/app/lib/exporters/CanvasLegacyOpenSciEdExporter";
+import CanvasLegacyOpenSciEdExporter from "src/lib/exporters/CanvasLegacyOpenSciEdExporter";
 
 import boss from "./pgBoss";
 import airbrake from "config/airbrake"

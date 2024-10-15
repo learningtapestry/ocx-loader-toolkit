@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/supplemental_material.schema.json",
+  "title": "SupplementalMaterial",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json" }
+  ],
+  "properties": {
+    "typicalAgeRange": { "type": "string" },
+    "ocx:partType": { "type": "string" }
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import OcxBundle from "src/app/lib/OcxBundle";
+import OcxBundle from "src/lib/OcxBundle";
 
 import ColorDotWithNumber from "src/app/components/ColorDotWithNumber"
 

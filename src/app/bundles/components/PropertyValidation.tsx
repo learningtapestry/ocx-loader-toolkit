@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { PropertyValidationResult } from "src/app/lib/OcxNode"
+import { PropertyValidationResult } from "src/lib/OcxNode"
 
 import JsonView from '@uiw/react-json-view';
 

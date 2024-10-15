@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import OcxNode from "src/app/lib/OcxNode"
+import OcxNode from "src/lib/OcxNode"
 
 import XMLViewer from 'react-xml-viewer';
 import JsonView from '@uiw/react-json-view';

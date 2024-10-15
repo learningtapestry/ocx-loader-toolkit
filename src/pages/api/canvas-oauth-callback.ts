@@ -4,7 +4,7 @@ import { getSession } from "@blitzjs/auth"
 import db from "db";
 
 import { StateEncoder } from "src/app/export-destinations/mutations/generateCanvasOAuth2ExportDestinationUrl"
-import { getOAuth2Token } from "@/src/app/lib/exporters/repositories/callCanvas"
+import { getOAuth2Token } from "src/lib/exporters/repositories/callCanvas"
 
 export default api(async (req, res) => {
   const { code, state } = req.query

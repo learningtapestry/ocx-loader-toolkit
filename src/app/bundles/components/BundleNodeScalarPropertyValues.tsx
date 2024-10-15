@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import DeepArrayMap from "src/app/lib/DeepArrayMap"
-import { PropertyValidationResult } from "src/app/lib/OcxNode"
+import DeepArrayMap from "src/lib/DeepArrayMap"
+import { PropertyValidationResult } from "src/lib/OcxNode"
 
 import PropertyHighlightToggle from "src/app/bundles/components/PropertyHighlightToggle"
 import PropertyValidation from "src/app/bundles/components/PropertyValidation"

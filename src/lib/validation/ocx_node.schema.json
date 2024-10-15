@@ -1,0 +1,288 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json",
+  "title": "Ocx Node",
+  "type": "object",
+  "properties": {
+    "@id": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/NodeId" },
+    "@type": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/NodeType" },
+    "@context": { "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string", "format": "uri"},
+          { "type": "object" }
+        ]
+      }
+    },
+    "name": { "type": "string" },
+    "url": { "type": "string", "format": "uri" },
+    "alternateName": { "type": "string" },
+    "description": { "type": "string" },
+    "about": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Thing" },
+
+    "hasPart": { "type": "array",
+      "items": {
+        "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/NodeReference"
+      }
+    },
+    "isPartOf": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/NodeReference" },
+
+    "accessibilitySummary": { "type": "string" },
+    "audience": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/EducationalAudience" },
+    "author": {
+      "oneOf": [
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Person" }
+      ]
+    },
+    "citation": {
+      "oneOf": [
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/CreativeWork" },
+        { "type": "string" }
+      ]
+    },
+    "contributor": {
+      "oneOf": [
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Person" }
+      ]
+    },
+    "dateCreated": { "type": "string", "format": "date" },
+    "dateModified": { "type": "string", "format": "date" },
+    "educationalAlignment": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/AlignmentObject" },
+    "inLanguage": {
+      "oneOf": [
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Language" },
+        { "type": "string" }
+      ]
+    },
+    "isBasedOn": {
+      "oneOf": [
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/CreativeWork" },
+        { "type": "string", "format": "uri" }
+      ]
+    },
+    "keywords": { "type": "string" },
+    "learningResourceType": { "type": "string" },
+    "provider": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+    "publisher": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Organization" },
+    "timeRequired": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" }
+      ]
+    },
+    "typicalAgeRange": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "forTopic": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Topic" },
+    "cc:license": {
+      "oneOf": [
+        { "type": "string", "format": "uri" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/License" }
+      ]
+    },
+    "cc:morePermissions": { "type": "string" },
+    "cc:attributionName": { "type": "string" },
+    "cc:attributionURL": { "type": "string", "format": "uri" },
+    "cc:useGuidelines": { "type": "string" }
+  },
+  "required": ["@id", "name"],
+  "definitions": {
+    "NodeId": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ]
+        }
+      ]
+    },
+    "NodeType": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "NodeReference": {
+      "type": "object",
+      "properties": {
+        "@id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "@type": {
+          "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/NodeType"
+        }
+      },
+      "required": [
+        "@id",
+        "name",
+        "@type"
+      ]
+    },
+    "Thing": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Thing",
+            "https://schema.org/Thing",
+            "Thing"
+          ]
+        }
+      }
+    },
+    "EducationalAudience": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/EducationalAudience",
+            "https://schema.org/EducationalAudience",
+            "EducationalAudience"
+          ]
+        }
+      }
+    },
+    "Organization": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Organization",
+            "https://schema.org/Organization",
+            "Organization"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Person": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Person",
+            "https://schema.org/Person",
+            "Person"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "CreativeWork": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/CreativeWork",
+            "https://schema.org/CreativeWork",
+            "CreativeWork"
+          ]
+        }
+      }
+    },
+    "AlignmentObject": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/AlignmentObject",
+            "https://schema.org/AlignmentObject",
+            "AlignmentObject"
+          ]
+        }
+      }
+    },
+    "MediaObject": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/MediaObject",
+            "https://schema.org/MediaObject",
+            "MediaObject"
+          ]
+        }
+      }
+    },
+    "Language": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "enum": [
+            "http://schema.org/Language",
+            "https://schema.org/Language",
+            "Language"
+          ]
+        }
+      }
+    },
+    "oer:Assessment": {
+      "type": "object"
+    },
+    "oer:GradeFormat": {
+      "type": "object"
+    },
+    "asn:Rubric": {
+      "type": "object"
+    },
+    "ocx:AssociatedMaterial": {
+      "type": "object"
+    },
+    "oer:Course": {
+      "type": "object"
+    },
+    "Task": {
+      "type": "object"
+    },
+    "LearningObjective": {
+      "type": "object"
+    },
+    "Topic": {
+      "type": "object"
+    },
+    "License": {
+      "type": "object"
+    },
+    "DefinedTerm": {
+      "type": "object"
+    }
+  }
+}

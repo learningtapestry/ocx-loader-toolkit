@@ -2,7 +2,7 @@ import {NotFoundError} from "blitz";
 import { resolver } from "@blitzjs/rpc";
 import db from "db";
 import { SetNodeParentSchema } from "../schemas"
-import OcxBundle from "src/app/lib/OcxBundle"
+import OcxBundle from "src/lib/OcxBundle"
 
 export default resolver.pipe(
   resolver.zod(SetNodeParentSchema),

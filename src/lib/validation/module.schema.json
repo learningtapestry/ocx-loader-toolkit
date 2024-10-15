@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/module.schema.json",
+  "title": "Module",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json" }
+  ],
+  "properties": {
+    "courseCode": { "type": "string" },
+    "coursePrerequisites": {
+      "oneOf": [
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/AlignmentObject" },
+        { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/oer:Course" },
+        { "type": "string" }
+      ]
+    },
+    "learningResourceType": { "type": "string" },
+    "oer:hasLearningObjective": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/LearningObjective" },
+    "oer:doTask": { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx_node.schema.json#/definitions/Task" }
+  }
+}

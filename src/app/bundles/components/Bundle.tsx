@@ -14,7 +14,7 @@ import importBundleFromZipFile from "../mutations/importBundleFromZipFile";
 import importLegacyOSEUnit from "../mutations/importLegacyOSEUnit";
 import getBundle from "../queries/getBundle";
 
-import OcxBundle from "src/app/lib/OcxBundle";
+import OcxBundle from "src/lib/OcxBundle";
 
 import Node from "./Node";
 import BundleNodeTypes from "./BundleNodeTypes"
