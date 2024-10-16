@@ -1,28 +1,19 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import { BundleExport, Prisma } from "@prisma/client"
 
 import { useRouter } from "next/navigation";
 
-import { setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
+import { useMutation, useQuery } from "@blitzjs/rpc"
 
-import exportBundle from "../mutations/exportBundle"
+import getExportRedirectUrl from "../mutations/getExportRedirectUrl"
 import getBundle from "../queries/getPublicBundle";
-
-import OcxBundle from "src/lib/OcxBundle";
 
 import ExportUpdateModal from "./ExportUpdateModal";
 
-import { useUiStore } from "src/app/stores/UiStore"
-
-import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
-
 export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
-  const setNodeTypes = useUiStore(state => state.setNodeTypes);
-
   const router = useRouter();
-  const [exportBundleMutation] = useMutation(exportBundle);
-  const [bundle, { refetch }] = useQuery(
+  const [getExportRedirectUrlMutation] = useMutation(getExportRedirectUrl);
+  const [bundle] = useQuery(
     getBundle,
     { id: bundleId },
     {
@@ -36,49 +27,58 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
   const [exportUrl, setExportUrl] = useState('');
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  const ocxBundle = new OcxBundle(bundle, bundle.nodes);
-
-  useEffect(() => {
-    setNodeTypes(ocxBundle.allCombinedTypes);
-  }, [ocxBundle.allCombinedTypes]);
-
   useEffect(() => {
     return () => {
       eventSourceRef.current?.close();
     };
   }, []);
 
-  const handleExport = async (exportDestinationId: number) => {
+  const [destinationUrl, setDestinationUrl] = useState('');
+
+  const handleExport = async () => {
+    if (!destinationUrl) {
+      alert("Please enter a destination canvas URL");
+      return;
+    }
+
     try {
-      const bundleExport : BundleExport = await exportBundleMutation({
+      const {redirectUrl, error} = await getExportRedirectUrlMutation({
         id: bundle.id,
-        exportDestinationId: exportDestinationId,
-      })
+        canvasUrl: destinationUrl,
+        localUrlBase: window.location.origin
+      });
 
-      setIsExportUpdateModalOpen(true);
-      setExportProgress({ status: 'exporting', progress: 0, totalActivities: 0 });
-
-      eventSourceRef.current = new EventSource(`/api/bundle-export-updates?bundleExportId=${bundleExport.id}`);
-      eventSourceRef.current.onmessage = (event) => {
-        const data = JSON.parse(event.data) as BundleExportUpdate;
-
-        console.log(data);
-
-        if (data.status === "exported") {
-          setExportProgress(prev => ({ ...prev, status: 'exported' }));
-          setExportUrl(data.exportUrl || '');
-          eventSourceRef.current?.close();
-        } else if (data.status === "failed") {
-          setExportProgress(prev => ({ ...prev, status: 'failed' }));
-          eventSourceRef.current?.close();
-        } else if (data.status === "exporting") {
-          setExportProgress({
-            status: 'exporting',
-            progress: data.progress,
-            totalActivities: data.totalActivities
-          });
-        }
+      if (error) {
+        alert(error);
+        return;
       }
+
+      window.location.assign(redirectUrl!);
+      //
+      // setIsExportUpdateModalOpen(true);
+      // setExportProgress({ status: 'exporting', progress: 0, totalActivities: 0 });
+      //
+      // eventSourceRef.current = new EventSource(`/api/bundle-export-updates?bundleExportId=${bundleExport.id}`);
+      // eventSourceRef.current.onmessage = (event) => {
+      //   const data = JSON.parse(event.data) as BundleExportUpdate;
+      //
+      //   console.log(data);
+      //
+      //   if (data.status === "exported") {
+      //     setExportProgress(prev => ({ ...prev, status: 'exported' }));
+      //     setExportUrl(data.exportUrl || '');
+      //     eventSourceRef.current?.close();
+      //   } else if (data.status === "failed") {
+      //     setExportProgress(prev => ({ ...prev, status: 'failed' }));
+      //     eventSourceRef.current?.close();
+      //   } else if (data.status === "exporting") {
+      //     setExportProgress({
+      //       status: 'exporting',
+      //       progress: data.progress,
+      //       totalActivities: data.totalActivities
+      //     });
+      //   }
+      // }
     } catch (error) {
       console.error(error);
       alert("Failed to export bundle.");
@@ -91,9 +91,17 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
         <h1>Bundle {bundle.name}</h1>
 
         <div>
+          <input
+            type="text"
+            value={destinationUrl}
+            onChange={(e) => setDestinationUrl(e.target.value)}
+            placeholder="Enter Canvas URL"
+            style={{ marginRight: "0.5rem" }}
+          />
+
           <button
             type="button"
-            onClick={() => alert('export')}
+            onClick={handleExport}
             style={{ marginLeft: "0.5rem" }}
           >
             Export Bundle

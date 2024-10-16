@@ -1,6 +1,7 @@
-import { ExportDestination } from "@prisma/client"
+import { CanvasInstance, ExportDestination } from "@prisma/client"
 
 import db from "db"
+import { JsonObject } from "type-fest"
 
 export default class ExportDestinationService {
   exportDestination: ExportDestination;
@@ -66,5 +67,38 @@ export default class ExportDestinationService {
     }
 
     throw new Error(`Unsupported export destination type: ${this.exportDestination.type}`);
+  }
+
+  static extractHostname(url: string): string {
+    let hostname;
+
+    try {
+      hostname = (new URL(url)).hostname
+    } catch (e) {
+      hostname = url.split('/')[0]
+    }
+
+    return hostname
+  }
+
+  static async findCanvasInstanceByUrl(url: string): Promise<CanvasInstance | null> {
+    const hostname = ExportDestinationService.extractHostname(url)
+
+    return db.canvasInstance.findFirst({
+      where: {
+        baseUrl: {
+          contains: hostname,
+          mode: 'insensitive'
+        }
+      }
+    });
+  }
+
+  static encodeState(state: JsonObject): string {
+    return Buffer.from(JSON.stringify(state)).toString('base64');
+  }
+
+  static decodeState<T extends JsonObject = JsonObject>(state: string): T {
+    return JSON.parse(Buffer.from(state, 'base64').toString()) as T;
   }
 }

@@ -132,13 +132,13 @@ model BundleExport {
   updatedAt DateTime @updatedAt
 
   exportDestinationId Int
-  userId              Int
+  userId              Int?
   bundleId            Int
 
   name String
 
   exportDestination ExportDestination @relation(fields: [exportDestinationId], references: [id])
-  user              User              @relation(fields: [userId], references: [id])
+  user              User?              @relation(fields: [userId], references: [id])
   bundle            Bundle            @relation(fields: [bundleId], references: [id])
 
   nodeExports NodeExport[]

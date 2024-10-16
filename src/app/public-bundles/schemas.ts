@@ -46,5 +46,6 @@ export const RemovePropertyInBundleSchema = z.object({
 
 export const ExportBundleSchema = z.object({
   id: z.number(),
-  exportDestinationId: z.number(),
+  canvasUrl: z.string(),
+  localUrlBase: z.string(),
 });
