@@ -54,7 +54,7 @@ export default class ExportDestinationService {
       return (this.exportDestination.metadata! as any).accessToken;
     }
 
-    if (this.exportDestination.type === 'canvas-oauth2') {
+    if (this.exportDestination.type === 'canvas-oauth2' || this.exportDestination.type === 'canvas-oauth2-temp') {
       let { accessToken, accessTokenExpiry } = (this.exportDestination.metadata! as any);
 
       const accessTokenExpiryDate = new Date(accessTokenExpiry);

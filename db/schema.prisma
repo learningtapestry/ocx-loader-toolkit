@@ -132,14 +132,15 @@ model BundleExport {
   updatedAt DateTime @updatedAt
 
   exportDestinationId Int
+  exportDestination   ExportDestination @relation(fields: [exportDestinationId], references: [id])
+
   userId              Int?
+  user                User?              @relation(fields: [userId], references: [id])
+
   bundleId            Int
+  bundle              Bundle            @relation(fields: [bundleId], references: [id])
 
   name String
-
-  exportDestination ExportDestination @relation(fields: [exportDestinationId], references: [id])
-  user              User?              @relation(fields: [userId], references: [id])
-  bundle            Bundle            @relation(fields: [bundleId], references: [id])
 
   nodeExports NodeExport[]
   metadata    Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)

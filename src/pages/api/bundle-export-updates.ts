@@ -22,7 +22,7 @@ export default api(async (req, res, ctx) => {
     return res.status(404).json({ message: "Bundle export not found" });
   }
 
-  if (bundleExport.userId !== ctx.session.userId) {
+  if (bundleExport.userId && bundleExport.userId !== ctx.session.userId) {
     return res.status(403).json({ message: "You do not have permission to access this bundle export" });
   }
 

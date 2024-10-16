@@ -7,9 +7,3 @@ export const CreateBundleSchema = z.object({
   sourceAccessToken: z.string().nullable().optional(),
   sourceAccessData: z.any()
 });
-
-export const ExportBundleSchema = z.object({
-  id: z.number(),
-  canvasUrl: z.string(),
-  localUrlBase: z.string(),
-});

@@ -21,6 +21,8 @@ export async function startWorkers() {
   boss.work<ExportBundleJobData>("export-bundle", async ([job]) => {
     const { bundleExportId } = job.data;
 
+    console.log(`[${bundleExportId}] Starting export`);
+
     const bundleExport = (await db.bundleExport.findUnique({
       where: {
         id: bundleExportId
@@ -30,11 +32,24 @@ export async function startWorkers() {
       }
     }))!;
 
-    if (bundleExport.exportDestination.type === "canvas" || bundleExport.exportDestination.type === "canvas-oauth2") {
+    if (bundleExport.exportDestination.type === "canvas" || bundleExport.exportDestination.type === "canvas-oauth2" || bundleExport.exportDestination.type === "canvas-oauth2-temp") {
       const exporter = new CanvasLegacyOpenSciEdExporter(bundleExport);
 
       try {
         await exporter.exportAll();
+
+        if (bundleExport.exportDestination.type === "canvas-oauth2-temp") {
+          // remove the access token and refresh token from the export destination after use
+          await db.exportDestination.update({
+            where: {
+              id: bundleExport.exportDestinationId
+            },
+            data: {
+              type: 'canvas-oauth2-used',
+              metadata: {}
+            }
+          })
+        }
       } catch (e) {
         console.error(`[${bundleExport.id}] Error exporting bundle:`, e);
 

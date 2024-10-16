@@ -4,6 +4,7 @@ import db from "db";
 
 import { getOAuth2Token } from "src/lib/exporters/repositories/callCanvas"
 import ExportDestinationService from "@/src/lib/ExportDestinationService"
+import boss from "@/src/app/jobs/pgBoss"
 
 export default api(async (req, res) => {
   const { code, state } = req.query
@@ -50,5 +51,29 @@ export default api(async (req, res) => {
     },
   })
 
-  res.redirect(`/export-destinations/${exportDestination.id}`)
+  const bundleExport = await db.bundleExport.create({
+    data: {
+      name: `Temp ${canvasInstance.name} Export`,
+      metadata: {
+        courseCode: "test1"
+      },
+      bundle: {
+        connect: {
+          id: bundleId,
+        },
+      },
+      exportDestination: {
+        connect: {
+          id: exportDestination.id,
+        },
+      },
+    },
+  });
+
+  await boss.send("export-bundle", {
+    bundleExportId: bundleExport.id
+  });
+
+  // then redirect to public bundleExport page
+  res.redirect(`/public-bundle-exports/${bundleExport.id}`)
 })
