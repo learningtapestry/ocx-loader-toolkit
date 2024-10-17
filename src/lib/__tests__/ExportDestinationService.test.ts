@@ -29,7 +29,7 @@ describe('ExportDestinationService', () => {
     });
   });
 
-  describe('.findCanvasInstanceByUrl', () => {
+  describe('.findPublicCanvasInstanceByUrl', () => {
     const baseUrl = 'https://example.com';
 
     let canvasInstance: CanvasInstance;
@@ -38,7 +38,7 @@ describe('ExportDestinationService', () => {
       await db.canvasInstance.deleteMany();
       canvasInstance = await db.canvasInstance.create({
         data: {
-          name: 'Example',
+          name: ExportDestinationService.publicCanvasInstanceNameFromUrl(baseUrl),
           baseUrl,
           clientId: 'clientId',
           clientSecret: 'clientSecret'
@@ -48,14 +48,28 @@ describe('ExportDestinationService', () => {
 
     it ('should return null if no export destination found', async () => {
       const url = 'https://example2.com/path/to/resource';
-      const foundCanvasInstance = await ExportDestinationService.findCanvasInstanceByUrl(url);
+      const foundCanvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(url);
 
       expect(foundCanvasInstance).toBeNull();
     });
 
     it ('should return export destination if found', async () => {
       const url = 'https://example.com/path/to/resource';
-      const foundCanvasInstance = await ExportDestinationService.findCanvasInstanceByUrl(url);
+      const foundCanvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(url);
+
+      expect(foundCanvasInstance!.id).toEqual(canvasInstance.id);
+    });
+
+    it('should return export destination with case insensitive full url', async () => {
+      const url = 'https://EXAMPLE.com/path/to/resource';
+      const foundCanvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(url);
+
+      expect(foundCanvasInstance!.id).toEqual(canvasInstance.id);
+    });
+
+    it('should return export destination with case insensitive hostname', async () => {
+      const url = 'EXAMPLE.com/path/to/resource';
+      const foundCanvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(url);
 
       expect(foundCanvasInstance!.id).toEqual(canvasInstance.id);
     });

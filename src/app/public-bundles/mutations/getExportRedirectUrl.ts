@@ -11,7 +11,7 @@ export type ExportRedirectResponse = {
 export default resolver.pipe(
   resolver.zod(ExportBundleSchema),
   async ({ id, canvasUrl, localUrlBase, ...data }, ctx) : Promise<ExportRedirectResponse> => {
-    const canvasInstance = await ExportDestinationService.findCanvasInstanceByUrl(canvasUrl);
+    const canvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(canvasUrl);
 
     if (canvasInstance) {
       const state = ExportDestinationService.encodeState({

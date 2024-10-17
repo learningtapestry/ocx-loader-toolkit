@@ -75,21 +75,24 @@ export default class ExportDestinationService {
     try {
       hostname = (new URL(url)).hostname
     } catch (e) {
-      hostname = url.split('/')[0]
+      hostname = url.split('/')[0].toLowerCase()
     }
 
     return hostname
   }
 
-  static async findCanvasInstanceByUrl(url: string): Promise<CanvasInstance | null> {
+  static publicCanvasInstanceNameFromUrl(url: string): string {
     const hostname = ExportDestinationService.extractHostname(url)
+
+    return `public:${hostname}`;
+  }
+
+  static async findPublicCanvasInstanceByUrl(url: string): Promise<CanvasInstance | null> {
+    const name = ExportDestinationService.publicCanvasInstanceNameFromUrl(url);
 
     return db.canvasInstance.findFirst({
       where: {
-        baseUrl: {
-          contains: hostname,
-          mode: 'insensitive'
-        }
+        name
       }
     });
   }

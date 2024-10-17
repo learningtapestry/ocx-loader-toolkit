@@ -110,7 +110,13 @@ export async function finalizeCanvasFileUpload(fileUploadParams: CanvasFileUploa
   });
 }
 
-export async function getOAuth2Token(canvasInstance: CanvasInstance, code: string, baseUrl: string) {
+type CanvasInstanceLike = {
+  baseUrl: string,
+  clientId: string,
+  clientSecret: string,
+}
+
+export async function getOAuth2Token(canvasInstance: CanvasInstance | CanvasInstanceLike, code: string, baseUrl: string) {
   return fetch(`${canvasInstance.baseUrl}/login/oauth2/token`, {
     method: 'POST',
     headers: {
