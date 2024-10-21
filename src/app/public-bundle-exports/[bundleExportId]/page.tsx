@@ -4,7 +4,7 @@ import { invoke } from "src/app/blitz-server";
 
 import getBundleExport from "../queries/getPublicBundleExport";
 
-import { PublicBundleExport } from "../components/PublicBundleExport";
+import { PublicBundleExportContainer } from "@/src/app/public-bundle-exports/components/PublicBundleExportContainer"
 
 export async function generateMetadata({
   params,
@@ -16,14 +16,22 @@ export async function generateMetadata({
 }
 
 type BundleExportPageProps = {
-  params: { bundleExportId: string };
+  params: {
+    bundleExportId: string
+  },
+  searchParams: {
+    token: string,
+  },
 };
 
-export default async function Page({ params }: BundleExportPageProps) {
+export default async function Page({ params, searchParams }: BundleExportPageProps) {
+  const { bundleExportId } = params;
+  const { token } = searchParams;
+
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
-        <PublicBundleExport bundleExportId={Number(params.bundleExportId)} />
+        <PublicBundleExportContainer bundleExportId={Number(bundleExportId)} token={token} />
       </Suspense>
     </div>
   );

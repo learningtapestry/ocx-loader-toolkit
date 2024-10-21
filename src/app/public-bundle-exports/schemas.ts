@@ -1,9 +1,7 @@
 import { z } from "zod";
 
-export const CreateBundleSchema = z.object({
-  // template: __fieldName__: z.__zodType__(),
-  name: z.string(),
-  sitemapUrl: z.string(),
-  sourceAccessToken: z.string().nullable().optional(),
-  sourceAccessData: z.any()
+export const ExportToCanvasNewCourseSchema = z.object({
+  bundleExportId: z.number(),
+  token: z.string(),
+  courseName: z.string(),
 });

@@ -1,23 +1,21 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 
-import { useQuery } from "@blitzjs/rpc"
-
-import getBundleExport from "../queries/getPublicBundleExport";
-
 import ExportUpdateModal from "./ExportUpdateModal";
 import { BundleExportUpdate } from "@/src/app/jobs/BundleExportUpdate"
 
-export const PublicBundleExport = ({ bundleExportId }: { bundleExportId: number }) => {
-  const [bundleExport] = useQuery(
-    getBundleExport,
-    { id: bundleExportId },
-    {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    }
-  );
+import { Prisma } from "@prisma/client"
 
+type BundleExportWithBundle = Prisma.BundleExportGetPayload<{
+  include: { bundle: true };
+}>;
+
+type PublicBundleExportProps = {
+  bundleExport: BundleExportWithBundle,
+  refetch: () => void,
+}
+
+export const PublicBundleExport = ({ bundleExport, refetch }: PublicBundleExportProps) => {
   const [isExportUpdateModalOpen, setIsExportUpdateModalOpen] = useState(false);
   const [exportProgress, setExportProgress] = useState({ status: '', progress: 0, totalActivities: 0 });
   const [exportUrl, setExportUrl] = useState('');
@@ -65,6 +63,11 @@ export const PublicBundleExport = ({ bundleExportId }: { bundleExportId: number 
     };
   }, []);
 
+  const handleModalClose = () => {
+    setIsExportUpdateModalOpen(false);
+    refetch();
+  }
+
   return (
     <>
       <div>
@@ -87,7 +90,7 @@ export const PublicBundleExport = ({ bundleExportId }: { bundleExportId: number 
 
         <ExportUpdateModal
           isOpen={isExportUpdateModalOpen}
-          onClose={() => setIsExportUpdateModalOpen(false)}
+          onClose={handleModalClose}
           exportProgress={exportProgress}
           exportUrl={exportUrl}
         />

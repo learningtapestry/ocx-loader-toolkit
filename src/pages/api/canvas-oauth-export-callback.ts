@@ -1,10 +1,10 @@
 import { api } from "src/app/blitz-server"
 
 import db from "db";
+import { randomBytes } from 'crypto';
 
 import { getOAuth2Token } from "src/lib/exporters/repositories/callCanvas"
 import ExportDestinationService from "@/src/lib/ExportDestinationService"
-import boss from "@/src/app/jobs/pgBoss"
 
 export default api(async (req, res) => {
   const { code, state } = req.query
@@ -51,12 +51,16 @@ export default api(async (req, res) => {
     },
   })
 
+  // create a random token
+  const token = randomBytes(32).toString('hex');
+
   const bundleExport = await db.bundleExport.create({
     data: {
       name: `Temp ${canvasInstance.name} Export`,
       metadata: {
         courseCode: "test1"
       },
+      token: token,
       bundle: {
         connect: {
           id: bundleId,
@@ -67,13 +71,10 @@ export default api(async (req, res) => {
           id: exportDestination.id,
         },
       },
+      state: 'waiting_user_input'
     },
   });
 
-  await boss.send("export-bundle", {
-    bundleExportId: bundleExport.id
-  });
-
-  // then redirect to public bundleExport page
-  res.redirect(`/public-bundle-exports/${bundleExport.id}`)
+  // Redirect to the new page instead of creating a bundleExport
+  res.redirect(`/public-bundle-exports/${bundleExport.id}?token=${token}`)
 })

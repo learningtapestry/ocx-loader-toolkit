@@ -146,6 +146,7 @@ model BundleExport {
   metadata    Json // data which is specific for the destination type (eg Canvas, Google Classroom, etc)
 
   state    String @default("pending") // pending, exporting, completed, failed
+  token    String?
 
   exportUrl String?
 }
