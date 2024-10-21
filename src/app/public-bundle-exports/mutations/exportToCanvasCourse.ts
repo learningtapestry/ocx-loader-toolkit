@@ -12,6 +12,7 @@ export default resolver.pipe(
       bundleExportId,
       token,
       newCourseName,
+      newCourseCode,
       existingCourseId
     } = input;
 
@@ -31,6 +32,7 @@ export default resolver.pipe(
         metadata: {
           ...bundleExport.metadata as any,
           newCourseName,
+          newCourseCode,
           existingCourseId
         },
         state: 'pending'

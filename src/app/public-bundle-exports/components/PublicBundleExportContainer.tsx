@@ -25,11 +25,12 @@ export const PublicBundleExportContainer = ({bundleExportId, token}: PublicBundl
 
   const [exportToCanvasCourseMutation] = useMutation(exportToCanvasCourse);
 
-  const startExportWithNewCourse = async (courseName: string) => {
+  const startExportWithNewCourse = async (courseName: string, courseCode: string) => {
     const updatedBundleExport = await exportToCanvasCourseMutation({
       bundleExportId,
       token,
       newCourseName: courseName,
+      newCourseCode: courseCode
     });
 
     setQueryData(updatedBundleExport);

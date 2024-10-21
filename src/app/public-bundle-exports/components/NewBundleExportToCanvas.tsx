@@ -8,13 +8,14 @@ import CanvasCoursePicker from "./CanvasCoursePicker"
 
 type NewBundleExportToCanvasProps = {
   bundleExport: BundleExport,
-  startExportWithNewCourse: (courseName: string) => void,
+  startExportWithNewCourse: (courseName: string, courseCode: string) => void,
   startExportWithExistingCourse: (courseId: number) => void,
 }
 
 export default function NewBundleExportToCanvas({bundleExport, startExportWithNewCourse, startExportWithExistingCourse}: NewBundleExportToCanvasProps) {
   const [createNewCourse, setCreateNewCourse] = useState(true);
   const [newCourseName, setNewCourseName] = useState('');
+  const [newCourseCode, setNewCourseCode] = useState('');
 
   const handStartExportWithCourseName = () => {
     if (createNewCourse) {
@@ -23,7 +24,12 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
         return;
       }
 
-      startExportWithNewCourse(newCourseName);
+      if (!newCourseCode) {
+        alert('Please enter a new course code');
+        return;
+      }
+
+      startExportWithNewCourse(newCourseName, newCourseCode);
     }
   }
 
@@ -59,6 +65,16 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
           value={newCourseName}
           onChange={(e) => setNewCourseName(e.target.value)}
           placeholder="Enter new course name"
+        />
+
+        <label htmlFor="newCourseCode">New course code:</label>
+
+        <input
+          type="text"
+          id="newCourseCode"
+          value={newCourseCode}
+          onChange={(e) => setNewCourseCode(e.target.value)}
+          placeholder="Enter new course code"
         />
 
         <button onClick={handStartExportWithCourseName}>Export</button>

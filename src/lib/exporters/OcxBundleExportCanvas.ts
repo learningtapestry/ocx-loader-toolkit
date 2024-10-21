@@ -244,7 +244,7 @@ export async function createExportOcxBundleToCanvas(
     console.log(`[${bundleExport.id}] Using existing course:`, canvasCourse.name, canvasCourse.course_code);
   } else {
     const name = (metadata.newCourseName || bundleExport.name) as string;
-    const courseCode = (bundleExport.metadata as any).courseCode as string;
+    const courseCode = (metadata.newCourseCode || metadata.courseCode) as string;
 
     canvasCourse = await canvasRepository.createCourse(name, courseCode);
 
