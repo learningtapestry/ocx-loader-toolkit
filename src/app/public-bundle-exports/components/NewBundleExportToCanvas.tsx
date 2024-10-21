@@ -1,18 +1,22 @@
 "use client"
 
-import { useState } from 'react';
+import { Suspense, useState } from "react"
+
 import { BundleExport } from "@prisma/client"
+
+import CanvasCoursePicker from "./CanvasCoursePicker"
 
 type NewBundleExportToCanvasProps = {
   bundleExport: BundleExport,
   startExportWithNewCourse: (courseName: string) => void,
+  startExportWithExistingCourse: (courseId: number) => void,
 }
 
-export default function NewBundleExportToCanvas({bundleExport, startExportWithNewCourse}: NewBundleExportToCanvasProps) {
+export default function NewBundleExportToCanvas({bundleExport, startExportWithNewCourse, startExportWithExistingCourse}: NewBundleExportToCanvasProps) {
   const [createNewCourse, setCreateNewCourse] = useState(true);
   const [newCourseName, setNewCourseName] = useState('');
 
-  const onStartExport = () => {
+  const handStartExportWithCourseName = () => {
     if (createNewCourse) {
       if (!newCourseName) {
         alert('Please enter a new course name');
@@ -20,8 +24,6 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
       }
 
       startExportWithNewCourse(newCourseName);
-    } else {
-      // TODO
     }
   }
 
@@ -59,14 +61,19 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
           placeholder="Enter new course name"
         />
 
-        <button onClick={onStartExport}>Export</button>
+        <button onClick={handStartExportWithCourseName}>Export</button>
       </div>
     )}
 
     {!createNewCourse && (
-      <div>
-        TODO load existing courses from Canvas
-      </div>
+      <Suspense fallback={<div>Loading courses...</div>}>
+        <CanvasCoursePicker
+          bundleExport={bundleExport}
+          onCoursePicked={(courseId) => {
+            startExportWithExistingCourse(courseId);
+          }}
+        />
+      </Suspense>
     )}
   </div>
 }

@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "@blitzjs/rpc"
 
 import getBundleExport from "../queries/getPublicBundleExport";
-import exportToCanvasNewCourse from "../mutations/exportToCanvasNewCourse";
+import exportToCanvasCourse from "../mutations/exportToCanvasCourse";
 
 import { PublicBundleExport } from "./PublicBundleExport"
 import NewBundleExportToCanvas from "./NewBundleExportToCanvas"
@@ -23,13 +23,23 @@ export const PublicBundleExportContainer = ({bundleExportId, token}: PublicBundl
     }
   );
 
-  const [exportToCanvasNewCourseMutation] = useMutation(exportToCanvasNewCourse);
+  const [exportToCanvasCourseMutation] = useMutation(exportToCanvasCourse);
 
   const startExportWithNewCourse = async (courseName: string) => {
-    const updatedBundleExport = await exportToCanvasNewCourseMutation({
+    const updatedBundleExport = await exportToCanvasCourseMutation({
       bundleExportId,
       token,
-      courseName,
+      newCourseName: courseName,
+    });
+
+    setQueryData(updatedBundleExport);
+  }
+
+  const startExportWithExistingCourse = async (courseId: number) => {
+    const updatedBundleExport = await exportToCanvasCourseMutation({
+      bundleExportId,
+      token,
+      existingCourseId: courseId,
     });
 
     setQueryData(updatedBundleExport);
@@ -40,7 +50,11 @@ export const PublicBundleExportContainer = ({bundleExportId, token}: PublicBundl
   }
 
   return <div>
-    {bundleExport.state === 'waiting_user_input' && <NewBundleExportToCanvas bundleExport={bundleExport} startExportWithNewCourse={startExportWithNewCourse} />}
+    {bundleExport.state === 'waiting_user_input' && <NewBundleExportToCanvas
+      bundleExport={bundleExport}
+      startExportWithNewCourse={startExportWithNewCourse}
+      startExportWithExistingCourse={startExportWithExistingCourse}
+    />}
     {bundleExport.state !== 'waiting_user_input' && <PublicBundleExport bundleExport={bundleExport} refetch={refetch} />}
   </div>
 }

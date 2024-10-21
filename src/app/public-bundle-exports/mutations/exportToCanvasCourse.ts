@@ -1,12 +1,19 @@
 import { resolver } from "@blitzjs/rpc";
 import db from "db";
-import { ExportToCanvasNewCourseSchema } from "../schemas";
+
 import boss from "@/src/app/jobs/pgBoss"
 
+import { ExportToCanvasCourseSchema } from "../schemas";
+
 export default resolver.pipe(
-  resolver.zod(ExportToCanvasNewCourseSchema),
+  resolver.zod(ExportToCanvasCourseSchema),
   async (input) => {
-    const { bundleExportId, token, courseName } = input;
+    const {
+      bundleExportId,
+      token,
+      newCourseName,
+      existingCourseId
+    } = input;
 
     const bundleExport = await db.bundleExport.findFirst(
       {
@@ -23,7 +30,8 @@ export default resolver.pipe(
       data: {
         metadata: {
           ...bundleExport.metadata as any,
-          courseName,
+          newCourseName,
+          existingCourseId
         },
         state: 'pending'
       },

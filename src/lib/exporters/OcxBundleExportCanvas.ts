@@ -14,7 +14,6 @@ import OcxBundleExport from "src/lib/OcxBundleExport"
 
 import OcxNode from "src/lib/OcxNode"
 import OcxNodeExport from "src/lib/OcxNodeExport"
-import OcxBundle from "src/lib/OcxBundle"
 
 import CanvasRepository from "./repositories/CanvasRepository"
 
@@ -222,9 +221,6 @@ export async function createExportOcxBundleToCanvas(
   db: PrismaClient,
   bundleExport: BundleExport,
 ) {
-  const name = bundleExport.name;
-  const courseCode = (bundleExport.metadata as any).courseCode as string;
-
   const exportDestination = await db.exportDestination.findUnique({
     where: {
       id: bundleExport.exportDestinationId
@@ -238,7 +234,22 @@ export async function createExportOcxBundleToCanvas(
     accessToken: await exportDestinationService.getToken()
   });
 
-  const canvasCourse = await canvasRepository.createCourse(name, courseCode);
+  let canvasCourse: Prisma.JsonObject;
+
+  const metadata = bundleExport.metadata as Prisma.JsonObject;
+
+  if (metadata.existingCourseId) {
+    canvasCourse = await canvasRepository.getCourse(metadata.existingCourseId as number);
+
+    console.log(`[${bundleExport.id}] Using existing course:`, canvasCourse.name, canvasCourse.course_code);
+  } else {
+    const name = (metadata.newCourseName || bundleExport.name) as string;
+    const courseCode = (bundleExport.metadata as any).courseCode as string;
+
+    canvasCourse = await canvasRepository.createCourse(name, courseCode);
+
+    console.log(`[${bundleExport.id}] Created new course:`, canvasCourse.name, canvasCourse.course_code);
+  }
 
   const updatedBundleExport = await db.bundleExport.update({
     where: {

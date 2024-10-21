@@ -4,6 +4,12 @@ import { Prisma } from "@prisma/client";
 
 type ModuleItemType = 'File' | 'Page' | 'Discussion' | 'Assignment' | 'Quiz' | 'SubHeader' | 'ExternalUrl' | 'ExternalTool';
 
+type CanvasCourse = {
+  id: string;
+  name: string;
+  course_code: string;
+}
+
 export default class CanvasRepository {
   canvasConfig: { accessToken: string, baseUrl: string };
 
@@ -35,7 +41,7 @@ export default class CanvasRepository {
       }
     }
 
-    return await callCanvas(baseUrl, accessToken, `courses/${course_id}/modules`, 'POST', moduleData);
+    return callCanvas(baseUrl, accessToken, `courses/${course_id}/modules`, 'POST', moduleData);
   }
 
   async createModuleItem(course_id: number, module_id: number,
@@ -81,6 +87,22 @@ export default class CanvasRepository {
 
   async uploadFileToCourse(course_id: number, blob: Blob, name = (blob as File).name, parentFolderPath = '/'): Promise<Prisma.JsonObject> {
     return (await uploadFileToCanvasCourse(this.canvasConfig.baseUrl, this.canvasConfig.accessToken, course_id, blob, name, parentFolderPath)).json();
+  }
+
+  async getCourses(): Promise<CanvasCourse[]> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    const courses = (await callCanvas(baseUrl, accessToken, 'courses?per_page=100', 'GET')) as CanvasCourse[];
+
+    console.log(courses);
+
+    return callCanvas(baseUrl, accessToken, 'courses', 'GET');
+  }
+
+  async getCourse(courseId: number): Promise<CanvasCourse> {
+    const { accessToken, baseUrl } = this.canvasConfig;
+
+    return callCanvas(baseUrl, accessToken, `courses/${courseId}`, 'GET');
   }
 
   async createContentMigration(course_id: number, migrationType: string, migrationSettings: Prisma.JsonObject, preAttachmentData: Prisma.JsonObject): Promise<Prisma.JsonObject> {
