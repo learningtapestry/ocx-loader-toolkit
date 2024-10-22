@@ -7,8 +7,8 @@ import JsonView from '@uiw/react-json-view';
 import DeepArrayMap from "src/lib/DeepArrayMap";
 import { PropertyValidationResult } from "src/lib/OcxNode";
 
-import PropertyHighlightToggle from "src/app/bundles/components/PropertyHighlightToggle";
-import PropertyValidation from "src/app/bundles/components/PropertyValidation";
+import PropertyHighlightToggle from "./PropertyHighlightToggle";
+import PropertyValidation from "./PropertyValidation";
 
 interface BundleNodeObjectPropertyValuesProps {
   propertyName: string;

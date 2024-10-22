@@ -4,7 +4,7 @@ import { invoke } from "src/app/blitz-server";
 
 import getBundleExport from "../queries/getPublicBundleExport";
 
-import { PublicBundleExportContainer } from "@/src/app/public-bundle-exports/components/PublicBundleExportContainer"
+import { PublicBundleExportContainer } from "../components/PublicBundleExportContainer"
 
 export async function generateMetadata({
   params,

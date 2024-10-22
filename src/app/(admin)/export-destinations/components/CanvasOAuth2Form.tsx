@@ -3,7 +3,7 @@ import { Form, FormProps } from "src/app/components/Form"
 import { LabeledSelect } from "src/app/components/LabeledSelect"
 import { z } from "zod"
 import { useQuery } from "@blitzjs/rpc"
-import getCanvasInstances from "src/app/canvas-instances/queries/getCanvasInstances"
+import getCanvasInstances from "../../canvas-instances/queries/getCanvasInstances"
 import LabeledTextField from "src/app/components/LabeledTextField"
 
 export function CanvasOAuth2Form<S extends z.ZodType<any, any>>(props: FormProps<S>) {

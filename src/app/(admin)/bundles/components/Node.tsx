@@ -6,10 +6,10 @@ import XMLViewer from 'react-xml-viewer';
 import JsonView from '@uiw/react-json-view';
 
 import { useMutation } from "@blitzjs/rpc"
-import setNodeParent from "src/app/nodes/mutations/setNodeParent"
-import fixNodeIsPartOf from "src/app/nodes/mutations/fixNodeIsPartOf"
-import deleteNode from "src/app/nodes/mutations/deleteNode"
-import removeChildrenNotFound from "src/app/nodes/mutations/removeChildrenNotFound"
+import setNodeParent from "../../nodes/mutations/setNodeParent"
+import fixNodeIsPartOf from "../../nodes/mutations/fixNodeIsPartOf"
+import deleteNode from "../../nodes/mutations/deleteNode"
+import removeChildrenNotFound from "../../nodes/mutations/removeChildrenNotFound"
 
 import { useUiStore } from "src/app/stores/UiStore"
 import { Prisma } from "@prisma/client"

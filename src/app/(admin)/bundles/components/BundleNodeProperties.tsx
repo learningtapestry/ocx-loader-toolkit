@@ -8,8 +8,8 @@ import BundleNodeScalarPropertyValues from "./BundleNodeScalarPropertyValues"
 import PropertyHighlightToggle from "./PropertyHighlightToggle"
 import BundleNodeObjectPropertyValues from "./BundleNodeObjectPropertyValues"
 
-import renamePropertyInBundle from "src/app/bundles/mutations/renamePropertyInBundle"
-import removePropertyInBundle from "src/app/bundles/mutations/removePropertyInBundle"
+import renamePropertyInBundle from "../mutations/renamePropertyInBundle"
+import removePropertyInBundle from "../mutations/removePropertyInBundle"
 
 import { FaEdit, FaTrash } from "react-icons/fa"
 
