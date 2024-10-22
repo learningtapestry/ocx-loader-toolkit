@@ -1,7 +1,6 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
 
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from 'react';
 
 import { useMutation, useQuery } from "@blitzjs/rpc"
 
@@ -33,6 +32,12 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
   }, []);
 
   const [destinationUrl, setDestinationUrl] = useState('');
+  const [destinationUrlValid, setDestinationUrlValid] = useState(false);
+
+  const handleDestinationUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDestinationUrl(e.target.value);
+    setDestinationUrlValid(e.target.value.trim().length > 0);
+  }
 
   const handleExport = async () => {
     if (!destinationUrl) {
@@ -53,31 +58,6 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
       }
 
       window.location.assign(redirectUrl!);
-      //
-      // setIsExportUpdateModalOpen(true);
-      // setExportProgress({ status: 'exporting', progress: 0, totalActivities: 0 });
-      //
-      // eventSourceRef.current = new EventSource(`/api/bundle-export-updates?bundleExportId=${bundleExport.id}`);
-      // eventSourceRef.current.onmessage = (event) => {
-      //   const data = JSON.parse(event.data) as BundleExportUpdate;
-      //
-      //   console.log(data);
-      //
-      //   if (data.status === "exported") {
-      //     setExportProgress(prev => ({ ...prev, status: 'exported' }));
-      //     setExportUrl(data.exportUrl || '');
-      //     eventSourceRef.current?.close();
-      //   } else if (data.status === "failed") {
-      //     setExportProgress(prev => ({ ...prev, status: 'failed' }));
-      //     eventSourceRef.current?.close();
-      //   } else if (data.status === "exporting") {
-      //     setExportProgress({
-      //       status: 'exporting',
-      //       progress: data.progress,
-      //       totalActivities: data.totalActivities
-      //     });
-      //   }
-      // }
     } catch (error) {
       console.error(error);
       alert("Failed to export bundle.");
@@ -95,8 +75,8 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
           <input
             type="text"
             value={destinationUrl}
-            onChange={(e) => setDestinationUrl(e.target.value)}
-            placeholder="Enter Canvas URL"
+            onChange={handleDestinationUrlChange}
+            placeholder="Enter URL of the Canvas instance you want to export to"
             style={{ marginRight: "0.5rem" }}
           />
 
@@ -104,6 +84,7 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
             type="button"
             onClick={handleExport}
             style={{ marginLeft: "0.5rem" }}
+            disabled={!destinationUrlValid}
           >
             Export Bundle
           </button>
