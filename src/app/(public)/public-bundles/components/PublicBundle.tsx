@@ -11,7 +11,6 @@ import getBundle from "../queries/getPublicBundle";
 import ExportUpdateModal from "./ExportUpdateModal";
 
 export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
-  const router = useRouter();
   const [getExportRedirectUrlMutation] = useMutation(getExportRedirectUrl);
   const [bundle] = useQuery(
     getBundle,
@@ -88,7 +87,9 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
   return (
     <>
       <div>
-        <h1>Bundle {bundle.name}</h1>
+        <h1>Export unit to Canvas</h1>
+
+        <h3>Unit: {bundle.name}</h3>
 
         <div>
           <input

@@ -31,6 +31,7 @@
     "@blitzjs/rpc": "2.1.1",
     "@hookform/error-message": "2.0.1",
     "@hookform/resolvers": "3.9.0",
+    "@picocss/pico": "2.0.6",
     "@prisma/client": "5.20.0",
     "@types/ioredis": "5.0.0",
     "@types/json-schema": "7.0.15",
