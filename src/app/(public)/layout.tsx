@@ -5,5 +5,5 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className='container'>{children}</div>
+  return <div className='container' style={{ marginTop: '1em' }}>{children}</div>
 }

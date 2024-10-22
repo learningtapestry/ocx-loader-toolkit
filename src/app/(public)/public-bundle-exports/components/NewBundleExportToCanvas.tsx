@@ -2,12 +2,16 @@
 
 import { Suspense, useState } from "react"
 
-import { BundleExport } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 
 import CanvasCoursePicker from "./CanvasCoursePicker"
 
+type BundleExportWithBundle = Prisma.BundleExportGetPayload<{
+  include: { bundle: true };
+}>;
+
 type NewBundleExportToCanvasProps = {
-  bundleExport: BundleExport,
+  bundleExport: BundleExportWithBundle,
   startExportWithNewCourse: (courseName: string, courseCode: string) => void,
   startExportWithExistingCourse: (courseId: number) => void,
 }
@@ -34,26 +38,28 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
   }
 
   return <div>
-    <h2>Choose the Canvas course to export {bundleExport.name}</h2>
+    <h2>Where should we export {bundleExport.bundle.name}?</h2>
 
-    <div>
-      <label>
-        <input
-          type="radio"
-          checked={createNewCourse}
-          onChange={() => setCreateNewCourse(true)}
-        />
-        Create new course
-      </label>
-      <label>
-        <input
-          type="radio"
-          checked={!createNewCourse}
-          onChange={() => setCreateNewCourse(false)}
-        />
-        Export to existing course
-      </label>
-    </div>
+    <section>
+      <div>
+        <label>
+          <input
+            type="radio"
+            checked={createNewCourse}
+            onChange={() => setCreateNewCourse(true)}
+          />
+          Create new Canvas course
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={!createNewCourse}
+            onChange={() => setCreateNewCourse(false)}
+          />
+          Export to existing Canvas course
+        </label>
+      </div>
+    </section>
 
     {createNewCourse && (
       <div>

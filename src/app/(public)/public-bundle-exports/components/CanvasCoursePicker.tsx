@@ -20,31 +20,30 @@ export default function CanvasCoursePicker({ bundleExport, onCoursePicked }: Can
     if (selectedCourseId !== null) {
       onCoursePicked(selectedCourseId);
     }
-  };
+  }
 
   return (
-    <div>
-      <h2>Choose course</h2>
-      <ul>
-        {courses?.map((course) => (
-          <li key={course.id}>
-            <label>
+    <div className="mt-4">
+      <h3>Choose course</h3>
+      <fieldset>
+        {courses.length > 0 ? (
+          courses.map((course) => (
+            <label key={course.id}>
               <input
                 type="radio"
                 name="course"
                 value={course.id}
-                checked={selectedCourseId == Number(course.id)}
+                checked={selectedCourseId === Number(course.id)}
                 onChange={() => setSelectedCourseId(Number(course.id))}
               />
-              {course.name} {course.course_code}
+              {course.course_code}/{course.name}
             </label>
-          </li>
-        ))}
-      </ul>
-      <button
-        onClick={handleConfirmSelection}
-        disabled={selectedCourseId === null}
-      >
+          ))
+        ) : (
+          <p>No active courses found for your Canvas account</p>
+        )}
+      </fieldset>
+      <button onClick={handleConfirmSelection} disabled={selectedCourseId === null}>
         Export to selected course
       </button>
     </div>

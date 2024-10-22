@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 
-import ExportUpdateModal from "./ExportUpdateModal";
+import ExportUpdatesWidget from "./ExportUpdatesWidget";
 
 import { BundleExportUpdate } from "@/src/app/jobs/BundleExportUpdate"
 
@@ -16,10 +16,10 @@ type PublicBundleExportProps = {
   refetch: () => void,
 }
 
-export const PublicBundleExport = ({ bundleExport, refetch }: PublicBundleExportProps) => {
-  const [isExportUpdateModalOpen, setIsExportUpdateModalOpen] = useState(false);
-  const [exportProgress, setExportProgress] = useState({ status: '', progress: 0, totalActivities: 0 });
+export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) => {
+  const [exportProgress, setExportProgress] = useState({ status: bundleExport.state, progress: 0, totalActivities: 0 });
   const [exportUrl, setExportUrl] = useState('');
+  const [showProgress, setShowProgress] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -27,18 +27,13 @@ export const PublicBundleExport = ({ bundleExport, refetch }: PublicBundleExport
       return;
     }
 
-    console.log(bundleExport);
-
     if (bundleExport.state !== 'exported' && bundleExport.state !== 'failed') {
-
-      setIsExportUpdateModalOpen(true);
       setExportProgress({ status: 'exporting', progress: 0, totalActivities: 0 });
+      setShowProgress(true);
 
       eventSourceRef.current = new EventSource(`/api/bundle-export-updates?bundleExportId=${bundleExport.id}`);
       eventSourceRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data) as BundleExportUpdate;
-
-        console.log(data);
 
         if (data.status === "exported") {
           setExportProgress(prev => ({ ...prev, status: 'exported' }));
@@ -64,18 +59,13 @@ export const PublicBundleExport = ({ bundleExport, refetch }: PublicBundleExport
     };
   }, []);
 
-  const handleModalClose = () => {
-    setIsExportUpdateModalOpen(false);
-    refetch();
-  }
-
   return (
     <>
       <div>
         <h1>Exporting Bundle {bundleExport.bundle.name}</h1>
 
         <p>
-          Status: {bundleExport.state}
+          Status: {exportProgress.status}
         </p>
 
         {bundleExport.state === 'exported' && (
@@ -89,12 +79,12 @@ export const PublicBundleExport = ({ bundleExport, refetch }: PublicBundleExport
           </a>
         )}
 
-        <ExportUpdateModal
-          isOpen={isExportUpdateModalOpen}
-          onClose={handleModalClose}
-          exportProgress={exportProgress}
-          exportUrl={exportUrl}
-        />
+        {
+          showProgress && <ExportUpdatesWidget
+            exportProgress={exportProgress}
+            exportUrl={exportUrl}
+          />
+        }
       </div>
     </>
   )
