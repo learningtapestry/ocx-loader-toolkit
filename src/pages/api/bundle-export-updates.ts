@@ -32,7 +32,12 @@ export default api(async (req, res, ctx) => {
     });
 
     subscribeToBundleExportUpdates(bundleExportId, (data) => {
-      session.push(data);
+      try {
+        session.push(data);
+      } catch (error) {
+        // when the client isn't listening, the session will throw an error, but we can ignore it on airbrake
+        console.error("Error pushing data to SSE session:", error);
+      }
     });
 
     req.on("close", () => {
