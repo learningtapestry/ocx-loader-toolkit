@@ -1,8 +1,8 @@
 import { resolver } from "@blitzjs/rpc"
 import db from "db"
 import { CreateCanvasInstanceSchema } from "../schemas"
-import { getOAuth2Token } from "@/src/lib/exporters/repositories/callCanvas"
-import ExportDestinationService from "@/src/lib/ExportDestinationService"
+import { getOAuth2Token } from "src/lib/exporters/repositories/callCanvas"
+import ExportDestinationService from "src/lib/ExportDestinationService"
 
 export default resolver.pipe(
   resolver.zod(CreateCanvasInstanceSchema),

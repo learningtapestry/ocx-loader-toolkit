@@ -20,7 +20,7 @@ const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzS
 export {api, getBlitzContext, useAuthenticatedBlitzContext, invoke}
 
 // initialize the background job queue
-import { initPgBoss, startWorkers } from "src/app/jobs/exportBundleJob"
+import { initPgBoss, startWorkers } from "src/app/jobs/initJobs";
 
 initPgBoss();
 

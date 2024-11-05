@@ -4,7 +4,7 @@ import db from "db";
 import { randomBytes } from 'crypto';
 
 import { getOAuth2Token } from "src/lib/exporters/repositories/callCanvas"
-import ExportDestinationService from "@/src/lib/ExportDestinationService"
+import ExportDestinationService from "src/lib/ExportDestinationService"
 
 export default api(async (req, res) => {
   const { code, state } = req.query

@@ -1,7 +1,7 @@
 import { resolver } from "@blitzjs/rpc";
 import { ExportBundleSchema } from "../schemas";
 
-import ExportDestinationService from "@/src/lib/ExportDestinationService"
+import ExportDestinationService from "src/lib/ExportDestinationService"
 
 export type ExportRedirectResponse = {
   redirectUrl?: string;

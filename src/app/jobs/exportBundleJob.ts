@@ -8,17 +8,12 @@ export type ExportBundleJobData = {
   bundleExportId: number;
 };
 
-export async function initPgBoss() {
-  await boss.start();
-  await boss.createQueue('export-bundle')
-}
+export const queueName = "export-bundle";
 
-export async function startWorkers() {
-  await initPgBoss();
+export async function startWorker() {
+  console.log("Starting exportBundleJob worker")
 
-  console.log("Starting workers");
-
-  boss.work<ExportBundleJobData>("export-bundle", async ([job]) => {
+  boss.work<ExportBundleJobData>(queueName, async ([job]) => {
     const { bundleExportId } = job.data;
 
     console.log(`[${bundleExportId}] Starting export`);
@@ -63,3 +58,15 @@ export async function startWorkers() {
     }
   });
 }
+
+export async function enqueueJob(data: ExportBundleJobData) {
+  await boss.send(queueName, data);
+}
+
+const ExportBundleJob = {
+  startWorker,
+  queueName,
+  enqueueJob,
+}
+
+export default ExportBundleJob

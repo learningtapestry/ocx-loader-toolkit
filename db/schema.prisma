@@ -83,6 +83,10 @@ model Bundle {
 
   exports BundleExport[]
 
+  importSourceId    Int?
+  importSource      BundleImportSource? @relation(fields: [importSourceId], references: [id])
+  importMetadata    Json @default("{}")
+
   errors Json @default("[]")
 }
 
@@ -179,4 +183,20 @@ model CanvasInstance {
   clientSecret String
 
   exportDestinations ExportDestination[]
+}
+
+model BundleImportSource {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name    String @unique
+  type    String // eg lcms, ...
+
+  baseUrl     String
+  accessData  Json // eg {accessToken}
+
+  lastCheck   DateTime?
+
+  bundles Bundle[]
 }

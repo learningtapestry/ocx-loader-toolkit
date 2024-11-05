@@ -9,7 +9,7 @@ const createFetchWithCookies = () => fetchCookie(fetch);
 
 export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
   // legacy openscied doesn't create an xml sitemap, and a whole unit is
-  // in one single .ocx.html file, and the data has some errors to fix
+  // in one single .ocx.html file, where the data has some errors to fix
   async createNodesFromUnitHtml(db: PrismaClient, unitUrl: string) {
     const fetchWithCookies = await this.logIntoOSELCMS(unitUrl);
 

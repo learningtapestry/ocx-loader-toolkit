@@ -2,7 +2,7 @@ import { NotFoundError } from "blitz";
 import { resolver } from "@blitzjs/rpc";
 import db from "db";
 import { z } from "zod";
-import CanvasRepository from "@/src/lib/exporters/repositories/CanvasRepository"
+import CanvasRepository from "src/lib/exporters/repositories/CanvasRepository"
 import { Prisma } from "@prisma/client"
 
 const GetCanvasCourses = z.object({

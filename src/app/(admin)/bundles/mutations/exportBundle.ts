@@ -3,7 +3,8 @@ import db from "db";
 import { resolver } from "@blitzjs/rpc";
 import { ExportBundleSchema } from "../schemas";
 
-import boss from "src/app/jobs/pgBoss";
+import ExportBundleJob from "src/app/jobs/exportBundleJob"
+
 import { BundleExport } from "@prisma/client"
 
 export default resolver.pipe(
@@ -34,9 +35,9 @@ export default resolver.pipe(
       },
     });
 
-    await boss.send("export-bundle", {
+    await ExportBundleJob.enqueueJob({
       bundleExportId: bundleExport.id
-    });
+    })
 
     return bundleExport;
   }

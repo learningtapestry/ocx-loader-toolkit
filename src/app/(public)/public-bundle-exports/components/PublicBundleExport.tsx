@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import ExportUpdatesWidget from "./ExportUpdatesWidget";
 
-import { BundleExportUpdate } from "@/src/app/jobs/BundleExportUpdate"
+import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
 import { Prisma } from "@prisma/client"
 

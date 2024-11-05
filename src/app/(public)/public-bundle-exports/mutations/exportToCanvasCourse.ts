@@ -1,9 +1,9 @@
 import { resolver } from "@blitzjs/rpc";
 import db from "db";
 
-import boss from "@/src/app/jobs/pgBoss"
-
 import { ExportToCanvasCourseSchema } from "../schemas";
+
+import ExportBundleJob from "@/src/app/jobs/exportBundleJob"
 
 export default resolver.pipe(
   resolver.zod(ExportToCanvasCourseSchema),
@@ -42,9 +42,9 @@ export default resolver.pipe(
       },
     })
 
-    await boss.send("export-bundle", {
+    await ExportBundleJob.enqueueJob({
       bundleExportId: bundleExport.id
-    });
+    })
 
     return updatedBundleExport;
   }
