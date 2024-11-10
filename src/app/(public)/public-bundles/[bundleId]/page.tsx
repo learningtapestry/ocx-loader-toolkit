@@ -8,9 +8,9 @@ import { PublicBundle } from "../components/PublicBundle";
 export async function generateMetadata({
   params,
 }: BundlePageProps): Promise<Metadata> {
-  const Bundle = await invoke(getBundle, { id: Number(params.bundleId) });
+  const bundle = await invoke(getBundle, { id: Number(params.bundleId) });
   return {
-    title: `Bundle ${Bundle.id} - ${Bundle.name}`,
+    title: `Bundle ${bundle.id} - ${bundle.name}`,
   };
 }
 

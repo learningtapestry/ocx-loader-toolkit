@@ -15,7 +15,7 @@ export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
 
     let unitText = await fetchWithCookies(unitUrl).then((res) => res.text());
 
-    // all ids reference the fragments int he file itself
+    // all ids reference the fragments in the file itself
     unitText = unitText.replaceAll('"@id":"SCI', '"@id":"#SCI');
 
     // the html ids for Lesson and Unit have a prefix which we need to remove

@@ -30,11 +30,28 @@ export class OcxUrl {
   }
 }
 
+export class OSEUnitCoordinates {
+  gradeCode: string
+  grade: number
+  unit: string
+  subject: string
+
+  constructor(unitName: string) {
+    // example: Science-G7-cb
+    const [subject, gradeCode, unit] = unitName.split('-')
+
+    this.gradeCode = gradeCode
+    this.grade = parseInt(gradeCode.slice(1))
+    this.unit = unit.toLowerCase()
+    this.subject = subject
+  }
+}
+
 export default class LcmsOpenSciEdLegacyImporter {
-  importSource: BundleImportSource;
+  importSource: BundleImportSource
 
   constructor(importSource: BundleImportSource) {
-    this.importSource = importSource;
+    this.importSource = importSource
   }
 
   async importBundle(ocxUrlString: string): Promise<OpenSciEdLegacyOcxBundle> {
@@ -42,7 +59,28 @@ export default class LcmsOpenSciEdLegacyImporter {
 
     await ocxBundle.createNodesFromUnitHtml(db, ocxUrlString)
 
-    return ocxBundle
+    const rootNode = ocxBundle.rootNodes[0]
+
+    const unitCoordinates = new OSEUnitCoordinates(rootNode.metadata.name as string)
+
+    const updatedBundle = await db.bundle.update({
+      where: {
+        id: ocxBundle.prismaBundle.id
+      },
+      data: {
+        importMetadata: {
+          ...(ocxBundle.prismaBundle.importMetadata as JSONObject),
+          grade: unitCoordinates.grade,
+          subject: unitCoordinates.subject,
+          unit: unitCoordinates.unit
+        }
+      },
+      include: {
+        nodes: true
+      }
+    })
+
+    return new OpenSciEdLegacyOcxBundle(updatedBundle, updatedBundle.nodes)
   }
 
   async findOrCreateBundle(ocxUrlString: string): Promise<OpenSciEdLegacyOcxBundle> {
@@ -77,6 +115,41 @@ export default class LcmsOpenSciEdLegacyImporter {
           nodes: true
         }
       })
+    }
+
+    return new OpenSciEdLegacyOcxBundle(bundle, bundle.nodes)
+  }
+
+  static async findBundleByCoordinates(importSource: BundleImportSource, coordinates: string[]): Promise<OpenSciEdLegacyOcxBundle | null> {
+    const [gradeStringToParse, unitString] = coordinates
+
+    // gradeStringToParse example: "grade%207"
+    const gradeString = decodeURIComponent(gradeStringToParse)
+    const grade = parseInt(gradeString.split(/\s+/).pop()!)
+
+    const unit = unitString.toLowerCase()
+
+    const bundle = await db.bundle.findFirst({
+      where: {
+        importSourceId: importSource.id,
+        importMetadata: {
+          path: ['grade'],
+            equals: grade
+          },
+        AND: {
+          importMetadata: {
+            path: ['unit'],
+            equals: unit
+          }
+        }
+      },
+      include: {
+        nodes: true
+      }
+    })
+
+    if (!bundle) {
+      return null
     }
 
     return new OpenSciEdLegacyOcxBundle(bundle, bundle.nodes)

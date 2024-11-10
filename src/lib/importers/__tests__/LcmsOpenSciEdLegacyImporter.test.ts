@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
-import LcmsOpenSciEdLegacyImporter, {OcxUrl} from "../LcmsOpenSciEdLegacyImporter"
+import LcmsOpenSciEdLegacyImporter, {OcxUrl, OSEUnitCoordinates} from "../LcmsOpenSciEdLegacyImporter"
 
 import db from "db"
 import { Bundle, BundleImportSource } from "@prisma/client"
@@ -21,7 +21,58 @@ describe('LcmsOpenSciEdLegacyImporter', () => {
 
       expect(ocxUrl.lcmsUnitId).toEqual(120);
     });
-  });
+
+    describe('.findBundleByCoordinates', () => {
+      let importSource: BundleImportSource;
+      let bundle: Bundle;
+
+      beforeEach(async () => {
+        await db.bundleImportSource.deleteMany()
+        await db.bundle.deleteMany()
+
+        importSource = await db.bundleImportSource.create({
+          data: {
+            name: 'importSourceName',
+            type: 'lcms-legacy-ose',
+            baseUrl: 'https://example.com',
+            accessData: {}
+          }
+        });
+
+        bundle = await db.bundle.create({
+          data: {
+            name: 'LCMS importSourceName Unit 123',
+            sitemapUrl: 'https://example.com/path/to/resource/123?foo=bar',
+            importSourceId: importSource.id,
+            importMetadata: {
+              idOnSource: 123,
+              grade: 7,
+              subject: 'Science',
+              unit: 'cb'
+            }
+          }
+        })
+      })
+
+      it('should find a bundle by coordinates', async () => {
+        const foundBundle = await LcmsOpenSciEdLegacyImporter.findBundleByCoordinates(importSource, ['grade%207', 'cb', 'en'])
+
+        expect(foundBundle?.prismaBundle.id).toEqual(bundle.id)
+      })
+
+      it('should find a bundle if grade only has the number', async () => {
+        const foundBundle = await LcmsOpenSciEdLegacyImporter.findBundleByCoordinates(importSource, ['7', 'cb', 'en'])
+
+        expect(foundBundle?.prismaBundle.id).toEqual(bundle.id)
+      })
+
+      it('should return null when the bundle does not exist', async () => {
+        const foundBundle = await LcmsOpenSciEdLegacyImporter.findBundleByCoordinates(importSource, ['grade%208', 'cb', 'en'])
+
+        expect(foundBundle).toBeNull()
+      })
+    })
+  })
 
   describe('findOrCreateBundle', () => {
     let importSource: BundleImportSource;
@@ -162,5 +213,18 @@ describe('LcmsOpenSciEdLegacyImporter', () => {
 
       expect(signature).toBe(expectedSignature)
     })
+  })
+})
+
+describe('OSEUnitCoordinates', () => {
+  it('should parse the unit name into its coordinates', () => {
+    const unitName = 'Science-G7-cb'
+
+    const coordinates = new OSEUnitCoordinates(unitName)
+
+    expect(coordinates.grade).toEqual(7)
+    expect(coordinates.subject).toEqual('Science')
+    expect(coordinates.unit).toEqual('cb')
+    expect(coordinates.subject).toEqual('Science')
   })
 })
