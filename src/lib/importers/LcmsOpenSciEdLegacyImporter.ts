@@ -8,6 +8,7 @@ import OpenSciEdLegacyOcxBundle from "src/lib/LegacyOpenSciEdOcxBundle"
 import { JSONObject } from "superjson/src/types"
 
 import ImportBundleJob from "src/app/jobs/importBundleJob"
+import computeHmacSignature from "src/lib/hmac/computeHmacSignature"
 
 export class OcxUrl {
   url: string
@@ -166,7 +167,7 @@ export default class LcmsOpenSciEdLegacyImporter {
 
     const hmacSecret = (this.importSource.accessData as JSONObject).api_secret_key as string;
 
-    const signature = this.computeHmacSignature(timestamp, path, body, hmacSecret);
+    const signature = computeHmacSignature(timestamp, path, body, hmacSecret);
 
     const response = await fetch(url, {
       method: 'GET',
@@ -214,12 +215,5 @@ export default class LcmsOpenSciEdLegacyImporter {
     })
 
     return newOrUpdatedResources.length
-  }
-
-  computeHmacSignature(timestamp: number, path: string, body: string, secretKey: string): string {
-    const data = `${timestamp}${path}${body}`;
-    return crypto.createHmac('sha256', secretKey)
-      .update(data)
-      .digest('hex')
   }
 }

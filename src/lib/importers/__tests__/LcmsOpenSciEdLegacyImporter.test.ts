@@ -5,6 +5,7 @@ import LcmsOpenSciEdLegacyImporter, {OcxUrl, OSEUnitCoordinates} from "../LcmsOp
 import db from "db"
 import { Bundle, BundleImportSource } from "@prisma/client"
 import { JsonObject } from "type-fest"
+import computeHmacSignature from "src/lib/hmac/computeHmacSignature"
 
 describe('LcmsOpenSciEdLegacyImporter', () => {
   describe('OcxUrl', () => {
@@ -204,7 +205,7 @@ describe('LcmsOpenSciEdLegacyImporter', () => {
       const timestamp = headers['X-Api-Timestamp']
       const signature = headers['X-Api-Signature']
 
-      const expectedSignature = importer.computeHmacSignature(
+      const expectedSignature = computeHmacSignature(
         parseInt(timestamp),
         '/api/resources?link_updated_after=ocx:0',
         '',

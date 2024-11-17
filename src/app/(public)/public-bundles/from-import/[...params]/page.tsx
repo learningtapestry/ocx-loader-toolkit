@@ -29,8 +29,6 @@ export default async function Page({ params }: BundlePageProps) {
   // lb is the unit
   // en is the language
 
-  console.log(params)
-
   const { params: pathSegments } = params;
 
   const [bundleImportSourceIdString, ...coordinates] = pathSegments
