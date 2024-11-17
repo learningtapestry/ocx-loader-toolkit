@@ -19,7 +19,7 @@ export default api(async (req, res) => {
     return
   }
 
-  const { canvasInstanceId, bundleId } = ExportDestinationService.decodeState<{canvasInstanceId: number, bundleId: number}>(state);
+  const { canvasInstanceId, bundleId, language } = ExportDestinationService.decodeState<{canvasInstanceId: number, bundleId: number, language: string}>(state);
 
   const canvasInstance = await db.canvasInstance.findFirst({ where: { id: canvasInstanceId } })
 
@@ -58,7 +58,8 @@ export default api(async (req, res) => {
     data: {
       name: `Temp ${canvasInstance.name} Export`,
       metadata: {
-        courseCode: "test1"
+        courseCode: "test1",
+        language: language || "en",
       },
       token: token,
       bundle: {

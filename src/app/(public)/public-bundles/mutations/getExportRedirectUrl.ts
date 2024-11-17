@@ -10,13 +10,14 @@ export type ExportRedirectResponse = {
 
 export default resolver.pipe(
   resolver.zod(ExportBundleSchema),
-  async ({ id, canvasUrl, localUrlBase, ...data }, ctx) : Promise<ExportRedirectResponse> => {
+  async ({ id, canvasUrl, localUrlBase, language, ...data }, ctx) : Promise<ExportRedirectResponse> => {
     const canvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(canvasUrl);
 
     if (canvasInstance) {
       const state = ExportDestinationService.encodeState({
         canvasInstanceId: canvasInstance.id,
         bundleId: id,
+        language: language || "en",
       });
 
       const authUrl = `${canvasInstance.baseUrl}/login/oauth2/auth?client_id=${

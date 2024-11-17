@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense } from "react"
 
-import getBundleIdFromImport from "../../queries/getPublicBundleIdFromImport";
-import { PublicBundle } from "../../components/PublicBundle";
+import getBundleIdFromImport from "../../queries/getPublicBundleIdFromImport"
+import { PublicBundle } from "../../components/PublicBundle"
 import { invoke } from "src/app/blitz-server"
 
 // export async function generateMetadata({
@@ -16,8 +16,8 @@ import { invoke } from "src/app/blitz-server"
 // }
 
 type BundlePageProps = {
-  params: { params: string[] };
-};
+  params: { params: string[] }
+}
 
 export default async function Page({ params }: BundlePageProps) {
   // public-bundles/from-import/1/grade%207/lb/en
@@ -29,7 +29,7 @@ export default async function Page({ params }: BundlePageProps) {
   // lb is the unit
   // en is the language
 
-  const { params: pathSegments } = params;
+  const { params: pathSegments } = params
 
   const [bundleImportSourceIdString, ...coordinates] = pathSegments
 
@@ -41,13 +41,15 @@ export default async function Page({ params }: BundlePageProps) {
       bundleImportSourceId: Number(bundleImportSourceId),
       coordinates
     },
-  );
+  )
+
+  const language = coordinates.pop() as string
 
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
-        <PublicBundle bundleId={bundleId} />
+        <PublicBundle bundleId={bundleId} language={language} />
       </Suspense>
     </div>
-  );
+  )
 }

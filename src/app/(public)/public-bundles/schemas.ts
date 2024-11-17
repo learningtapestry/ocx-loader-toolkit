@@ -12,4 +12,5 @@ export const ExportBundleSchema = z.object({
   id: z.number(),
   canvasUrl: z.string(),
   localUrlBase: z.string(),
+  language: z.string().optional()
 });

@@ -4,6 +4,8 @@ import db from "db"
 
 import { BundleExport, ExportDestination, User } from "@prisma/client"
 
+import { JsonObject } from "type-fest"
+
 import OcxBundle from "src/lib/OcxBundle"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "src/lib/exporters/OcxBundleExportCanvas"
@@ -16,7 +18,7 @@ import GoogleRepository from "src/lib/exporters/repositories/GoogleRepository"
 import { publishBundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
 type GoogleClassroomMaterial = {
-  version: string;
+  version: string; // eg "English", "Spanish", "English, Spanish"
   object: {
     title: string;
     url: string;
@@ -25,10 +27,17 @@ type GoogleClassroomMaterial = {
 }
 
 type GoogleClassroomData = {
-  postTitle: { en: string };
-  postInstructions: { en: string };
+  postTitle: { en: string, es: string };
+  postInstructions: { en: string, es: string };
   materials: GoogleClassroomMaterial[];
 }
+
+const languages = {
+  en: 'English',
+  es: 'Spanish'
+}
+
+type Language = 'en' | 'es';
 
 export default class CanvasLegacyOpenSciEdExporter {
   prismaBundleExport: BundleExport;
@@ -37,8 +46,12 @@ export default class CanvasLegacyOpenSciEdExporter {
 
   courseUrl: string | null = null;
 
+  language: Language;
+
   constructor(prismaBundleExport: BundleExport) {
     this.prismaBundleExport = prismaBundleExport;
+
+    this.language = (prismaBundleExport.metadata as JsonObject).language as Language || 'en';
   }
 
   async exportAll(): Promise<string | null> {
@@ -118,8 +131,8 @@ export default class CanvasLegacyOpenSciEdExporter {
           const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData;
 
           // legacy OSE OCX has googleClassroom data
-          activityNode.metadata.name = googleClassroomData?.postTitle?.en;
-          activityNode.metadata.instructions = googleClassroomData?.postInstructions?.en;
+          activityNode.metadata.name = googleClassroomData?.postTitle?.[this.language]
+          activityNode.metadata.instructions = googleClassroomData?.postInstructions?.[this.language]
 
           console.log(`[${this.prismaBundleExport.id}] -- Start exporting activity`, activityNode.metadata.name);
 
@@ -132,7 +145,7 @@ export default class CanvasLegacyOpenSciEdExporter {
           let quizCreated = false;
 
           for (const material of googleClassroomData?.materials || []) {
-            if ((material.version as string).includes('English')) {
+            if ((material.version as string).includes(languages[this.language])) {
               if (material.object.url) {
                 if (material.object.type === 'material') {
                   if (material.object.url.includes('google.com/forms')) {

@@ -9,7 +9,12 @@ import getBundle from "../queries/getPublicBundle";
 
 import ExportUpdateModal from "./ExportUpdateModal";
 
-export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
+type PublicBundleProps = {
+  bundleId: number
+  language: string
+}
+
+export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
   const [getExportRedirectUrlMutation] = useMutation(getExportRedirectUrl);
   const [bundle] = useQuery(
     getBundle,
@@ -49,7 +54,8 @@ export const PublicBundle = ({ bundleId }: { bundleId: number }) => {
       const {redirectUrl, error} = await getExportRedirectUrlMutation({
         id: bundle.id,
         canvasUrl: destinationUrl,
-        localUrlBase: window.location.origin
+        localUrlBase: window.location.origin,
+        language,
       });
 
       if (error) {
