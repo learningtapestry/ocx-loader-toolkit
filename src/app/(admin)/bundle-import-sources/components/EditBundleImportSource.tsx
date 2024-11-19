@@ -31,7 +31,7 @@ export const EditBundleImportSource = ({
           <BundleImportSourceForm
             submitText="Update BundleImportSource"
             schema={UpdateBundleImportSourceSchema}
-            initialValues={bundleImportSource}
+            initialValues={bundleImportSource as any}
             onSubmit={async (values) => {
               try {
                 const updated = await updateBundleImportSourceMutation({

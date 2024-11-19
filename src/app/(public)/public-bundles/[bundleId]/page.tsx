@@ -22,7 +22,7 @@ export default async function Page({ params }: BundlePageProps) {
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
-        <PublicBundle bundleId={Number(params.bundleId)} />
+        <PublicBundle bundleId={Number(params.bundleId)} language={'en'} />
       </Suspense>
     </div>
   );
