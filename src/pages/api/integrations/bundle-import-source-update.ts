@@ -27,7 +27,7 @@ export default api(async (req, res, ctx) => {
     throw new Error(`Bundle Import Source not found for id: ${bundleImportSourceId}`)
   }
 
-  const ocxUrl = req.body.ocxUrl
+  const ocxUrl = req.body.url || req.body.ocxUrl
 
   await enqueueJob({ bundleImportSourceId, ocxUrl })
 
