@@ -21,6 +21,7 @@ import BundleNodeTypes from "./BundleNodeTypes"
 import BundleNodeProperties from "./BundleNodeProperties"
 import ExportDialog from "./ExportDialog"
 import ExportUpdateModal from "./ExportUpdateModal";
+import ExportLinks from "./ExportLinks";
 
 import { useUiStore } from "src/app/stores/UiStore"
 
@@ -230,6 +231,8 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
             Export Bundle
           </button>
         </div>
+
+        <ExportLinks bundle={bundle} />
 
         <div>
           <h2>Exports</h2>

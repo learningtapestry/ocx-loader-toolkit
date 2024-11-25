@@ -1,7 +1,5 @@
 import db from "db"
 
-import crypto from 'crypto'
-
 import { BundleImportSource } from "@prisma/client"
 
 import OpenSciEdLegacyOcxBundle from "src/lib/LegacyOpenSciEdOcxBundle"
