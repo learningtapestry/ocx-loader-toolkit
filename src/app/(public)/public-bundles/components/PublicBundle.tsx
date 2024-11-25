@@ -9,9 +9,18 @@ import getBundle from "../queries/getPublicBundle";
 
 import ExportUpdateModal from "./ExportUpdateModal";
 
+import { languages } from "src/constants/languages";
+
 type PublicBundleProps = {
   bundleId: number
   language: string
+}
+
+type importMetadata = {
+  full_course_name: string
+  grade: string
+  subject: string
+  unit: string
 }
 
 export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
@@ -70,7 +79,8 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
     }
   }
 
-  const courseName = (bundle.importMetadata as { full_course_name: string }).full_course_name;
+  const importMetadata = bundle.importMetadata as importMetadata;
+  const courseName = importMetadata.full_course_name;
 
   return (
     <>
@@ -78,6 +88,11 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
         <h1>Create a Canvas Version</h1>
 
         <h3>{courseName}</h3>
+
+        <p>Unit: {importMetadata.unit}</p>
+        <p>Grade: {importMetadata.grade}</p>
+        <p>Subject: {importMetadata.subject}</p>
+        <p>Language: {languages[language]}</p>
 
         <div>
           <input

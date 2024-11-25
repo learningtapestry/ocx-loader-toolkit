@@ -26,6 +26,17 @@ import { useUiStore } from "src/app/stores/UiStore"
 
 import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
+const generateOSEPublicBundleLink = (bundle: any, language: String) => {
+  const importMetadata = bundle.importMetadata as { grade?: string, unit?: string };
+  const grade = importMetadata.grade;
+  const unit = importMetadata.unit;
+
+  if (!grade || !unit) {
+    return null;
+  }
+  return `/public-bundles/from-import/${bundle.importSourceId}/grade%20${grade}/${unit}/${language}`;
+};
+
 export const Bundle = ({ bundleId }: { bundleId: number }) => {
   const setNodeTypes = useUiStore(state => state.setNodeTypes);
 
@@ -137,6 +148,16 @@ export const Bundle = ({ bundleId }: { bundleId: number }) => {
 
         <div>
           <Link href={`/bundles/${bundle.id}/edit`}>Edit</Link>
+          &nbsp;
+          |&nbsp;
+          { generateOSEPublicBundleLink(bundle, "en")!==null && (
+            <Link href={{ pathname: generateOSEPublicBundleLink(bundle, "en") }}>Export English</Link>
+          )}
+          &nbsp;
+          |&nbsp;
+          { generateOSEPublicBundleLink(bundle, "es")!==null && (
+            <Link href={{ pathname: generateOSEPublicBundleLink(bundle, "es") }}>Export Spanish</Link>
+          )}
 
           <button
             type="button"

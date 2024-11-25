@@ -17,6 +17,8 @@ import GoogleRepository from "src/lib/exporters/repositories/GoogleRepository"
 
 import { publishBundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
+import { languages } from "src/constants/languages";
+
 type GoogleClassroomMaterial = {
   version: string; // eg "English", "Spanish", "English, Spanish"
   object: {
@@ -30,11 +32,6 @@ type GoogleClassroomData = {
   postTitle: { en: string, es: string };
   postInstructions: { en: string, es: string };
   materials: GoogleClassroomMaterial[];
-}
-
-const languages = {
-  en: 'English',
-  es: 'Spanish'
 }
 
 type Language = 'en' | 'es';
