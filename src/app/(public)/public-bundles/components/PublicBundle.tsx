@@ -9,6 +9,8 @@ import getBundle from "../queries/getPublicBundle";
 
 import ExportUpdateModal from "./ExportUpdateModal";
 
+import { languages } from "src/constants/languages";
+
 type PublicBundleProps = {
   bundleId: number
   language: string
@@ -75,7 +77,9 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
       <div>
         <h1>Export unit to Canvas</h1>
 
-        <h3>Unit: {bundle.name}</h3>
+        <p>Bundle ID: {bundle.id}</p>
+        <p>Unit: {bundle.name}</p>
+        <p>Language: {languages[language]}</p>
 
         <div>
           <input
