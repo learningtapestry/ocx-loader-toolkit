@@ -45,7 +45,7 @@ describe("api/integrations/bundle-import-source-update", () => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ ocxUrl: "https://example.com/path/to/resource/123?foo=bar" }),
+            body: JSON.stringify({ url: "https://example.com/path/to/resource/123?foo=bar" }),
           })
           expect(res.status).toBe(401)
         },
@@ -71,7 +71,7 @@ describe("api/integrations/bundle-import-source-update", () => {
           const timestamp = Date.now().toString()
           const path = "/api/integrations/bundle-import-source-update"
           const body = JSON.stringify({
-            ocxUrl: "https://example.com/path/to/resource/123?foo=bar",
+            url: "https://example.com/path/to/resource/123?foo=bar",
           })
 
           const computedSignature = computeHmacSignature(
