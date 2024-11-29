@@ -2,7 +2,7 @@ import db from "db"
 
 import crypto from 'crypto'
 
-import { BundleImportSource } from "@prisma/client"
+import { BundleImportSource, BundleStatus } from "@prisma/client"
 
 import OpenSciEdLegacyOcxBundle from "src/lib/LegacyOpenSciEdOcxBundle"
 import { JSONObject } from "superjson/src/types"
@@ -58,30 +58,50 @@ export default class LcmsOpenSciEdLegacyImporter {
   async importBundle(ocxUrlString: string): Promise<OpenSciEdLegacyOcxBundle> {
     const ocxBundle = await this.findOrCreateBundle(ocxUrlString)
 
-    await ocxBundle.createNodesFromUnitHtml(db, ocxUrlString)
+    try {
+      await this.updateBundleStatus(ocxBundle.prismaBundle.id, 'processing')
 
-    const rootNode = ocxBundle.rootNodes[0]
+      await ocxBundle.createNodesFromUnitHtml(db, ocxUrlString)
 
-    const unitCoordinates = new OSEUnitCoordinates(rootNode.metadata.name as string)
+      const rootNode = ocxBundle.rootNodes[0]
 
-    const updatedBundle = await db.bundle.update({
+      const unitCoordinates = new OSEUnitCoordinates(rootNode.metadata.name as string)
+
+      const updatedBundle = await db.bundle.update({
+        where: {
+          id: ocxBundle.prismaBundle.id
+        },
+        data: {
+          importMetadata: {
+            ...(ocxBundle.prismaBundle.importMetadata as JSONObject),
+            grade: unitCoordinates.grade,
+            subject: unitCoordinates.subject,
+            unit: unitCoordinates.unit
+          }
+        },
+        include: {
+          nodes: true
+        }
+      })
+      await this.updateBundleStatus(ocxBundle.prismaBundle.id, 'completed')
+
+      return new OpenSciEdLegacyOcxBundle(updatedBundle, updatedBundle.nodes)
+    } catch (e) {
+      await this.updateBundleStatus(ocxBundle.prismaBundle.id, 'failed')
+
+      throw e
+    }
+  }
+
+  async updateBundleStatus(bundleId: number, status: string): Promise<void> {
+    await db.bundle.update({
       where: {
-        id: ocxBundle.prismaBundle.id
+        id: bundleId
       },
       data: {
-        importMetadata: {
-          ...(ocxBundle.prismaBundle.importMetadata as JSONObject),
-          grade: unitCoordinates.grade,
-          subject: unitCoordinates.subject,
-          unit: unitCoordinates.unit
-        }
-      },
-      include: {
-        nodes: true
+        status: status as BundleStatus
       }
     })
-
-    return new OpenSciEdLegacyOcxBundle(updatedBundle, updatedBundle.nodes)
   }
 
   async findOrCreateBundle(ocxUrlString: string): Promise<OpenSciEdLegacyOcxBundle> {
@@ -118,7 +138,13 @@ export default class LcmsOpenSciEdLegacyImporter {
       })
     }
 
-    return new OpenSciEdLegacyOcxBundle(bundle, bundle.nodes)
+    try {
+      return new OpenSciEdLegacyOcxBundle(bundle, bundle.nodes)
+    } catch (e) {
+      await this.updateBundleStatus(bundle.id, 'failed')
+
+      throw e
+    }
   }
 
   static async findBundleByCoordinates(importSource: BundleImportSource, coordinates: string[]): Promise<OpenSciEdLegacyOcxBundle | null> {
