@@ -68,12 +68,20 @@ model Token {
 //   RESET_PASSWORD
 // }
 
+enum BundleImportStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
 model Bundle {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   name              String
+  importStatus      BundleImportStatus @default(pending)
   sitemapUrl        String
   sourceAccessToken String?
   sourceAccessData  Json    @default("{}")

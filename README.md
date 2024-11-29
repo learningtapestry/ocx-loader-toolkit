@@ -87,6 +87,19 @@ Inside OCX-LOADER-TOOLKIT click `create Canvas Instance`. Fill the data:
 - Base URL: URL of Canvas instance
 - CLIENT ID and CLIENT_SECRET: get that info from previously generated developer key.
 
+## Email Service Setup
+We need to provide envs. For local testing it will be:
+```
+EMAIL_FROM= - email we want to display as sender
+SMTP_HOST=localhost - host of mailhog smtp server
+SMTP_PORT=1025 - port of mailhog smtp server
+SMTP_AUTH=false
+SMTP_USER
+SMTP_PASSWORD
+SMTP_SECURE=false
+NOTIFICATION_EMAIL= - email we want to receive notification to
+```
+
 ## Tests
 
 Runs your tests using Jest.
