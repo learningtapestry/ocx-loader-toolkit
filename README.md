@@ -49,6 +49,44 @@ CANVAS_BASE_URL=http://your.server/
 CANVAS_ACCESS_TOKEN=your_token
 ```
 
+## Integration with other services
+All keys for setup can be generated in Rails using  SecureRandom.hex(64) or online tool to generate those.
+
+### LCMS -> OCX-LOADER_TOOLKIT
+Inside ocx-loader-toolkit, add ENV `HMAC_SECRET` with some key.
+Inside lcms, add env `OCX_MATERIAL_EVENT_NAME` with some name we want to use for webhooks.
+
+Inside LCMS, we need to generate `Lcms::Engine::Integrations::WebhookConfiguration` object, with:
+- event_name: same as `OCX_MATERIAL_EVENT_NAME` env value in LCMS.
+- active: true (default)
+- endpoint_url: "OCX_LOADER_TOOLKIT_HOST/api/integrations/bundle-import-source-update?bundleImportSourceId=BUNDLE_IMPORT_SOURCE_FOR_THIS_APPLICATION"
+Example:
+Our toolkit application is "https://toolkit.com" and bundle import source for LCMS application inside toolkit got id 1. The endpoint url will be:
+"https://toolkit.com/api/integrations/bundle-import-source-update?bundleImportSourceId=1"
+- action: "post" (default)
+- auth_type: "hmac"
+- auth_credentials: { secret_key: HMAC_SECRET }
+
+### OCX-LOADER-TOOLKIT -> LCMS
+Inside LCMS, add ENV `API_SECRET_KEY` with some key.
+
+Inside ocx-loader-toolkit create a Bundle Import Source with:
+- Name: any name you want
+- Type: "lcms-legacy-ose"
+- base Url: lcms url
+- api secret key: must be the same as this which is set inside lcms `API_SECRET_KEY` ENV variable
+
+### OCX-LOADER-TOOLKIT -> Canvas LMS Instances
+Inside Canvas instance we need to create a Api Key. To do so, go to Admin - Developer Keys - '+ Developer Key'. Put following data into fields:
+- key name: any name you want
+- owner email: your email or some admin email
+- redirect URIs: OCX-LOADER-TOOLKIT_HOST + `/api/canvas-oauth-export-callback`
+
+Inside OCX-LOADER-TOOLKIT click `create Canvas Instance`. Fill the data:
+- Name: any name you want
+- Base URL: URL of Canvas instance
+- CLIENT ID and CLIENT_SECRET: get that info from previously generated developer key.
+
 ## Tests
 
 Runs your tests using Jest.
