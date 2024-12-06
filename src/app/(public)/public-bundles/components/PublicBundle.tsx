@@ -9,6 +9,8 @@ import getBundle from "../queries/getPublicBundle";
 
 import ExportUpdateModal from "./ExportUpdateModal";
 
+import { envVars } from "src/app/components/useEnvVars";
+
 type PublicBundleProps = {
   bundleId: number
   language: string
@@ -70,6 +72,11 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
     }
   }
 
+  (window as any).__DEBUG__ = {
+    env: envVars,
+    logEnv: () => console.table(envVars)
+  };
+
   const courseName = (bundle.importMetadata as { full_course_name: string }).full_course_name;
 
   return (
@@ -84,7 +91,7 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
             type="text"
             value={destinationUrl}
             onChange={handleDestinationUrlChange}
-            placeholder={`Enter URL of the Canvas instance where you want to load this ${process.env.NEXT_PUBLIC_CLIENT_NAME} unit`}
+            placeholder={`Enter URL of the Canvas instance where you want to load this ${envVars.clientName} unit`}
             style={{ marginRight: "0.5rem" }}
           />
 

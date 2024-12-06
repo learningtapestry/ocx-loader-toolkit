@@ -19,7 +19,6 @@ RUN yarn prisma generate
 
 RUN yarn build
 
-
 # Expose port 3000 to the outside world
 EXPOSE 3000
 
