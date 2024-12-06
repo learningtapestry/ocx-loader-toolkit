@@ -37,8 +37,10 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
     }
   }
 
+  const courseName = (bundleExport.bundle.importMetadata as { full_course_name: string }).full_course_name
+
   return <div>
-    <h2>Where should we export {bundleExport.bundle.name}?</h2>
+    <h2>Where should we load {courseName}?</h2>
 
     <section>
       <div>
@@ -48,7 +50,7 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
             checked={createNewCourse}
             onChange={() => setCreateNewCourse(true)}
           />
-          Create new Canvas course
+          Create a new Canvas course
         </label>
         <label>
           <input
@@ -56,7 +58,7 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
             checked={!createNewCourse}
             onChange={() => setCreateNewCourse(false)}
           />
-          Export to existing Canvas course
+          Sync with an existing Canvas course
         </label>
       </div>
     </section>
@@ -83,7 +85,7 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
           placeholder="Enter new course code"
         />
 
-        <button onClick={handStartExportWithCourseName}>Export</button>
+        <button onClick={handStartExportWithCourseName}>Sync with Canvas</button>
       </div>
     )}
 

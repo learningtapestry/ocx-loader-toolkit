@@ -70,19 +70,21 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
     }
   }
 
+  const courseName = (bundle.importMetadata as { full_course_name: string }).full_course_name;
+
   return (
     <>
       <div>
-        <h1>Export unit to Canvas</h1>
+        <h1>Create a Canvas Version</h1>
 
-        <h3>Unit: {bundle.name}</h3>
+        <h3>{courseName}</h3>
 
         <div>
           <input
             type="text"
             value={destinationUrl}
             onChange={handleDestinationUrlChange}
-            placeholder="Enter URL of the Canvas instance you want to export to"
+            placeholder={`Enter URL of the Canvas instance where you want to load this ${process.env.NEXT_PUBLIC_CLIENT_NAME} unit`}
             style={{ marginRight: "0.5rem" }}
           />
 
@@ -92,7 +94,7 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
             style={{ marginLeft: "0.5rem" }}
             disabled={!destinationUrlValid}
           >
-            Export Bundle
+            Sync with Canvas
           </button>
         </div>
 

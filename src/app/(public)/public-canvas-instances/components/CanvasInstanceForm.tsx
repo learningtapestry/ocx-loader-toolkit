@@ -10,15 +10,17 @@ export function CanvasInstanceForm<S extends z.ZodType<any, any>>(props: FormPro
     <Form<S> {...props}>
       <LabeledTextField
         name="baseUrl"
-        label="Base URL"
+        label="Canvas URL"
         placeholder="https://canvas.instructure.com"
       />
-      <LabeledTextField name="clientId" label="Client ID" placeholder="Client ID" />
+      <LabeledTextField name="clientId" label="Details" placeholder="Client ID" />
       <LabeledTextField
         name="clientSecret"
-        label="Client Secret"
-        placeholder="Client Secret"
+        label="Client Secret Key"
+        placeholder="Client Secret Key"
         type="password"
+        showpasswordlabel="(Show key)"
+        hidepasswordlabel="(Hide key)"
       />
 
       <RegisterLocalBaseUrl />

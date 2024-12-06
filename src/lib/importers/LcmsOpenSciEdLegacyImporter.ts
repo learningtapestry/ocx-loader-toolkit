@@ -73,7 +73,10 @@ export default class LcmsOpenSciEdLegacyImporter {
           ...(ocxBundle.prismaBundle.importMetadata as JSONObject),
           grade: unitCoordinates.grade,
           subject: unitCoordinates.subject,
-          unit: unitCoordinates.unit
+          unit: unitCoordinates.unit,
+          course_chapter: rootNode.metadata.alternateName,
+          course_about: rootNode.metadata.about,
+          full_course_name: rootNode.metadata.alternateName + ': ' + rootNode.metadata.about
         }
       },
       include: {

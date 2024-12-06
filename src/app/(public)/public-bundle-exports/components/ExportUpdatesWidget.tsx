@@ -16,7 +16,7 @@ const ExportUpdatesWidget: React.FC<ExportUpdatesWidgetProps> = ({
 
   return (
      <div>
-      <h2>Export Progress</h2>
+      <h2>Syncing Progress</h2>
 
       {exportProgress.status === "exporting" && (
         <div>
@@ -25,7 +25,7 @@ const ExportUpdatesWidget: React.FC<ExportUpdatesWidgetProps> = ({
 
             }
             {
-              exportProgress.totalActivities > 0 && `Exporting activities: ${exportProgress.progress} / ${exportProgress.totalActivities}`
+              exportProgress.totalActivities > 0 && `Syncing activities: ${exportProgress.progress} / ${exportProgress.totalActivities}`
             }
           </p>
           <progress
@@ -37,14 +37,14 @@ const ExportUpdatesWidget: React.FC<ExportUpdatesWidgetProps> = ({
       )}
       {exportProgress.status === "exported" && (
         <div>
-          <p>Export completed successfully!</p>
+          <p>{process.env.NEXT_PUBLIC_CLIENT_NAME} Unit loaded successfully!</p>
           <a
             href={exportUrl}
             target="_blank"
             rel="noreferrer"
             style={{ display: "block", marginBottom: "1rem", color: "blue" }}
           >
-            View Export
+            View Unit on Canvas
           </a>
         </div>
       )}

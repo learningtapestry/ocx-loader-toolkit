@@ -17,7 +17,11 @@ type PublicBundleExportProps = {
 }
 
 export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) => {
-  const [exportProgress, setExportProgress] = useState({ status: bundleExport.state, progress: 0, totalActivities: 0 });
+  const [exportProgress, setExportProgress] = useState<{ status: keyof typeof exportStateMapping, progress: number, totalActivities: number }>({
+    status: bundleExport.state as keyof typeof exportStateMapping,
+    progress: 0,
+    totalActivities: 0
+  });
   const [exportUrl, setExportUrl] = useState('');
   const [showProgress, setShowProgress] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -59,13 +63,19 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
     };
   }, []);
 
+  const exportStateMapping = {
+    exporting: 'syncing',
+    exported: 'loaded',
+    failed: 'failed'
+  };
+
   return (
     <>
       <div>
-        <h1>Exporting Bundle {bundleExport.bundle.name}</h1>
+        <h1>Loading {(bundleExport.bundle.importMetadata as { full_course_name: string })!.full_course_name}</h1>
 
         <p>
-          Status: {exportProgress.status}
+          Status: {exportStateMapping[exportProgress.status]}
         </p>
 
         {bundleExport.state === 'exported' && (
@@ -75,7 +85,7 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
             rel="noreferrer"
             style={{ display: "block", marginBottom: "1rem", color: "blue" }}
           >
-            View Export
+            View Unit on Canvas
           </a>
         )}
 

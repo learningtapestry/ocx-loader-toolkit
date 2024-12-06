@@ -8,7 +8,7 @@ export function New__ModelName() {
   const [createCanvasInstanceMutation] = useMutation(createCanvasInstance)
   return (
     <CanvasInstanceForm
-      submitText="Create/Update CanvasInstance"
+      submitText="Create/Update Connection to my Canvas Instance"
       schema={CreateCanvasInstanceSchema}
       onSubmit={async (values) => {
         try {

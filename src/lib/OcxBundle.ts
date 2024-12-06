@@ -297,6 +297,10 @@ export default class OcxBundle {
   }
 
   async createNodesFromFilesTexts(db: PrismaClient, filesTexts: { [key: string]: string }) {
+    await db.nodeExport.deleteMany({
+      where: { nodeId: { in: this.ocxNodes.map(node => node.prismaNode.id) } }
+    });
+
     await db.node.deleteMany({
       where: { bundleId: this.prismaBundle.id }
     });
