@@ -43,7 +43,7 @@ const ExportUpdateModal: React.FC<ExportUpdateModalProps> = ({
           width: "300px",
         }}
       >
-        <h2>Export Progress</h2>
+        <h2>Syncing Progress</h2>
         {exportProgress.status === "exporting" && (
           <div>
             <p>
@@ -51,7 +51,7 @@ const ExportUpdateModal: React.FC<ExportUpdateModalProps> = ({
 
               }
               {
-                exportProgress.totalActivities > 0 && `Exporting activities: ${exportProgress.progress} / ${exportProgress.totalActivities}`
+                exportProgress.totalActivities > 0 && `Syncing activities: ${exportProgress.progress} / ${exportProgress.totalActivities}`
               }
             </p>
             <progress
@@ -63,14 +63,14 @@ const ExportUpdateModal: React.FC<ExportUpdateModalProps> = ({
         )}
         {exportProgress.status === "exported" && (
           <div>
-            <p>Export completed successfully!</p>
+            <p>{process.env.NEXT_PUBLIC_CLIENT_NAME} Unit loaded successfully!</p>
             <a
               href={exportUrl}
               target="_blank"
               rel="noreferrer"
               style={{ display: "block", marginBottom: "1rem", color: "blue" }}
             >
-              View Export
+              View Unit on Canvas
             </a>
           </div>
         )}

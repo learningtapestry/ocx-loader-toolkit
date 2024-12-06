@@ -98,6 +98,7 @@ export default class CanvasLegacyOpenSciEdExporter {
     const courseNode = ocxBundle.rootNodes[0];
 
     let canvasModulePosition = 1;
+    let canvasModuleItemPosition = 1;
 
     const totalActivityNodes = courseNode.children.reduce((acc, unitNode) => {
       return acc + unitNode.children.reduce((acc2, lessonNode) => {
@@ -113,13 +114,11 @@ export default class CanvasLegacyOpenSciEdExporter {
       totalActivities: totalActivityNodes
     });
 
-    // iterate on the oer:Unit nodes
+    courseNode.metadata.name = `${(bundle.importMetadata as { full_course_name: string }).full_course_name}`;
+    const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(courseNode, canvasModulePosition);
+
+    // iterate on the oer:Unit nodes which represent lesson sets for OpenScied and should not generate any module in Canvas
     for (const unitNode of courseNode.children) {
-      unitNode.metadata.name = `Unit ${unitNode.metadata.alternateName}: ${unitNode.metadata.name}`;
-      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, canvasModulePosition++);
-
-      let canvasModuleItemPosition = 1;
-
       // iterate on the oer:Lesson nodes
       for (const lessonNode of unitNode.children) {
         lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;

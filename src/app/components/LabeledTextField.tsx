@@ -1,4 +1,4 @@
-import { forwardRef, PropsWithoutRef, ComponentPropsWithoutRef } from "react"
+import { forwardRef, PropsWithoutRef, ComponentPropsWithoutRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { ErrorMessage } from "@hookform/error-message"
 
@@ -7,6 +7,8 @@ export interface LabeledTextFieldProps extends PropsWithoutRef<JSX.IntrinsicElem
   name: string
   /** Field label. */
   label: string
+  showpasswordlabel?: string
+  hidepasswordlabel?: string
   /** Field type. Doesn't include radio buttons and checkboxes */
   type?: "text" | "password" | "email" | "number"
   outerProps?: PropsWithoutRef<JSX.IntrinsicElements["div"]>
@@ -14,17 +16,45 @@ export interface LabeledTextFieldProps extends PropsWithoutRef<JSX.IntrinsicElem
 }
 
 export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldProps>(
-  ({ label, outerProps, labelProps, name, ...props }, ref) => {
+  ({ label, outerProps, labelProps, name, type, ...props }, ref) => {
     const {
       register,
       formState: { isSubmitting, errors },
     } = useFormContext()
 
+    const [showPassword, setShowPassword] = useState(false)
+
+    const isPassword = type === "password"
+    const inputType = isPassword && showPassword ? "text" : type
+
+    const showPasswordLabel = props.showpasswordlabel || "(show)"
+    const hidePasswordLabel = props.hidepasswordlabel || "(hide)"
+
     return (
       <div {...outerProps}>
         <label {...labelProps}>
           {label}
-          <input disabled={isSubmitting} {...register(name)} {...props} />
+          { isPassword && (
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              style={
+                {
+                  cursor: "pointer",
+                  marginLeft: "0.5rem"
+                }
+              }>
+              {showPassword ? hidePasswordLabel : showPasswordLabel}
+            </span>
+          )}
+          <div style={{ position: "relative" }}>
+            <input 
+              disabled={isSubmitting} 
+              {...register(name)} 
+              {...props} 
+              type={inputType}
+              style={{ width: "100%" }}
+            />
+          </div>
         </label>
 
         <ErrorMessage
@@ -36,23 +66,6 @@ export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldPro
           errors={errors}
           name={name}
         />
-
-        <style jsx>{`
-          label {
-            display: flex;
-            flex-direction: column;
-            align-items: start;
-            font-size: 1rem;
-          }
-          input {
-            font-size: 1rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            border: 1px solid purple;
-            appearance: none;
-            margin-top: 0.5rem;
-          }
-        `}</style>
       </div>
     )
   }

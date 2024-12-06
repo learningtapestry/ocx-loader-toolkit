@@ -24,7 +24,7 @@ export default function CanvasCoursePicker({ bundleExport, onCoursePicked }: Can
 
   return (
     <div className="mt-4">
-      <h3>Choose course</h3>
+      <h3>Choose a course</h3>
       <fieldset>
         {courses.length > 0 ? (
           courses.map((course) => (
@@ -44,7 +44,7 @@ export default function CanvasCoursePicker({ bundleExport, onCoursePicked }: Can
         )}
       </fieldset>
       <button onClick={handleConfirmSelection} disabled={selectedCourseId === null}>
-        Export to selected course
+        Sync with Canvas
       </button>
     </div>
   );
