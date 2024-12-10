@@ -1,11 +1,5 @@
 import { HttpError } from "../types";
 
-// const canvasBaseURL = 'https://canvas.instructure.com';
-// const canvasAccessToken = '6936~BkIi8Lxs7qM9pWAITibFTmTcxKSOtxIK9LKOOZ15p6dwPEpQirrYzcvxzjMtAzxl';
-
-const canvasBaseURL = 'http://ec2-3-82-213-67.compute-1.amazonaws.com';
-const canvasAccessToken = 'rdcwb0qHrgR4jK0N7vARTRjuyoD3HvTQxo225RE5qdgVEgSibEfK2UCI1gazJ2xx';
-
 export default async function callCanvas(
   baseUrl: string,
   accessToken: string,
