@@ -24,7 +24,8 @@ export default class CanvasRepository {
       course: {
         name: name,
         course_code: code,
-      }
+      },
+      enroll_me: true
     }
 
     return callCanvas(baseUrl, accessToken, 'accounts/self/courses', 'POST', courseData);
