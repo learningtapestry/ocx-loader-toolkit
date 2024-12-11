@@ -38,17 +38,16 @@ type Language = 'en' | 'es';
 
 export default class CanvasLegacyOpenSciEdExporter {
   prismaBundleExport: BundleExport;
-
   ocxBundleExportCanvas?: OcxBundleExportCanvas;
-
   courseUrl: string | null = null;
-
   language: Language;
+  courseName: string;
 
   constructor(prismaBundleExport: BundleExport) {
     this.prismaBundleExport = prismaBundleExport;
 
     this.language = (prismaBundleExport.metadata as JsonObject).language as Language || 'en';
+    this.courseName = (prismaBundleExport.metadata as JsonObject).courseName as string || '';
   }
 
   async exportAll(): Promise<string | null> {
@@ -111,7 +110,7 @@ export default class CanvasLegacyOpenSciEdExporter {
       totalActivities: totalActivityNodes
     });
 
-    courseNode.metadata.name = `${(bundle.importMetadata as { full_course_name: string }).full_course_name}`;
+    courseNode.metadata.name = this.courseName;
     const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(courseNode, canvasModulePosition);
 
     // iterate on the oer:Unit nodes which represent lesson sets for OpenScied and should not generate any module in Canvas

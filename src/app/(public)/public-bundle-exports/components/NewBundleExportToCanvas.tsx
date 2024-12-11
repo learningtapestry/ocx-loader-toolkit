@@ -5,6 +5,7 @@ import { Suspense, useState } from "react"
 import { Prisma } from "@prisma/client"
 
 import CanvasCoursePicker from "./CanvasCoursePicker"
+import { JsonObject } from "@prisma/client/runtime/library";
 
 type BundleExportWithBundle = Prisma.BundleExportGetPayload<{
   include: { bundle: true };
@@ -37,7 +38,7 @@ export default function NewBundleExportToCanvas({bundleExport, startExportWithNe
     }
   }
 
-  const courseName = (bundleExport.bundle.importMetadata as { full_course_name: string }).full_course_name
+  const courseName = (bundleExport.metadata as JsonObject).courseName as string;
 
   return <div>
     <h2>Where should we load {courseName}?</h2>
