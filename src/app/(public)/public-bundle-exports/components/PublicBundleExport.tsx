@@ -6,6 +6,7 @@ import ExportUpdatesWidget from "./ExportUpdatesWidget";
 import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
 import { Prisma } from "@prisma/client"
+import { JsonObject } from '@prisma/client/runtime/library';
 
 type BundleExportWithBundle = Prisma.BundleExportGetPayload<{
   include: { bundle: true };
@@ -72,7 +73,7 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
   return (
     <>
       <div>
-        <h1>Loading {(bundleExport.bundle.importMetadata as { full_course_name: string })!.full_course_name}</h1>
+        <h1>Loading {(bundleExport.metadata as JsonObject).courseName as string}</h1>
 
         <p>
           Status: {exportStateMapping[exportProgress.status]}

@@ -6,6 +6,9 @@ import { randomBytes } from 'crypto';
 import { getOAuth2Token } from "src/lib/exporters/repositories/callCanvas"
 import ExportDestinationService from "src/lib/ExportDestinationService"
 
+import { languages } from "src/constants/languages";
+import { JsonObject } from "@prisma/client/runtime/library";
+
 export default api(async (req, res) => {
   const { code, state } = req.query
 
@@ -54,10 +57,21 @@ export default api(async (req, res) => {
   // create a random token
   const token = randomBytes(32).toString('hex');
 
+  const bundle = await db.bundle.findFirst({
+    where: {
+      id: bundleId,
+    }
+  });
+  let courseName = (bundle?.importMetadata as JsonObject).full_course_name as string;
+  if (language !== 'en' && languages[language]) {
+    courseName += ` ${languages[language]}`;
+  }
+
   const bundleExport = await db.bundleExport.create({
     data: {
       name: `Temp ${canvasInstance.name} Export`,
       metadata: {
+        courseName: courseName,
         courseCode: "test1",
         language: language || "en",
       },

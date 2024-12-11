@@ -80,7 +80,10 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
   }
 
   const importMetadata = bundle.importMetadata as importMetadata;
-  const courseName = importMetadata.full_course_name;
+  let courseName = importMetadata.full_course_name;
+  if (language !== 'en' && languages[language]) {
+    courseName += ` ${languages[language]}`;
+  }
 
   return (
     <>
