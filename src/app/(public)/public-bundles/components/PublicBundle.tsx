@@ -101,7 +101,7 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
             type="text"
             value={destinationUrl}
             onChange={handleDestinationUrlChange}
-            placeholder={`Enter URL of the Canvas instance where you want to load this ${process.env.NEXT_PUBLIC_CLIENT_NAME} unit`}
+            placeholder={`Enter URL of the Canvas instance where you want to load this ${process.env.NEXT_PUBLIC_CLIENT_NAME} unit: https://mydistrictname.instructure.com`}
             style={{ marginRight: "0.5rem" }}
           />
 
