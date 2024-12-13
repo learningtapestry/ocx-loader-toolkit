@@ -91,11 +91,6 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
 
         <h3>{courseName}</h3>
 
-        <p>Unit: {importMetadata.unit}</p>
-        <p>Grade: {importMetadata.grade}</p>
-        <p>Subject: {importMetadata.subject}</p>
-        <p>Language: {languages[language]}</p>
-
         <div>
           <input
             type="text"
