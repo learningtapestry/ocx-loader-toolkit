@@ -20,7 +20,7 @@ type BundlePageProps = {
 
 export default async function Page({ params }: BundlePageProps) {
   return (
-    <div>
+    <div className='content'>
       <Suspense fallback={<div>Loading...</div>}>
         <PublicBundle bundleId={Number(params.bundleId)} language={'en'} />
       </Suspense>

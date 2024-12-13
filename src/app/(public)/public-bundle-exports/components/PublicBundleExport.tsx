@@ -73,7 +73,7 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
   return (
     <>
       <div>
-        <h1>Loading {(bundleExport.metadata as JsonObject).courseName as string}</h1>
+        <h2>Loading {(bundleExport.metadata as JsonObject).courseName as string}</h2>
 
         <p>
           Status: {exportStateMapping[exportProgress.status]}
