@@ -6,6 +6,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator nextAdmin {
+  provider              = "next-admin-generator-prisma"
+}
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]

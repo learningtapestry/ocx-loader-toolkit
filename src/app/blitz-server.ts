@@ -5,6 +5,14 @@ import {BlitzLogger} from "blitz"
 import {RpcServerPlugin} from "@blitzjs/rpc"
 import {authConfig} from "./blitz-auth-config"
 
+const disableSignup = (req, res, next) => {
+  if (req.url?.includes("/api/auth/signup")) {
+    res.status(404).end()
+    return
+  }
+  return next()
+}
+
 const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzServer({
   plugins: [
     AuthServerPlugin({
@@ -15,6 +23,7 @@ const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzS
     RpcServerPlugin({}),
   ],
   logger: BlitzLogger({}),
+  middleware: [disableSignup],
 })
 
 export {api, getBlitzContext, useAuthenticatedBlitzContext, invoke}
