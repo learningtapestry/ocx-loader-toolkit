@@ -87,7 +87,7 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
   return (
     <>
       <div>
-        <h1>Create a Canvas Version</h1>
+        <h2>Create a Canvas Version</h2>
 
         <h3>{courseName}</h3>
 

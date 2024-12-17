@@ -47,9 +47,16 @@ export default async function Page({ params }: BundlePageProps) {
 
   return (
     <div>
-      <Suspense fallback={<div>Loading...</div>}>
-        <PublicBundle bundleId={bundleId} language={language} />
-      </Suspense>
+      <div className='intro'>
+        The {process.env.NEXT_PUBLIC_CLIENT_NAME} Canvas Loader tool below will add the identified unit to your Canvas instance.
+        For the tool to work, your Canvas administrator will need to have approved use of the tool.
+        Visit the Canvas Administrator page for more information on the approval process.
+      </div>
+      <div className='content'>
+        <Suspense fallback={<div>Loading...</div>}>
+          <PublicBundle bundleId={bundleId} language={language} />
+        </Suspense>
+      </div>
     </div>
   )
 }

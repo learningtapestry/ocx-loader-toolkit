@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <div>
-      <h1>Connect your Canvas instance</h1>
+    <div className='content'>
+      <h2>Connect your Canvas instance</h2>
 
       <ApiKeyInstructions />
 

@@ -29,7 +29,7 @@ export default async function Page({ params, searchParams }: BundleExportPagePro
   const { token } = searchParams;
 
   return (
-    <div>
+    <div className='content'>
       <Suspense fallback={<div>Loading...</div>}>
         <PublicBundleExportContainer bundleExportId={Number(bundleExportId)} token={token} />
       </Suspense>
