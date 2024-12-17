@@ -36,7 +36,9 @@ export const BundlesList = () => {
       <ul>
         {bundles.map((bundle) => (
           <li key={bundle.id}>
-            <Link href={`/bundles/${bundle.id}`}>{bundle.name}</Link>
+            <Link href={`/bundles/${bundle.id}`} style={{ color: getColorByStatus(bundle.importStatus) }}>
+              {bundle.name}
+            </Link>
           </li>
         ))}
       </ul>
@@ -49,4 +51,15 @@ export const BundlesList = () => {
       </button>
     </div>
   );
+};
+
+const getColorByStatus = (importStatus: string) => {
+  switch (importStatus) {
+    case "failed":
+      return "red";
+    case "completed":
+      return "green";
+    default:
+      return "black";
+  }
 };
