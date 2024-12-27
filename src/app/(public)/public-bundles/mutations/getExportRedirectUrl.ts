@@ -28,7 +28,7 @@ export default resolver.pipe(
 
       return { redirectUrl: authUrl }
     } else {
-      return { error: `This Canvas instance has not yet been approved. Ask your Canvas administrator to visit ${process.env.CANVAS_LOADER_ADMINISTRATOR_URL} to add a Developer Key.` }
+      return { error: `This Canvas instance has not yet been approved. Ask your Canvas administrator to visit ${process.env.GUIDE_FOR_CANVAS_INSTANCE_ADMNISTRATOR_URL} to add a Developer Key.` }
     }
   }
 )

@@ -7,7 +7,7 @@ import { invoke } from "src/app/blitz-server"
 
 import { ClientInfoVar } from "src/app/components/ClientInfoVar"
 import Link from "next/link";
-import getClientInfoVars, { ClientInfoVarsResponse } from "src/app/mutations/getClientInfoVars"
+import getClientInfoVars, { ClientInfoVarsResponse } from "src/app/queries/getClientInfoVars"
 
 // export async function generateMetadata({
 //                                          params,
@@ -50,16 +50,15 @@ export default async function Page({ params }: BundlePageProps) {
 
   // Use invoke to call the resolver
   const clientInfoVars: ClientInfoVarsResponse = await invoke(getClientInfoVars, {})
-  const adminUrl = clientInfoVars.canvasLoaderAdministratorUrl || ""
 
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
         {/* <Intro/> */}
         <div className='intro'>
-          The <ClientInfoVar field="clientName"/> Canvas Loader tool below will add the identified unit to your Canvas instance.
+          The {clientInfoVars.clientName || ""} Canvas Loader tool below will add the identified unit to your Canvas instance.
           For the tool to work, your Canvas administrator will need to have approved use of the tool.
-          Visit the <Link href={adminUrl as any}>Canvas Administrator page</Link> for more information on the approval process.
+          Visit the <Link href={clientInfoVars.canvasLoaderAdministratorUrl || "" as any}>Canvas Administrator page</Link> for more information on the approval process.
         </div>
       
         <div className='content'>

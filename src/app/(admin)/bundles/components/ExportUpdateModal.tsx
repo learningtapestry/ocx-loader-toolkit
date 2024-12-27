@@ -1,3 +1,4 @@
+import { ClientInfoVar } from "@/src/app/components/ClientInfoVar";
 import React from "react";
 
 interface ExportUpdateModalProps {
@@ -63,7 +64,7 @@ const ExportUpdateModal: React.FC<ExportUpdateModalProps> = ({
         )}
         {exportProgress.status === "exported" && (
           <div>
-            <p>{process.env.NEXT_PUBLIC_CLIENT_NAME} Unit loaded successfully!</p>
+            <p><ClientInfoVar field="clientName"/> Unit loaded successfully!</p>
             <a
               href={exportUrl}
               target="_blank"

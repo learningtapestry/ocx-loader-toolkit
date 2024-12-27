@@ -1,5 +1,6 @@
 "use client"
 
+import { ClientInfoVar } from '@/src/app/components/ClientInfoVar';
 import { useState, useEffect } from 'react';
 
 export default function ApiKeyInstructions() {
@@ -23,7 +24,7 @@ export default function ApiKeyInstructions() {
     <div>
       <p>
         Add a Developer Key on your Canvas instance to allow teachers to load{' '}
-        {process.env.NEXT_PUBLIC_CLIENT_NAME} units using OAuth2. See{' '}
+        <ClientInfoVar field="clientName"/> units using OAuth2. See{' '}
         <a
           href="https://community.canvaslms.com/t5/Admin-Guide/How-do-I-add-a-developer-API-key-for-an-account/ta-p/259"
           target="_blank"
@@ -35,7 +36,7 @@ export default function ApiKeyInstructions() {
 
       <ul>
         <li>Type: API key</li>
-        <li>Key Name: {process.env.NEXT_PUBLIC_CLIENT_NAME} Canvas Loader</li>
+        <li>Key Name: <ClientInfoVar field="clientName"/> Canvas Loader</li>
         <li>Redirect URI: {redirectUri}</li>
       </ul>
     </div>

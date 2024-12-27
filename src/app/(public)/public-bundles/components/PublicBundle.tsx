@@ -11,6 +11,8 @@ import ExportUpdateModal from "./ExportUpdateModal";
 
 import { languages } from "src/constants/languages";
 
+import { ClientInfoVar } from '@/src/app/components/ClientInfoVar';
+
 type PublicBundleProps = {
   bundleId: number
   language: string
@@ -84,6 +86,8 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
   const languageDescription = language !== 'en' && languages[language] ? ` [${languages[language]}]` : '';
   const courseName = importMetadata.full_course_name + languageDescription;
 
+  const clientName = ClientInfoVar({field: "clientName"})
+
   return (
     <>
       <div>
@@ -96,7 +100,7 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
             type="text"
             value={destinationUrl}
             onChange={handleDestinationUrlChange}
-            placeholder={`Enter URL of the Canvas instance where you want to load this ${process.env.NEXT_PUBLIC_CLIENT_NAME} unit: https://mydistrictname.instructure.com`}
+            placeholder={`Enter URL of the Canvas instance where you want to load this ${clientName} unit: https://mydistrictname.instructure.com`}
             style={{ marginRight: "0.5rem" }}
           />
 

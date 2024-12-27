@@ -13,7 +13,7 @@ export default resolver.pipe(
   async (_, ctx) : Promise<ClientInfoVarsResponse> => {
     return {
       clientName: process.env.CLIENT_NAME || "",
-      canvasLoaderAdministratorUrl: process.env.CANVAS_LOADER_ADMINISTRATOR_URL || "",
+      canvasLoaderAdministratorUrl: process.env.GUIDE_FOR_CANVAS_INSTANCE_ADMNISTRATOR_URL || "",
     };
   }
 );
