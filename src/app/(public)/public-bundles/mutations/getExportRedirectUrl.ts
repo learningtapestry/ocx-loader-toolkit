@@ -28,7 +28,7 @@ export default resolver.pipe(
 
       return { redirectUrl: authUrl }
     } else {
-      return { error: "Canvas instance not found" }
+      return { error: `This Canvas instance has not yet been approved. Ask your Canvas administrator to visit ${process.env.CANVAS_LOADER_ADMINISTRATOR_URL} to add a Developer Key.` }
     }
   }
 )
