@@ -49,6 +49,13 @@ CANVAS_BASE_URL=http://your.server/
 CANVAS_ACCESS_TOKEN=your_token
 ```
 
+### Client specific
+We need to provide client specific env variables:
+```
+CLIENT_NAME=ClientName
+GUIDE_FOR_CANVAS_INSTANCE_ADMNISTRATOR_URL=https://clientname.com
+```
+
 ## Integration with other services
 All keys for setup can be generated in Rails using  SecureRandom.hex(64) or online tool to generate those.
 

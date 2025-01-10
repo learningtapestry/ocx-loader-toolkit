@@ -1,3 +1,4 @@
+import { ClientInfoVar } from "@/src/app/components/ClientInfoVar";
 import React from "react";
 
 interface ExportUpdatesWidgetProps {
@@ -37,7 +38,7 @@ const ExportUpdatesWidget: React.FC<ExportUpdatesWidgetProps> = ({
       )}
       {exportProgress.status === "exported" && (
         <div>
-          <p>{process.env.NEXT_PUBLIC_CLIENT_NAME} Unit loaded successfully!</p>
+          <p><ClientInfoVar field="clientName"/> Unit loaded successfully!</p>
           <a
             href={exportUrl}
             target="_blank"

@@ -1,7 +1,5 @@
 # Use the official Node.js 18 image as the base
 FROM node:22.5
-ARG NEXT_PUBLIC_CLIENT_NAME
-ENV NEXT_PUBLIC_CLIENT_NAME=$NEXT_PUBLIC_CLIENT_NAME
 # Set the working directory inside the container
 WORKDIR /app
 

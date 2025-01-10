@@ -1,10 +1,13 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react"
 
 import getBundleIdFromImport from "../../queries/getPublicBundleIdFromImport"
 import { PublicBundle } from "../../components/PublicBundle"
 import { invoke } from "src/app/blitz-server"
+
+import { ClientInfoVar } from "src/app/components/ClientInfoVar"
+import Link from "next/link";
+import getClientInfoVars, { ClientInfoVarsResponse } from "src/app/queries/getClientInfoVars"
 
 // export async function generateMetadata({
 //                                          params,
@@ -45,18 +48,23 @@ export default async function Page({ params }: BundlePageProps) {
 
   const language = coordinates.pop() as string
 
+  // Use invoke to call the resolver
+  const clientInfoVars: ClientInfoVarsResponse = await invoke(getClientInfoVars, {})
+
   return (
     <div>
-      <div className='intro'>
-        The {process.env.NEXT_PUBLIC_CLIENT_NAME} Canvas Loader tool below will add the identified unit to your Canvas instance.
-        For the tool to work, your Canvas administrator will need to have approved use of the tool.
-        Visit the Canvas Administrator page for more information on the approval process.
-      </div>
-      <div className='content'>
-        <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div>Loading...</div>}>
+        {/* <Intro/> */}
+        <div className='intro'>
+          The {clientInfoVars.clientName || ""} Canvas Loader tool below will add the identified unit to your Canvas instance.
+          For the tool to work, your Canvas administrator will need to have approved use of the tool.
+          Visit the <Link href={clientInfoVars.canvasLoaderAdministratorUrl || "" as any}>Canvas Administrator page</Link> for more information on the approval process.
+        </div>
+      
+        <div className='content'>
           <PublicBundle bundleId={bundleId} language={language} />
-        </Suspense>
-      </div>
+        </div>
+      </Suspense>
     </div>
   )
 }

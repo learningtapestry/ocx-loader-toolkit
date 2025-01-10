@@ -1,5 +1,6 @@
 import '@picocss/pico/css/pico.min.css';
 import '../styles/public/layout.css';
+import { ClientInfoVar } from '../components/ClientInfoVar';
 
 export default async function PublicLayout({
   children,
@@ -9,7 +10,7 @@ export default async function PublicLayout({
   return (
     <>
       <div className='publicHeader'>
-        <h1>{process.env.NEXT_PUBLIC_CLIENT_NAME} Canvas Loader</h1>
+        <h1><ClientInfoVar field="clientName"/> Canvas Loader</h1>
       </div>
 
       <div className='container' style={{ marginTop: '1em' }}>
