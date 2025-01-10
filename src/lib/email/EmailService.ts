@@ -6,7 +6,7 @@ export class EmailService {
   private transporter: nodemailer.Transporter
 
   constructor() {
-    this.transporter = nodemailer.createTransport(emailConfig.smtp)
+    this.transporter = nodemailer.createTransport(emailConfig.smtp as unknown as nodemailer.Transporter)
   }
 
   async sendEmail({ to, subject, body }: EmailPayload): Promise<void> {

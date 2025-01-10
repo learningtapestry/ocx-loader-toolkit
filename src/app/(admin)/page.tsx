@@ -23,6 +23,12 @@ export default async function Home() {
               </a>
             </div>
 
+            <div>
+              <a href={"/bundle-import-sources"} className={styles.button}>
+                <strong>Bundle import sources</strong>
+              </a>
+            </div>
+
             <LogoutButton />
 
             <div>

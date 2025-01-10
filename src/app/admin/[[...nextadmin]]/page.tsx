@@ -1,5 +1,6 @@
 
 import prisma from "@/prisma";
+
 import { NextAdmin, PromisePageProps } from "@premieroctet/next-admin";
 import { getNextAdminProps } from "@premieroctet/next-admin/appRouter";
 import { Metadata, Viewport } from "next";

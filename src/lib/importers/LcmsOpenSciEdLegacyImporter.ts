@@ -3,7 +3,7 @@ import db from "db"
 import { BundleImportSource, BundleImportStatus } from "@prisma/client"
 
 import OpenSciEdLegacyOcxBundle from "src/lib/LegacyOpenSciEdOcxBundle"
-import { JSONObject } from "superjson/src/types"
+import { JsonObject } from '@prisma/client/runtime/library';
 
 import ImportBundleJob from "src/app/jobs/importBundleJob"
 import computeHmacSignature from "src/lib/hmac/computeHmacSignature"
@@ -71,7 +71,7 @@ export default class LcmsOpenSciEdLegacyImporter {
         },
         data: {
           importMetadata: {
-            ...(ocxBundle.prismaBundle.importMetadata as JSONObject),
+            ...(ocxBundle.prismaBundle.importMetadata as JsonObject),
             grade: unitCoordinates.grade,
             subject: unitCoordinates.subject,
             unit: unitCoordinates.unit,
@@ -192,7 +192,7 @@ export default class LcmsOpenSciEdLegacyImporter {
     const timestamp = Math.floor(Date.now() / 1000)
     const body = ''
 
-    const hmacSecret = (this.importSource.accessData as JSONObject).api_secret_key as string;
+    const hmacSecret = (this.importSource.accessData as JsonObject).api_secret_key as string;
 
     const signature = computeHmacSignature(timestamp, path, body, hmacSecret);
 
