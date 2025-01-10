@@ -5,6 +5,8 @@ import airbrake from "config/airbrake"
 
 import LcmsOpenSciEdLegacyImporter from "src/lib/importers/LcmsOpenSciEdLegacyImporter"
 
+import { sendEmail } from 'src/lib/email/EmailService'
+
 export type ImportBundleJobData = {
   bundleImportSourceId: number
   ocxUrl: string
@@ -37,7 +39,14 @@ export async function startWorker() {
           throw new Error(`Unsupported bundle import source type: ${bundleImportSource?.type}`)
       }
     } catch (e) {
-      console.error(`${bundleImportSourceId}, ocxUrl: ${ocxUrl}] Error importing bundle:`, e)
+      console.error(`[${bundleImportSourceId}, ocxUrl: ${ocxUrl}] Error importing bundle:`, e)
+
+      await sendEmail({
+        to: process.env.NOTIFICATION_EMAIL!,
+        subject: 'Bundle Import Failed',
+        body: `Failed to import bundle from URL: ${ocxUrl}\nError: ${(e as Error).message}`
+      })
+
       await airbrake?.notify(e)
       throw e
     }
