@@ -2,7 +2,7 @@ import Link from "next/link"
 import { invoke } from "../blitz-server"
 import { LogoutButton } from "../(auth)/components/LogoutButton"
 import styles from "../styles/Home.module.css"
-import getCurrentUser from "../users/queries/getCurrentUser"
+import getCurrentUser from "../(admin)/users/queries/getCurrentUser"
 
 export default async function Home() {
   const currentUser = await invoke(getCurrentUser, null)
@@ -12,26 +12,14 @@ export default async function Home() {
         {currentUser ? (
           <>
             <div>
+              <a href={"/admin"} className={styles.button}>
+                <strong>Admin Panel</strong>
+              </a>
+            </div>
+
+            <div>
               <a href={"/bundles"} className={styles.button}>
                 <strong>Bundles</strong>
-              </a>
-            </div>
-
-            <div>
-              <a href={"/bundle-import-sources"} className={styles.button}>
-                <strong>Bundle Import Sources</strong>
-              </a>
-            </div>
-
-            <div>
-              <a href={"/export-destinations"} className={styles.button}>
-                <strong>Export Destinations</strong>
-              </a>
-            </div>
-
-            <div>
-              <a href={"/canvas-instances"} className={styles.button}>
-                <strong>Canvas Instances</strong>
               </a>
             </div>
 
@@ -45,9 +33,6 @@ export default async function Home() {
           </>
         ) : (
           <>
-            <Link href="/signup" className={styles.button}>
-              <strong>Sign Up</strong>
-            </Link>
             <Link href="/login" className={styles.loginButton}>
               <strong>Login</strong>
             </Link>

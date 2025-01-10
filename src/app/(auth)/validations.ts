@@ -11,11 +11,6 @@ export const password = z
   .max(100)
   .transform((str) => str.trim())
 
-export const Signup = z.object({
-  email,
-  password,
-})
-
 export const Login = z.object({
   email,
   password: z.string(),
