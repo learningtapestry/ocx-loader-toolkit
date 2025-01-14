@@ -8,7 +8,11 @@ import {
 import db from "db"
 import airbrake from "config/airbrake"
 
-import prettyBytes from "pretty-bytes"
+let prettyBytes: any;
+
+(async () => {
+  prettyBytes = await import("pretty-bytes");
+})();
 
 import OcxBundleExport from "src/lib/OcxBundleExport"
 

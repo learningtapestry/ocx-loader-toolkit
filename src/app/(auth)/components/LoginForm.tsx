@@ -53,10 +53,6 @@ export const LoginForm = (props: LoginFormProps) => {
           <Link href={"/forgot-password"}>Forgot your password?</Link>
         </div>
       </Form>
-
-      <div style={{marginTop: "1rem"}}>
-        Or <Link href="/signup">Sign Up</Link>
-      </div>
     </>
   )
 }
