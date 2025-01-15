@@ -2,7 +2,9 @@ import { SecurePassword } from "@blitzjs/auth/secure-password";
 
 import { NextAdminOptions } from "@premieroctet/next-admin";
 import PasswordInput from "./components/PasswordInput";
-import {Ctx} from "blitz"
+
+import db from "@/db"
+import LcmsOpenSciEdLegacyImporter from "@/src/lib/importers/LcmsOpenSciEdLegacyImporter"
 
 export const options: NextAdminOptions = {
   title: "⚡️ Admin Panel",
@@ -33,7 +35,6 @@ export const options: NextAdminOptions = {
         hooks: {
           beforeDb: async (data, mode, request) => {
             try {
-              console.log("before DB");
               const newPassword = data.newPassword;
               
               if (newPassword) {
@@ -51,25 +52,28 @@ export const options: NextAdminOptions = {
     },
     Session: {},
     BundleImportSource: {
-      // actions: [
-      //   {
-      //     type: "server",
-      //     title: "Sync all bundles",
-      //     id: "sync-all-bundles",
-      //     action: async (ids) => {
-      //       const id = ids[0] as number;
-      //       if (window.confirm("This will import all bundles from the source")) {
-      //         const bundles = await importFromBundleImportSourceMutation({ id: id }, {} as Ctx);
+      actions: [
+        {
+          type: "server",
+          title: "Sync all bundles",
+          id: "sync-all-bundles",
+          action: async (ids) => {
+            const id = ids[0] as number;
+            const bundleImportSource = await db.bundleImportSource.findUnique({ where: { id } })
 
-      //         if (bundles) {
-      //           alert(`Created ${bundles} import jobs`)
-      //         }
-      //       }
-      //     },
-      //     successMessage: "sync bundles job started",
-      //     errorMessage: "sync bundles job failed to start",
-      //   },
-      // ]
+            if (!bundleImportSource) throw new Error("Bundle Import Source not found")
+
+            const importer = new LcmsOpenSciEdLegacyImporter(bundleImportSource)
+
+            const bundlesToUpdate = await importer.importAllBundlesWithJobs()
+
+            return {
+              type: "success",
+              message: `Created ${bundlesToUpdate} import jobs`,
+            };
+          },
+        },
+      ]
     },
     CanvasInstance: {},
     Token: {},

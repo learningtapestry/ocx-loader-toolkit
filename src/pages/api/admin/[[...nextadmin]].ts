@@ -1,6 +1,6 @@
 import prisma from "../../../../prisma";
 import { createHandler } from "@premieroctet/next-admin/pageHandler";
-import options from "./pageRouterOptions";
+import { options } from "src/app/admin/options";
 
 import { invoke } from "src/app/blitz-server"
 import getCurrentUser from "../../../app/(admin)/users/queries/getCurrentUser";
