@@ -8,6 +8,8 @@ import {
 import db from "db"
 import airbrake from "config/airbrake"
 
+import prettyBytes from "pretty-bytes"
+
 import OcxBundleExport from "src/lib/OcxBundleExport"
 
 import OcxNode from "src/lib/OcxNode"
@@ -129,7 +131,7 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
 
     for (const { blob, name } of attachments) {
       console.log(
-        `[${this.prismaBundleExport.id}] Uploading attachment: ${name} / ${blob.size}`,
+        `[${this.prismaBundleExport.id}] Uploading attachment: ${name} / ${prettyBytes(blob.size)}`,
       );
       const uploadFileData = await this.canvasRepository!.uploadFileToCourse(this.bundleExportCanvasId, blob, name);
       console.log(`[${this.prismaBundleExport.id}] Uploaded: ${name}`);
