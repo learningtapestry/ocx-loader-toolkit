@@ -1,9 +1,13 @@
 import OcxBundle from "./OcxBundle"
 
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, BundleImportSource } from "@prisma/client"
 
 import fetch from 'node-fetch';
 import fetchCookie from 'fetch-cookie';
+import computeHmacSignature from "./hmac/computeHmacSignature";
+import db from "@/db";
+
+import { JsonObject } from '@prisma/client/runtime/library';
 
 const createFetchWithCookies = () => fetchCookie(fetch);
 
@@ -11,9 +15,15 @@ export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
   // legacy openscied doesn't create an xml sitemap, and a whole unit is
   // in one single .ocx.html file, where the data has some errors to fix
   async createNodesFromUnitHtml(db: PrismaClient, unitUrl: string) {
-    const fetchWithCookies = await this.logIntoOSELCMS(unitUrl);
+    let unitText = ""
 
-    let unitText = await fetchWithCookies(unitUrl).then((res) => res.text());
+    if (unitUrl.includes("/api/")) {
+      unitText = await this.fetchUsingApi(unitUrl).then((res) => res.text());
+    } else {
+      const fetchWithCookies = await this.logIntoOSELCMS(unitUrl);
+      unitText = await fetchWithCookies(unitUrl).then((res) => res.text());
+    }
+    
 
     // all ids reference the fragments in the file itself
     unitText = unitText.replaceAll('"@id":"SCI', '"@id":"#SCI');
@@ -45,6 +55,36 @@ export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
     await this.reloadFromDb(db);
 
     return this.prismaBundle;
+  }
+
+  async fetchUsingApi(unitUrl: string) {
+    const parsedUrl = new URL(unitUrl);
+    const baseUrl = `${parsedUrl.protocol}//${parsedUrl.host}`;
+    const path = parsedUrl.pathname
+    const timestamp = Math.floor(Date.now() / 1000)
+    const body = ''
+
+    const importSource = await db.bundleImportSource.findFirst({
+      where: { baseUrl: { contains: baseUrl, mode: 'insensitive' } }
+    }) as BundleImportSource;
+
+    if (!importSource) {
+      throw new Error("Import source not found");
+    }
+
+    const hmacSecret = (importSource.accessData as JsonObject).api_secret_key as string;
+
+    const signature = computeHmacSignature(timestamp, path, body, hmacSecret);
+
+    const response = await fetch(unitUrl, {
+      method: 'GET',
+      headers: {
+        'X-Api-Timestamp': timestamp.toString(),
+        'X-Api-Signature': signature,
+      }
+    });
+
+    return response;
   }
 
   async logIntoOSELCMS(unitUrl: string) {
