@@ -1,9 +1,12 @@
 import {setupBlitzServer} from "@blitzjs/next"
+import {BlitzServerMiddleware} from "@blitzjs/next"
 import {AuthServerPlugin, PrismaStorage, simpleRolesIsAuthorized} from "@blitzjs/auth"
 import db from "db"
 import {BlitzLogger} from "blitz"
 import {RpcServerPlugin} from "@blitzjs/rpc"
 import {authConfig} from "./blitz-auth-config"
+
+import { forceHttps } from "../../middlewares/force_https"
 
 const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzServer({
   plugins: [
@@ -13,6 +16,7 @@ const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzS
       isAuthorized: simpleRolesIsAuthorized,
     }),
     RpcServerPlugin({}),
+    BlitzServerMiddleware(forceHttps()),
   ],
   logger: BlitzLogger({})
 })
