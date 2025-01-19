@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
+html, body {
+  color: black;
+  background: white;
+  color-scheme: light;
+}
+
 .publicHeader {
   background-color: #2c3675;
   color: white;
@@ -16,6 +22,13 @@
 
 .container {
   font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  color: black;
+  background: white;
+
+  h1, h2, h3, h4, h5, h6, h7, p, ul, li, label {
+    background: transparent;
+    color: black;
+  }
 
   h1, h2, h3, h4, h5, h6, h7 {
     font-family: "Open Sans", Helvetica, Arial, sans-serif;
@@ -25,10 +38,25 @@
     color: black;
     margin: 10px 0 30px 0;
   }
+
   .content {
-    background-color: #f5f5f5;
+    background: #f5f5f5;
+    color: black;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  input {
+    color: black;
+    background-color: white;
+  }
+
+  a {
+    color: #0150a1;
+  }
+
+  progress {
+    background-color: #dfe3eb;
   }
 }
