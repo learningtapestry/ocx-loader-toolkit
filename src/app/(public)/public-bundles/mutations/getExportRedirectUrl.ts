@@ -2,6 +2,7 @@ import { resolver } from "@blitzjs/rpc";
 import { ExportBundleSchema } from "../schemas";
 
 import ExportDestinationService from "src/lib/ExportDestinationService"
+import { scopeUrls, oauth2AuthLink } from "@/src/lib/exporters/repositories/callCanvas";
 
 export type ExportRedirectResponse = {
   redirectUrl?: string;
@@ -20,11 +21,7 @@ export default resolver.pipe(
         language: language || "en",
       });
 
-      const authUrl = `${canvasInstance.baseUrl}/login/oauth2/auth?client_id=${
-        canvasInstance.clientId
-      }&response_type=code&redirect_uri=${encodeURIComponent(
-        `${localUrlBase}/api/canvas-oauth-export-callback`
-      )}&state=${state}`
+      const authUrl = oauth2AuthLink(canvasInstance, state, `${localUrlBase}/api/canvas-oauth-export-callback`);
 
       return { redirectUrl: authUrl }
     } else {

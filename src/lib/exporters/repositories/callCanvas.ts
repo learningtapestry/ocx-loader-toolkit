@@ -30,7 +30,7 @@ export default async function callCanvas(
 ) {
   const url = /^https?:\/\//i.test(path)
     ? path
-    : new URL(`api/v1/${path}?per_page=100`, baseUrl);
+    : new URL(`api/v1/${path}`, baseUrl);
 
   const fetchWithAuthorization = async () => {
     const response = await fetch(url, {
@@ -130,4 +130,40 @@ export async function getOAuth2Token(canvasInstance: CanvasInstance | CanvasInst
       code: code,
     }),
   });
+}
+
+export const scopeUrls = [
+  // Assigments
+  "url:POST|/api/v1/courses/:course_id/assignments",
+  // Content Migrations
+  "url:POST|/api/v1/courses/:course_id/content_migrations",
+  // Courses
+  "url:GET|/api/v1/courses",
+  "url:GET|/api/v1/courses/:id",
+  "url:POST|/api/v1/accounts/:account_id/courses",
+  "url:POST|/api/v1/courses/:course_id/files",
+  // Discussion Topics
+  "url:POST|/api/v1/courses/:course_id/discussion_topics",
+  // Modules
+  "url:POST|/api/v1/courses/:course_id/modules",
+  "url:POST|/api/v1/courses/:course_id/modules/:module_id/items",
+  // Progress
+  "url:GET|/api/v1/progress/:id",
+  // Quiz Questions
+  "url:POST|/api/v1/courses/:course_id/quizzes/:quiz_id/questions",
+  // Quizzes
+  "url:GET|/api/v1/courses/:course_id/quizzes",
+  "url:PUT|/api/v1/courses/:course_id/quizzes/:id",
+]
+
+export function oauth2AuthLink(canvasInstance: CanvasInstance | CanvasInstanceLike, state: string, redirectUrl: string) {
+  return `${canvasInstance.baseUrl}/login/oauth2/auth?client_id=${
+    canvasInstance.clientId
+  }&response_type=code&redirect_uri=${encodeURIComponent(
+    redirectUrl
+  )}&state=${
+    state
+  }&scope=${
+    scopeUrls.join(" ")
+  }`
 }
