@@ -1,3 +1,4 @@
+import { oauth2AuthLink } from "@/src/lib/exporters/repositories/callCanvas"
 import { resolver } from "@blitzjs/rpc"
 import db from "db"
 import { z } from "zod"
@@ -29,11 +30,7 @@ export default resolver.pipe(
 
     const state = StateEncoder.encodeState(canvasInstanceId, name, baseUrl)
 
-    const authUrl = `${canvasInstance.baseUrl}/login/oauth2/auth?client_id=${
-      canvasInstance.clientId
-    }&response_type=code&redirect_uri=${encodeURIComponent(
-      `${baseUrl}/api/canvas-oauth-callback`
-    )}&state=${state}`
+    const authUrl = oauth2AuthLink(canvasInstance, state, `${baseUrl}/api/canvas-oauth-callback`)
 
     return authUrl
   }
