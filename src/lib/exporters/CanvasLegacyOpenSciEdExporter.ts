@@ -141,7 +141,7 @@ export default class CanvasLegacyOpenSciEdExporter {
 
           for (const material of googleClassroomData?.materials || []) {
             if ((material.version as string).includes(languages[this.language])) {
-              if (material.object.url) {
+              if (material.object && material.object.url) {
                 if (material.object.type === 'material') {
                   if (material.object.url.includes('google.com/forms')) {
                     console.log(`[${this.prismaBundleExport.id}] loading form`, material.object.url);
