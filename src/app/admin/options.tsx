@@ -5,6 +5,7 @@ import PasswordInput from "./components/PasswordInput";
 
 import db from "@/db"
 import LcmsOpenSciEdLegacyImporter from "@/src/lib/importers/LcmsOpenSciEdLegacyImporter"
+import ImportBundleJob from "../jobs/importBundleJob";
 
 export const options: NextAdminOptions = {
   title: "⚡️ Admin Panel",
@@ -77,7 +78,33 @@ export const options: NextAdminOptions = {
     },
     CanvasInstance: {},
     Token: {},
-    Bundle: {},
+    Bundle: {
+      actions: [
+        {
+          type: "server",
+          title: "Sync bundle",
+          id: "sync-bundle",
+          action: async (ids) => {
+            const id = ids[0] as number;
+            const bundle = await db.bundle.findUnique({ where: { id } });
+
+            if (!bundle || !bundle.importSourceId || !bundle.sitemapUrl) {
+              throw new Error("Bundle or required fields not found");
+            }
+
+            await ImportBundleJob.enqueueJob({
+              bundleImportSourceId: bundle.importSourceId,
+              ocxUrl: bundle.sitemapUrl,
+            });
+
+            return {
+              type: "success",
+              message: `Created import job for bundle ${bundle.id}`,
+            };
+          },
+        }
+      ]
+    },
     Node: {},
     ExportDestination: {},
     BundleExport: {},

@@ -38,6 +38,8 @@ export async function startWorker() {
         default:
           throw new Error(`Unsupported bundle import source type: ${bundleImportSource?.type}`)
       }
+
+      console.log(`[${bundleImportSourceId}, ${ocxUrl}] Finished import`)
     } catch (e) {
       console.error(`[${bundleImportSourceId}, ocxUrl: ${ocxUrl}] Error importing bundle:`, e)
 
