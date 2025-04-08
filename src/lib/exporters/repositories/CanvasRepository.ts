@@ -92,11 +92,7 @@ export default class CanvasRepository {
   async getCourses(): Promise<CanvasCourse[]> {
     const { accessToken, baseUrl } = this.canvasConfig;
 
-    const courses = (await callCanvas(baseUrl, accessToken, 'courses?per_page=100', 'GET')) as CanvasCourse[];
-
-    console.log(courses);
-
-    return callCanvas(baseUrl, accessToken, 'courses', 'GET');
+    return callCanvas(baseUrl, accessToken, 'courses?per_page=100', 'GET');
   }
 
   async getCourse(courseId: number): Promise<CanvasCourse> {
