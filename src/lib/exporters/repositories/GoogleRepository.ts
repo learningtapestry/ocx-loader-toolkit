@@ -14,8 +14,12 @@ export default class GoogleRepository {
     });
   }
 
+  googleLinkMatch(url: string): RegExpMatchArray | null {
+    return url.match(/\/d\/([^/?]+)|open\?id=([^/?&]+)/);
+  }
+
   extractFileId(originalUrl: string): string {
-    const match = originalUrl.match(/\/d\/([^/?]+)|open\?id=([^/?&]+)/);
+    const match = this.googleLinkMatch(originalUrl);
     if (match) {
       return match[1] || match[2];
     } else {

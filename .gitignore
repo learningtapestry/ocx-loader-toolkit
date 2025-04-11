@@ -15,10 +15,14 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
 *.pem
+.idea/
+.vscode/
+notes/
 
 # debug
 npm-debug.log*
@@ -36,6 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vscode
 /src/node_modules/.vitest/results.json
-

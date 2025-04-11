@@ -51,185 +51,214 @@ export default class CanvasLegacyOpenSciEdExporter {
   }
 
   async exportAll(): Promise<string | null> {
-    console.log(`[${this.prismaBundleExport.id}] exportAll started`);
-
-    await db.bundleExport.update({
-      where: {
-        id: this.prismaBundleExport.id
-      },
-      data: {
-        state: 'exporting'
-      }
-    });
-
-    this.ocxBundleExportCanvas = await createExportOcxBundleToCanvas(
-      db,
-      this.prismaBundleExport
-    );
-
-    const exportDestination = await db.exportDestination.findUnique({
-      where: {
-        id: this.prismaBundleExport.exportDestinationId
-      }
-    })! as ExportDestination;
-
-    const bundle = (await db.bundle.findUnique({
-      where: {
-        id: this.prismaBundleExport.bundleId
-      },
-      include: {
-        nodes: true
-      }
-    }))!;
-
-    const ocxBundle = new OcxBundle(bundle, bundle.nodes);
-
-    const googleRepository = new GoogleRepository(bundle.sourceAccessData);
-
-    // Assuming `createExportOcxBundleToCanvas` returns metadata that includes the course ID
-    const courseId = this.ocxBundleExportCanvas.bundleExportCanvasId;
-    const baseUrl = exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
-    this.courseUrl = `${baseUrl}/courses/${courseId}`;
-
-    const courseNode = ocxBundle.rootNodes[0];
-
-    let canvasModulePosition = 1;
-    let canvasModuleItemPosition = 1;
-
-    const totalActivityNodes = courseNode.children.reduce((acc, unitNode) => {
-      return acc + unitNode.children.reduce((acc2, lessonNode) => {
-        return acc2 + lessonNode.children.length;
-      }, 0);
-    }, 0);
-
     let activityNodesExported = 0;
+    let totalActivityNodes = 0;
 
-    publishBundleExportUpdate(this.prismaBundleExport.id, {
-      status: 'exporting',
-      progress: activityNodesExported,
-      totalActivities: totalActivityNodes
-    });
+    try {
+      console.log(`[${this.prismaBundleExport.id}] exportAll started`);
 
-    courseNode.metadata.name = this.courseName;
-    const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(courseNode, canvasModulePosition);
+      await db.bundleExport.update({
+        where: {
+          id: this.prismaBundleExport.id
+        },
+        data: {
+          state: 'exporting'
+        }
+      });
 
-    // iterate on the oer:Unit nodes which represent lesson sets for OpenScied and should not generate any module in Canvas
-    for (const unitNode of courseNode.children) {
-      // iterate on the oer:Lesson nodes
-      for (const lessonNode of unitNode.children) {
-        lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;
+      this.ocxBundleExportCanvas = await createExportOcxBundleToCanvas(
+        db,
+        this.prismaBundleExport
+      );
 
-        const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.canvasId, canvasModuleItemPosition++, 0);
+      const exportDestination = await db.exportDestination.findUnique({
+        where: {
+          id: this.prismaBundleExport.exportDestinationId
+        }
+      })! as ExportDestination;
 
-        // iterate on the oer:Activity nodes
-        for (const activityNode of lessonNode.children) {
-          const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData;
+      const bundle = (await db.bundle.findUnique({
+        where: {
+          id: this.prismaBundleExport.bundleId
+        },
+        include: {
+          nodes: true
+        }
+      }))!;
 
-          // legacy OSE OCX has googleClassroom data
-          activityNode.metadata.name = googleClassroomData?.postTitle?.[this.language]
-          activityNode.metadata.instructions = googleClassroomData?.postInstructions?.[this.language]
+      const ocxBundle = new OcxBundle(bundle, bundle.nodes);
 
-          console.log(`[${this.prismaBundleExport.id}] -- Start exporting activity`, activityNode.metadata.name);
+      const googleRepository = new GoogleRepository(bundle.sourceAccessData);
 
-          // // only test the one which is not working
-          // if (!activityNode.metadata.name.includes('Packets')) continue;
+      // Assuming `createExportOcxBundleToCanvas` returns metadata that includes the course ID
+      const courseId = this.ocxBundleExportCanvas.bundleExportCanvasId;
+      const baseUrl = exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
+      this.courseUrl = `${baseUrl}/courses/${courseId}`;
 
-          const attachments: AttachmentData[] = [];
-          const links: LinkData[] = [];
+      const courseNode = ocxBundle.rootNodes[0];
 
-          let quizCreated = false;
+      let canvasModulePosition = 1;
+      let canvasModuleItemPosition = 1;
 
-          for (const material of googleClassroomData?.materials || []) {
-            if ((material.version as string).includes(languages[this.language])) {
-              if (material.object.url) {
-                if (material.object.type === 'material') {
-                  if (material.object.url.includes('google.com/forms')) {
-                    console.log(`[${this.prismaBundleExport.id}] loading form`, material.object.url);
+      totalActivityNodes = courseNode.children.reduce((acc, unitNode) => {
+        return acc + unitNode.children.reduce((acc2, lessonNode) => {
+          return acc2 + lessonNode.children.length;
+        }, 0);
+      }, 0);
 
-                    const formJson = await googleRepository.downloadGoogleForm(material.object.url);
+      publishBundleExportUpdate(this.prismaBundleExport.id, {
+        status: 'exporting',
+        progress: activityNodesExported,
+        totalActivities: totalActivityNodes
+      });
 
-                    const formConverter = new GoogleFormToQtiConverter(formJson);
+      courseNode.metadata.name = this.courseName;
+      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(courseNode, canvasModulePosition);
 
-                    const qtiObject = await formConverter.convertToQti();
+      // iterate on the oer:Unit nodes which represent lesson sets for OpenScied and should not generate any module in Canvas
+      for (const unitNode of courseNode.children) {
+        // iterate on the oer:Lesson nodes
+        for (const lessonNode of unitNode.children) {
+          lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;
 
-                    const qtiFileBlob = await qtiObject.generateQtiZip();
+          const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.canvasId, canvasModuleItemPosition++, 0);
+
+          // iterate on the oer:Activity nodes
+          for (const activityNode of lessonNode.children) {
+            const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData;
+
+            // legacy OSE OCX has googleClassroom data
+            activityNode.metadata.name = googleClassroomData?.postTitle?.[this.language]
+            activityNode.metadata.instructions = googleClassroomData?.postInstructions?.[this.language]
+
+            console.log(`[${this.prismaBundleExport.id}] -- Start exporting activity`, activityNode.metadata.name);
+
+            // // only test the one which is not working
+            // if (!activityNode.metadata.name.includes('Packets')) continue;
+
+            const attachments: AttachmentData[] = [];
+            const links: LinkData[] = [];
+
+            let quizCreated = false;
+
+            for (const material of googleClassroomData?.materials || []) {
+              if ((material.version as string).includes(languages[this.language])) {
+                if (material.object.url) {
+                  if (material.object.type === 'material') {
+                    if (material.object.url.includes('google.com/forms')) {
+                      console.log(`[${this.prismaBundleExport.id}] loading form`, material.object.url);
+
+                      const formJson = await googleRepository.downloadGoogleForm(material.object.url);
+
+                      const formConverter = new GoogleFormToQtiConverter(formJson);
+
+                      const qtiObject = await formConverter.convertToQti();
+
+                      const qtiFileBlob = await qtiObject.generateQtiZip();
 
 
-                    // // save the form json file to the disk
-                    // const formFilePath = join(__dirname, '/__tests__/', 'fixtures', 'google_form.json');
-                    //
-                    // await writeFile(formFilePath, JSON.stringify(formJson, null, 2));
-                    //
-                    // // const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'test_form_qti.zip');
-                    // const testFilePath = join(__dirname, '..', 'qti', '/__tests__/', 'output', 'generated_test.qti.zip');
-                    // // const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'Archive.zip');
-                    // const qtiFileBlob = new Blob([await readFile(testFilePath)]);
+                      // // save the form json file to the disk
+                      // const formFilePath = join(__dirname, '/__tests__/', 'fixtures', 'google_form.json');
+                      //
+                      // await writeFile(formFilePath, JSON.stringify(formJson, null, 2));
+                      //
+                      // // const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'test_form_qti.zip');
+                      // const testFilePath = join(__dirname, '..', 'qti', '/__tests__/', 'output', 'generated_test.qti.zip');
+                      // // const testFilePath = join(__dirname, '/__tests__/', 'fixtures', 'Archive.zip');
+                      // const qtiFileBlob = new Blob([await readFile(testFilePath)]);
 
-                    await this.ocxBundleExportCanvas.exportOcxNodeQtiFileToQuiz(activityNode, qtiFileBlob, moduleExport.canvasId, canvasModuleItemPosition++);
-                    quizCreated = true;
-                  } else {
-                    console.log(`[${this.prismaBundleExport.id}] downloading material`, material.object.url);
+                      await this.ocxBundleExportCanvas.exportOcxNodeQtiFileToQuiz(activityNode, qtiFileBlob, moduleExport.canvasId, canvasModuleItemPosition++);
+                      quizCreated = true;
+                    } else if (googleRepository.googleLinkMatch(material.object.url)) {
+                      console.log(`[${this.prismaBundleExport.id}] downloading material`, material.object.url);
 
-                    const {blob, extension} = await googleRepository.downloadFromGoogleDrive(material.object.url);
+                      const {blob, extension} = await googleRepository.downloadFromGoogleDrive(material.object.url);
 
-                    const fileName = `${material.object.title}.${extension}`;
+                      const fileName = `${material.object.title}.${extension}`;
 
-                    attachments.push({
-                      blob,
-                      name: fileName
+                      attachments.push({
+                        blob,
+                        name: fileName
+                      });
+                    } else {
+                      console.log(`[${this.prismaBundleExport.id}] processing link material`, material.object.url);
+                      links.push({
+                        url: material.object.url,
+                        name: material.object.title
+                      });
+                    }
+                  }
+
+                  if (material.object.type === 'video') {
+                    links.push({
+                      url: material.object.url,
+                      name: material.object.title
                     });
                   }
                 }
-
-                if (material.object.type === 'video') {
-                  links.push({
-                    url: material.object.url,
-                    name: material.object.title
-                  });
-                }
               }
             }
+
+            if (!quizCreated) {
+              const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(
+                activityNode, attachments, links, moduleExport.canvasId, canvasModuleItemPosition++
+              );
+            }
+
+            activityNodesExported++;
+
+            publishBundleExportUpdate(this.prismaBundleExport.id, {
+              status: 'exporting',
+              progress: activityNodesExported,
+              totalActivities: totalActivityNodes
+            });
           }
-
-          if (!quizCreated) {
-            const activityExport = await this.ocxBundleExportCanvas.exportOcxNodeToAssignment(
-              activityNode, attachments, links, moduleExport.canvasId, canvasModuleItemPosition++
-            );
-          }
-
-          activityNodesExported++;
-
-          publishBundleExportUpdate(this.prismaBundleExport.id, {
-            status: 'exporting',
-            progress: activityNodesExported,
-            totalActivities: totalActivityNodes
-          });
         }
       }
-    }
 
-    await db.bundleExport.update(
-      {
+      await db.bundleExport.update(
+        {
+          where: {
+            id: this.ocxBundleExportCanvas.prismaBundleExport.id
+          },
+          data: {
+            exportUrl: this.courseUrl,
+            state: 'exported'
+          }
+        }
+      );
+
+      publishBundleExportUpdate(this.prismaBundleExport.id, {
+        status: 'exported',
+        progress: totalActivityNodes,
+        totalActivities: totalActivityNodes,
+        exportUrl: this.courseUrl
+      });
+
+      console.log(`[${this.prismaBundleExport.id}] course exported - URL: ${this.courseUrl}`);
+
+      // Return the stored course URL
+      return this.courseUrl;
+    }
+    catch (error: any) {
+      console.error(`[${this.prismaBundleExport.id}] Error exporting course:`, error);
+
+      await db.bundleExport.update({
         where: {
-          id: this.ocxBundleExportCanvas.prismaBundleExport.id
+          id: this.prismaBundleExport.id
         },
         data: {
-          exportUrl: this.courseUrl,
-          state: 'exported'
+          state: 'failed'
         }
-      }
-    );
+      });
 
-    publishBundleExportUpdate(this.prismaBundleExport.id, {
-      status: 'exported',
-      progress: totalActivityNodes,
-      totalActivities: totalActivityNodes,
-      exportUrl: this.courseUrl
-    });
+      publishBundleExportUpdate(this.prismaBundleExport.id, {
+        status: 'failed',
+        progress: activityNodesExported,
+        totalActivities: totalActivityNodes,
+      });
 
-    console.log(`[${this.prismaBundleExport.id}] course exported - URL: ${this.courseUrl}`);
-
-    // Return the stored course URL
-    return this.courseUrl;
+      throw error;
+    }
   }
 }
