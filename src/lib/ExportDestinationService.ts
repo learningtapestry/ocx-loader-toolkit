@@ -60,7 +60,7 @@ export default class ExportDestinationService {
 
       const accessTokenExpiryDate = new Date(accessTokenExpiry);
 
-      if (accessTokenExpiryDate < new Date()) {
+      if (!accessToken || accessTokenExpiryDate < new Date()) {
         accessToken = await this.refreshAccessToken();
       }
 
