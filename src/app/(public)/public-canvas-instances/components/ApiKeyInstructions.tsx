@@ -18,8 +18,7 @@ export default function ApiKeyInstructions() {
     return null
   }
 
-  const redirectUri = `${baseUrl}/api/canvas-oauth-export-callback`
-
+  const redirectUri = `${baseUrl}/api/canvas-oauth-callback`
   return (
     <div>
       <p>
