@@ -25,6 +25,13 @@ export default resolver.pipe(
       };
     }
 
+    if (responseData.error) {
+      return {
+        message: `Unexpected error: ${responseData.error}`,
+        status: 'error'
+      };
+    }
+
     const existingCanvasInstance = await ExportDestinationService.findPublicCanvasInstanceByUrl(input.baseUrl);
 
     if (existingCanvasInstance) {
