@@ -47,7 +47,7 @@ export default class CanvasLegacyOpenSciEdExporter {
     this.prismaBundleExport = prismaBundleExport;
 
     this.language = (prismaBundleExport.metadata as JsonObject).language as Language || 'en';
-    this.courseName = (prismaBundleExport.metadata as JsonObject).courseName as string || '';
+    this.courseName = (prismaBundleExport.metadata as JsonObject).courseName as string || 'Course';
   }
 
   async exportAll(): Promise<string | null> {
