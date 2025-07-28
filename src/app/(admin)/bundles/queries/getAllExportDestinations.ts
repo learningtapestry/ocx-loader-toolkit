@@ -7,7 +7,7 @@ export default resolver.pipe(
     const exportDestinations = await db.exportDestination.findMany({
       where: {
         type: {
-          in: ["canvas", "canvas-oauth2"]
+          in: ["canvas", "canvas-oauth2", "canvas-oauth2-temp"]
         }
       }
     });
