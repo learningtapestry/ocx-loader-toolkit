@@ -60,6 +60,11 @@ export default class OcxBundleExportCanvas extends OcxBundleExport {
 
           const progress = progressObject.completion;
 
+          if (progressObject?.workflow_state === 'failed') {
+            clearInterval(poller);
+            reject(new Error(`Canvas job failed! Message: ${progressObject?.message || 'No message provided'}, Context ID: ${progressObject?.context_id}`));
+          }
+
           if (progress >= 100) {
             clearInterval(poller);
             resolve('Operation complete!');
