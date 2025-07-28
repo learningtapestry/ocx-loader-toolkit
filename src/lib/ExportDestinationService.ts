@@ -29,7 +29,8 @@ export default class ExportDestinationService {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to refresh Canvas access token");
+      const text = await response.text(); 
+      throw new Error(`Failed to refresh Canvas access token: ${text}`);
     }
 
     const { access_token, refresh_token, expires_in } = await response.json();
