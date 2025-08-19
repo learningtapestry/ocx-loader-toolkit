@@ -83,6 +83,20 @@ export default class OcxBundle {
     return zip.generateAsync({ type: 'blob' });
   }
 
+  // async exportJSON() {
+  //   let jsonTree = {};
+
+  //   const topLevelNodes = this.ocxNodes.filter((node) => !node.parent);
+  //   if (topLevelNodes.length > 0) {
+  //     jsonTree = [...topLevelNodes];
+  //   }
+
+  //   for (const node of topLevelNodes) {
+  //     node.children = 
+  //   }
+
+  // }
+
   async reloadFromDb(db : PrismaClient) {
     const prismaBundle = await db.bundle.findFirst(
       {

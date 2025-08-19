@@ -18,23 +18,8 @@
       "fullStatement": "Colonial Era (CE)",
       "lastChangeDateTime": "2025-05-02T19:40:22.624Z",
       "extensions": {
-        "ocx": {
-          "@context": "https://schema.org/LessonGrouping",
-          "@type": "LessonGrouping",
-          "name": "Colonial Era (CE)",
-          "identifier": "408ca56a-9d1b-478f-97f8-b48e356ed61b",
-          "isPartOf": [
-            "26f3c45c-c053-48a0-af55-c60b2a89033e"
-          ],
-          "hasPart": [
-            "C46372C0-C8B3-478F-AB10-68E69C2756BB",
-            "73610F78-85D4-4DDA-8B21-2D3F449C8762",
-            "2D1C85EB-4189-4738-90C4-75AEFC2F07F9",
-            "94A97DF5-4BC5-4C50-BA76-F7269F50F021",
-            "E1A8C0DE-C63B-4847-A865-C7958BFC82A4",
-            "33456B54-9075-4489-B877-1E2FF44F1E90"
-          ],
-          "position": 1
+        "ocxEntity": {
+          
         }
       }
     },
@@ -60,18 +45,7 @@
         "deliverySystem": "sparkl",
         "resourceURL": "https://velocity.gadoe.org/31245",
         "isIframeable": true,
-        "fullContent": "The Colonial Era Introduction The Colonial Period is the foundational era of American History as we know it today. Europeans from a variety of nations set out across the Atlantic in search of riches, expanded economic markets, a new start on life, and religious freedom. The thirteen English Colonies that developed would eventually become the original thirteen states of our republic. The thirteen colonies were divided into three geographic groupings: New England, Middle, and the Southern colonies. Each one of these regions had some common characteristics, but also some key differences both socially and economically. While primarily English, there were other groups that settled here as well. During this time period the concept of mercantilism was predominant and resulted in a competitive trans-Atlantic trade. Soon, the colonies became a part of the trade route. Unfortunately, this resulted in an increase in African slave trade as well, which included the horrible Middle Passage. However, the African experience in the Americas would bring new cultural traditions and provide contributions that impact our society today. Colonists were focused on social mobility and key figures such as Benjamin Franklin promoted the idea of Individualism. Another major movement which is associated with Colonial America is the Great Awakening, which resulted in a massive religious revival. All of these are examples of factors that helped shaped the Colonial Period. Module Lessons Preview In this module, we will study the following topics: Development of the Colonies: Examine the development of colonies including reasons for their establishment and impact of their creation on the economy, government, and relationships with Native Americans. Colonial Regions: Compare the similarities and differences between the three major colonial regions. Examine the impact of location and place on their founding, the demographics of its people and the economic factors of their success. The African Experience: Explore the history of the African Experience in the Americas. This section will include their increased involvement from indentured servitude through slavery, the differences of life amongst the colonial regions, and the lasting impact of African-American cultural traditions and history. Salutary Neglect: Examine the relationship between Great Britains salutary neglect policy and its effect on Colonial self-government. The Great Awakening: Define the Great Awakening and, combined with the Enlightenment movement, how it ultimately led to increased sentiments for colonial independence. Key Terms Review Review the key terms for this module in the activity below. IMAGE USED WITH ACCORDING TO TERMS OF USE FROM FREEPIK AUTO AUTO AUTO AUTO AUTO",
-        "ocx": {
-          "@context": "https://chanzuckerberg.com/Activity",
-          "@type": "Activity",
-          "name": "GAVS US History: CE - Colonial Era Module Overview",
-          "identifier": "C46372C0-C8B3-478F-AB10-68E69C2756BB",
-          "isPartOf": [
-            "408ca56a-9d1b-478f-97f8-b48e356ed61b"
-          ],
-          "position": 1,
-          "description": "Interactive textbook section"
-        }
+        "fullContent": "The Colonial Era Introduction The Colonial Period is the foundational era of American History as we know it today. Europeans from a variety of nations set out across the Atlantic in search of riches, expanded economic markets, a new start on life, and religious freedom. The thirteen English Colonies that developed would eventually become the original thirteen states of our republic. The thirteen colonies were divided into three geographic groupings: New England, Middle, and the Southern colonies. Each one of these regions had some common characteristics, but also some key differences both socially and economically. While primarily English, there were other groups that settled here as well. During this time period the concept of mercantilism was predominant and resulted in a competitive trans-Atlantic trade. Soon, the colonies became a part of the trade route. Unfortunately, this resulted in an increase in African slave trade as well, which included the horrible Middle Passage. However, the African experience in the Americas would bring new cultural traditions and provide contributions that impact our society today. Colonists were focused on social mobility and key figures such as Benjamin Franklin promoted the idea of Individualism. Another major movement which is associated with Colonial America is the Great Awakening, which resulted in a massive religious revival. All of these are examples of factors that helped shaped the Colonial Period. Module Lessons Preview In this module, we will study the following topics: Development of the Colonies: Examine the development of colonies including reasons for their establishment and impact of their creation on the economy, government, and relationships with Native Americans. Colonial Regions: Compare the similarities and differences between the three major colonial regions. Examine the impact of location and place on their founding, the demographics of its people and the economic factors of their success. The African Experience: Explore the history of the African Experience in the Americas. This section will include their increased involvement from indentured servitude through slavery, the differences of life amongst the colonial regions, and the lasting impact of African-American cultural traditions and history. Salutary Neglect: Examine the relationship between Great Britains salutary neglect policy and its effect on Colonial self-government. The Great Awakening: Define the Great Awakening and, combined with the Enlightenment movement, how it ultimately led to increased sentiments for colonial independence. Key Terms Review Review the key terms for this module in the activity below. IMAGE USED WITH ACCORDING TO TERMS OF USE FROM FREEPIK AUTO AUTO AUTO AUTO AUTO"
       }
     },
     {

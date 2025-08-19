@@ -4,6 +4,7 @@ import boss from "./pgBoss"
 import airbrake from "config/airbrake"
 
 import LcmsOpenSciEdLegacyImporter from "src/lib/importers/LcmsOpenSciEdLegacyImporter"
+import SatchelImporter from "src/lib/importers/SatchelImporter"
 
 import { sendEmail } from 'src/lib/email/EmailService'
 
@@ -33,7 +34,10 @@ export async function startWorker() {
         case "lcms-legacy-ose":
           const importer = new LcmsOpenSciEdLegacyImporter(bundleImportSource)
           await importer.importBundle(ocxUrl)
-
+          break
+        case "satchel":
+          const satchelImporter = new SatchelImporter(bundleImportSource)
+          await satchelImporter.importBundle()
           break
         default:
           throw new Error(`Unsupported bundle import source type: ${bundleImportSource?.type}`)

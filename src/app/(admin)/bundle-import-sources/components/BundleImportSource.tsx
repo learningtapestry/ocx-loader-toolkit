@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation"
 import deleteBundleImportSource from "../mutations/deleteBundleImportSource"
 import importFromBundleImportSource from "../mutations/importFromBundleImportSource"
 import getBundleImportSource from "../queries/getBundleImportSource"
+import triggerSatchelImport from "../mutations/triggerSatchelImport"
+import { PeriodicImportStatus } from "./PeriodicImportStatus"
 
 export const BundleImportSource = ({ bundleImportSourceId }: { bundleImportSourceId: number }) => {
   const router = useRouter()
   const [deleteBundleImportSourceMutation] = useMutation(deleteBundleImportSource)
   const [importFromBundleImportSourceMutation] = useMutation(importFromBundleImportSource)
+  const [triggerSatchelImportMutation] = useMutation(triggerSatchelImport)
   const [bundleImportSource] = useQuery(getBundleImportSource, { id: bundleImportSourceId })
 
   return (
@@ -48,6 +51,27 @@ export const BundleImportSource = ({ bundleImportSourceId }: { bundleImportSourc
         >
           Sync All
         </button>
+
+        {bundleImportSource.type === "satchel" && (
+          <button
+            type="button"
+            onClick={async () => {
+              if (window.confirm("This will trigger a manual Satchel import")) {
+                try {
+                  await triggerSatchelImportMutation({ bundleImportSourceId: bundleImportSource.id })
+                  alert("Satchel import completed successfully")
+                } catch (error) {
+                  alert(`Satchel import failed: ${error}`)
+                }
+              }
+            }}
+            style={{ marginLeft: "0.5rem" }}
+          >
+            Trigger Satchel Import
+          </button>
+        )}
+
+        <PeriodicImportStatus importSource={bundleImportSource} />
 
       </div>
     </>

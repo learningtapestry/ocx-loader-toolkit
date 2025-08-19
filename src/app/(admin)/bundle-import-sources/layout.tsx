@@ -4,5 +4,5 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   await useAuthenticatedBlitzContext({
     redirectTo: "/login",
   })
-  return <>{children}</>
+  return <div style={{ padding: "1rem" }}>{children}</div>
 }

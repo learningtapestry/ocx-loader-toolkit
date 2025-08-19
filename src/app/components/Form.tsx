@@ -30,7 +30,7 @@ export function Form<S extends z.ZodType<any, any>>({
   ...props
 }: FormProps<S>) {
   const ctx = useForm<z.infer<S>>({
-    mode: "onBlur",
+    mode: "onSubmit",
     resolver: schema ? zodResolver(schema) : undefined,
     defaultValues: initialValues,
   })
@@ -39,25 +39,28 @@ export function Form<S extends z.ZodType<any, any>>({
   return (
     <FormProvider {...ctx}>
       <form
-        onSubmit={ctx.handleSubmit(
-          async (values) => {
-            const result = (await onSubmit(values)) || {}
-            for (const [key, value] of Object.entries(result)) {
-              if (key === FORM_ERROR) {
-                setFormError(value)
-              } else {
-                ctx.setError(key as any, {
-                  type: "submit",
-                  message: value,
-                })
-              }
-            }
-          },
-          (errors) => {
-            console.error("Validation errors:", errors)
-          }
-        )}
+        onSubmit={(e) => {
+          e.preventDefault()
 
+          return ctx.handleSubmit(
+            async (values) => {
+              const result = (await onSubmit(values)) || {}
+              for (const [key, value] of Object.entries(result)) {
+                if (key === FORM_ERROR) {
+                  setFormError(value)
+                } else {
+                  ctx.setError(key as any, {
+                    type: "submit",
+                    message: value,
+                  })
+                }
+              }
+            },
+            (errors) => {
+              console.error("Validation errors:", errors)
+            },
+          )(e);
+        }}
         className="form"
         {...props}
       >

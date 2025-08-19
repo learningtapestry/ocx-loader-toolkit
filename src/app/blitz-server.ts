@@ -20,7 +20,7 @@ const {api, getBlitzContext, useAuthenticatedBlitzContext, invoke} = setupBlitzS
 export {api, getBlitzContext, useAuthenticatedBlitzContext, invoke}
 
 // initialize the background job queue
-import { initPgBoss, startWorkers } from "src/app/jobs/initJobs";
+import { initPgBoss, startWorkers, scheduleAllPeriodicJobs } from "src/app/jobs/initJobs";
 
 initPgBoss();
 
@@ -28,4 +28,8 @@ initPgBoss();
 if (process.env.NODE_ENV === "development") {
   startWorkers().then(() => console.log("Export bundle workers started"))
 }
+
+// Schedule all periodic jobs at startup
+// Disabled for now as we need to test race conditions and singleton behavior of pg-boss
+// scheduleAllPeriodicJobs().then(() => console.log("All periodic jobs scheduled"))
 

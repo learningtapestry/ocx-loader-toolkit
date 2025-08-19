@@ -25,7 +25,7 @@ export default async function Page({ params }: BundlePageProps) {
 
   if (bundle.importStatus == "completed") {
     return (
-      <div>
+      <div style={{padding: 16}}>
         <p>
           <Link href={"/bundles"}>Bundles</Link>
         </p>

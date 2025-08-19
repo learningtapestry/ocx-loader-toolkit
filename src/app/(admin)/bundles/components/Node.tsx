@@ -56,7 +56,7 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
   );
 
   return (
-    <div key={node.ocxId} style={{paddingLeft: 16, borderLeft: '1px black solid'}}>
+    <div key={node.ocxId} style={{paddingLeft: 24, borderLeft: '1px black solid'}}>
       <h2>
         <span dangerouslySetInnerHTML={{__html: `${node.metadata!.name as string}`}}></span>
         &nbsp;
@@ -73,7 +73,7 @@ export default function Node({ node, refetchBundle }: { node: OcxNode, refetchBu
 
       {
         metadataPropertiesToHighlight.length > 0 && (
-          <ul>
+          <ul style={{paddingLeft: 16}}>
             {
               metadataPropertiesToHighlight.map((key) => (
                 <li key={key}>
