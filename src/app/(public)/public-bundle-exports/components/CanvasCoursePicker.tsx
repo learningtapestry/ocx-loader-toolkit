@@ -25,7 +25,7 @@ export default function CanvasCoursePicker({ bundleExport, onCoursePicked }: Can
   return (
     <div className="mt-4">
       <h3>Choose a course</h3>
-      <fieldset>
+      <fieldset style={{ maxHeight: '300px', overflowY: 'auto' }}>
         {courses.length > 0 ? (
           courses.map((course) => (
             <label key={course.id}>
