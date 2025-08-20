@@ -96,7 +96,7 @@ export default class CanvasRepository {
 
     console.log(courses);
 
-    return callCanvas(baseUrl, accessToken, 'courses', 'GET');
+    return courses;
   }
 
   async getCourse(courseId: number): Promise<CanvasCourse> {
