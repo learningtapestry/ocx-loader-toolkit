@@ -30,6 +30,8 @@ You will be required to create a user. After that you can go the Bundles page an
 
 If you entered a URL, click the *Load Data* button. If you want to load a zip file, click on the *Import Zip* button.
 
+If you're having trouble breakpoint debugging the worker logic with VS Code, see [this doc](./doc/vscode-worker-debugging.md).
+
 ## Environment Variables
 
 Ensure the `.env.local` file has the required environment variables:
@@ -93,6 +95,8 @@ Inside OCX-LOADER-TOOLKIT click `create Canvas Instance`. Fill the data:
 - Name: any name you want
 - Base URL: URL of Canvas instance
 - CLIENT ID and CLIENT_SECRET: get that info from previously generated developer key.
+
+More details for the Canvas OAuth linking are available [here](./doc/canvas-link.md).
 
 ## Email Service Setup
 We need to provide envs. For local testing it will be:
