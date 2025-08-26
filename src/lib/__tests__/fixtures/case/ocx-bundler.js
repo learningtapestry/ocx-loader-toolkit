@@ -35,7 +35,8 @@ const findItemByIdInMyTree = (id, tree) => {
     )
   }
 
-  return element
+  const { lessons, modules, ...rest } = element;
+  return rest;
 }
 
 let courses = getItemChildren(data.CFDocument.identifier)
@@ -94,7 +95,7 @@ courses = courses.map((course) => ({
               identifier: lesson.identifier.replace(/(?<=-)[0-9a-fA-F]{12}$/, "616374697669"),
               name: lesson.fullStatement,
               isPartOf: [{ identifier: lesson.identifier, name: lesson.fullStatement }],
-              description: `<a href="${lesson.extensions.resourceURL}" /><br /><br />${lesson.extensions.fullContent}`,
+              description: `<a href="${lesson.extensions.resourceURL}" />See external content</a><br /><br /><h3>Excerpt</h3> ${lesson.extensions.fullContent}`,
               position: 1,
             },
             {

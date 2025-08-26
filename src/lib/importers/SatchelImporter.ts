@@ -39,6 +39,11 @@ export default class SatchelImporter {
         await this.updateBundleImportStatus(bundle.id, 'processing')
 
         // Clear existing nodes and errors for idempotency
+        const bundleExports = await db.bundleExport.findMany({ where: { bundleId: bundle.id } });
+        for (const bundleExport of bundleExports) {
+          await db.nodeExport.deleteMany({ where: { bundleExportId: bundleExport.id } })
+        }
+        await db.bundleExport.deleteMany({ where: { bundleId: bundle.id } });
         await db.node.deleteMany({ where: { bundleId: bundle.id } })
         await db.bundle.update({ where: { id: bundle.id }, data: { errors: [] } })
 
@@ -73,8 +78,7 @@ export default class SatchelImporter {
   }
 
   private async findOrCreateBundleForRoot(root: OCXNode) {
-    const hostname = new URL(this.importSource.baseUrl).hostname
-    const bundleName = `${root.name || root.identifier} – ${hostname}`
+    const bundleName = `${this.importSource.name} – ${root.name || root.identifier}`
     const uniqueSitemapUrl = `${this.importSource.baseUrl}#${root.identifier}`
 
     const existingBundle = await db.bundle.findFirst({
@@ -147,6 +151,12 @@ export default class SatchelImporter {
   }
 
   private async createDBOcxNodesRecursively(bundleId: number, root: OCXNode, dbParentId: number | null) {
+    if (dbParentId === null) {
+      console.log('root', root.identifier);
+    } else {
+      console.log(`child - parent ID: ${dbParentId} - ${root.identifier}`);
+    }
+
     const dbNode = await db.node.create({ 
       data: {
         bundleId,
@@ -158,7 +168,7 @@ export default class SatchelImporter {
     });
 
     const children = root?.hasPart
-      ?.map(childId => this.findOcxNodeById(this.caseData, childId))
+      ?.map(childId => this.findOcxNodeById(this.caseData, childId?.identifier || ''))
       ?.filter(Boolean);
 
     if (!children?.length) {
@@ -177,11 +187,6 @@ export default class SatchelImporter {
     return ""
   }
 
-
-  // TODO: Implement helper to assist troubleshooting data structure issues
-  // private analyzeDataStructure(data: SatchelData): Record<string, any> {
-  // }
-
   private async updateBundleImportStatus(bundleId: number, importStatus: BundleImportStatus): Promise<void> {
     await db.bundle.update({
       where: { id: bundleId },
@@ -191,6 +196,13 @@ export default class SatchelImporter {
 
   private ocx1To08(node: OCXNode) {
     const typeMap = {
+      "Course": ["Course", "oer:Module"],
+      "LessonGrouping": ["Course", "oer:Unit"],
+      "Lesson": ["Course", "oer:Lesson"],
+      "Activity": ["CreativeWork", "oer:Activity"],
+    };
+
+    const isPartOfTypeMap = {
       "Course": "oer:Module",
       "LessonGrouping": "oer:Unit",
       "Lesson": "oer:Lesson",
@@ -204,12 +216,45 @@ export default class SatchelImporter {
       "Activity": "Activity",
     };
 
-  
-    return {
-      "@type": [typeMap[node["@type"] as keyof typeof typeMap]],
+    const isPartOf = node.isPartOf?.map(part => ({
+      "@id": part.identifier,
+      "@type": isPartOfTypeMap[this.findOcxNodeById(this.caseData, part.identifier || '')?.["@type"] as keyof typeof isPartOfTypeMap],
+      "name": part.name,
+    })) || [];
+
+    const result = {
+      "@id": node.identifier,
+      "@type": typeMap[node["@type"] as keyof typeof typeMap],
+      isPartOf: isPartOf[0],
+      hasPart: node.hasPart?.map(part => ({
+        "@id": part.identifier,
+        "name": part.name,
+        "@type": typeMap[this.findOcxNodeById(this.caseData, part.identifier || '')?.["@type"] as keyof typeof typeMap],
+      })),
       learningResourceType: learningResourceTypeMap[node["@type"] as keyof typeof learningResourceTypeMap],
       name: node.name,
-      description: node.description,
+      alternateName: node.name,
+      description: node?.description || "",
+      instructions: node?.description || "",
+      courseName: undefined as string | undefined,
+      googleClassroom: {}
+    };
+
+    if (node["@type"] === "LessonGrouping") {
+      result.courseName = node.name;
     }
+    
+    if (node["@type"] === "Activity") {
+      result.googleClassroom = {
+        postTitle: {
+          en: node.name,
+        },
+        postInstructions: {
+          en: node.description
+        }
+      }
+    }
+
+    return result;
   }
 } 

@@ -7,8 +7,8 @@ export interface OCXNodeBase {
   "@type": string;
   name: string;
   identifier: string;
-  isPartOf?: string[];
-  hasPart?: string[];
+  isPartOf?: Partial<OCXNode>[];
+  hasPart?: Partial<OCXNode>[];
   position?: number;
   [key: string]: any; // Index signature for Prisma JSON compatibility
 }
@@ -20,15 +20,15 @@ export interface OCXCourse extends OCXNodeBase {
   academicSubject: string;
   audience: string;
   courseCode: string;
-  hasPart: string[];
+  hasPart: Partial<OCXNode>[];
 }
 
 // LessonGrouping node type
 export interface OCXLessonGrouping extends OCXNodeBase {
   "@context": "https://schema.org/LessonGrouping";
   "@type": "LessonGrouping";
-  isPartOf: string[];
-  hasPart: string[];
+  isPartOf: Partial<OCXNode>[];
+  hasPart: Partial<OCXNode>[];
   position: number;
 }
 
@@ -36,8 +36,8 @@ export interface OCXLessonGrouping extends OCXNodeBase {
 export interface OCXLesson extends OCXNodeBase {
   "@context": "https://chanzuckerberg.com/Lesson";
   "@type": "Lesson";
-  isPartOf: string[];
-  hasPart: string[];
+  isPartOf: Partial<OCXNode>[];
+  hasPart: Partial<OCXNode>[];
   position: number;
 }
 
@@ -45,7 +45,7 @@ export interface OCXLesson extends OCXNodeBase {
 export interface OCXActivity extends OCXNodeBase {
   "@context": "https://chanzuckerberg.com/Activity";
   "@type": "Activity";
-  isPartOf: string[];
+  isPartOf: Partial<OCXNode>[];
   position: number;
   description?: string;
 }
@@ -54,8 +54,8 @@ export interface OCXActivity extends OCXNodeBase {
 export interface OCXAssessment extends OCXNodeBase {
   "@context": "https://chanzuckerberg.com/Assesment";
   "@type": "Assessment";
-  isPartOf: string[];
-  hasPart: string[];
+  isPartOf: Partial<OCXNode>[];
+  hasPart: Partial<OCXNode>[];
   position: number;
 }
 
@@ -63,15 +63,15 @@ export interface OCXAssessment extends OCXNodeBase {
 export interface OCXMaterial extends OCXNodeBase {
   "@context": "https://chanzuckerberg.com/Material";
   "@type": "Material";
-  isPartOf: string[];
-  hasRepresentation: string[];
+  isPartOf: Partial<OCXNode>[];
+  hasRepresentation: Partial<OCXNode>[];
 }
 
 // Representation node type
 export interface OCXRepresentation extends OCXNodeBase {
   "@context": "https://chanzuckerberg.com/Representation";
   "@type": "Representation";
-  isRepresentationOf: string[];
+  isRepresentationOf: Partial<OCXNode>[];
   encodingFormat: string;
   accessResource: string;
 }
