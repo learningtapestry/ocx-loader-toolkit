@@ -1,8 +1,8 @@
-// exporter using the legacy OSE OCX with googleClassroom data
+// This is based entirely on the CanvasLegacyOpenSciEdExporter
 
 import db from "db"
 
-import { BundleExport, ExportDestination, User } from "@prisma/client"
+import { Prisma, ExportDestination } from "@prisma/client"
 
 import { JsonObject } from "type-fest"
 
@@ -19,6 +19,10 @@ import { publishBundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
 import { languages } from "src/constants/languages";
 import Exporter from "./Exporter";
+
+type BundleExportWithRelations = Prisma.BundleExportGetPayload<{
+  include: { exportDestination: true; bundle: true }
+}>;
 
 type GoogleClassroomMaterial = {
   version: string; // eg "English", "Spanish", "English, Spanish"
@@ -37,20 +41,23 @@ type GoogleClassroomData = {
 
 type Language = 'en' | 'es';
 
-export default class CanvasLegacyOpenSciEdExporter extends Exporter {
-  prismaBundleExport: BundleExport;
+export default class CanvasSatchelExporter extends Exporter {
+  prismaBundleExport: BundleExportWithRelations;
   ocxBundleExportCanvas?: OcxBundleExportCanvas;
   courseUrl: string | null = null;
   language: Language;
   courseName: string;
 
-  constructor(prismaBundleExport: BundleExport) {
+  constructor(prismaBundleExport: BundleExportWithRelations) {
     super(prismaBundleExport);
+    const importMetadata = prismaBundleExport.bundle.importMetadata as JsonObject | null;
 
     this.prismaBundleExport = prismaBundleExport;
-
     this.language = (prismaBundleExport.metadata as JsonObject).language as Language || 'en';
-    this.courseName = (prismaBundleExport.metadata as JsonObject).courseName as string || 'Course';
+    this.courseName = (importMetadata?.rootName as string) || 'Course';
+
+    //@ts-ignore - metadata needs to have its type defined
+    this.prismaBundleExport.metadata.newCourseName = this.courseName;
   }
 
   async exportAll(): Promise<string | null> {
@@ -116,10 +123,10 @@ export default class CanvasLegacyOpenSciEdExporter extends Exporter {
       });
 
       courseNode.metadata.name = this.courseName;
-      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(courseNode, canvasModulePosition);
-
-      // iterate on the oer:Unit nodes which represent lesson sets for OpenScied and should not generate any module in Canvas
+      
       for (const unitNode of courseNode.children) {
+        const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitNode, canvasModulePosition++);
+
         // iterate on the oer:Lesson nodes
         for (const lessonNode of unitNode.children) {
           lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;

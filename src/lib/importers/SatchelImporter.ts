@@ -12,16 +12,17 @@ export default class SatchelImporter {
   constructor(private importSource: BundleImportSource) {}
 
   async importBundle(): Promise<any> {
-    // Fetch JSON data from the baseUrl
-    // const response = await fetch(this.importSource.baseUrl)
-    // if (!response.ok) {
-    //   throw new Error(`Failed to fetch JSON from ${this.importSource.baseUrl}: ${response.status} ${response.statusText}`)
-    // }
-
-    // Todo: Uncomment when we know from where we get the data
-    // const satchelData: CaseData = await response.json()
-    const satchelRawData = await readFile('/Users/alex.culea/Documents/Learning Tapestry/Repositories/ocx-loader-toolkit/src/lib/__tests__/fixtures/case/output.json', 'utf-8');
-    this.caseData = JSON.parse(satchelRawData.toString());
+    let satchelSource = new URL(this.importSource.baseUrl);
+    if (satchelSource.protocol === 'file:') {
+      const satchelRawData = await readFile(decodeURI(satchelSource.pathname), 'utf-8');
+      this.caseData = JSON.parse(satchelRawData.toString());
+    } else {
+      const response = await fetch(this.importSource.baseUrl)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch JSON from ${this.importSource.baseUrl}: ${response.status} ${response.statusText}`)
+      }
+      this.caseData = await response.json()
+    }
 
     const rootOcxNodes = this.findRootOcxNodes(this.caseData)
 
@@ -60,7 +61,8 @@ export default class SatchelImporter {
               lastFetched: new Date().toISOString(),
               rootIdentifier: root.identifier,
               rootName: root.name,
-              rootType: root["@type"]
+              rootType: root["@type"],
+              source: "satchel"
             }
           },
           include: { nodes: true }

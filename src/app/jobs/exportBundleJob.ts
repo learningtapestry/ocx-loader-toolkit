@@ -1,5 +1,8 @@
 import db from "db";
+
+import Exporter from "src/lib/exporters/Exporter";
 import CanvasLegacyOpenSciEdExporter from "src/lib/exporters/CanvasLegacyOpenSciEdExporter";
+import CanvasSatchelExporter from "src/lib/exporters/CanvasSatchelExporter";
 
 import boss from "./pgBoss";
 import airbrake from "config/airbrake"
@@ -24,12 +27,20 @@ export async function startWorker() {
       },
       include: {
         exportDestination: true,
+        bundle: true,
       }
     }))!;
+    
+    const destinationType = bundleExport.exportDestination.type;
+    const isCanvasDestination = destinationType === "canvas" || destinationType === "canvas-oauth2" || destinationType === "canvas-oauth2-temp";
+    const isSatchelImport = (bundleExport.bundle.importMetadata as Record<string, string>)?.source === "satchel"
+    const exporter: Exporter | undefined = isSatchelImport && isCanvasDestination
+      ? new CanvasSatchelExporter(bundleExport)
+      : isCanvasDestination && !isSatchelImport
+        ? new CanvasLegacyOpenSciEdExporter(bundleExport)
+        : undefined;
 
-    if (bundleExport.exportDestination.type === "canvas" || bundleExport.exportDestination.type === "canvas-oauth2" || bundleExport.exportDestination.type === "canvas-oauth2-temp") {
-      const exporter = new CanvasLegacyOpenSciEdExporter(bundleExport);
-
+    if (exporter) {
       try {
         await exporter.exportAll();
 
