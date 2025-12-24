@@ -1,5 +1,6 @@
 import { CanvasInstance, Prisma } from "@prisma/client"
 import airbrake from "config/airbrake"
+import { CANVAS_USER_AGENT } from "../../../constants/canvas"
 
 export class HttpError extends Error {
   description: string = '';
@@ -39,6 +40,7 @@ export default async function callCanvas(
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'User-Agent': CANVAS_USER_AGENT,
       }
     });
 
@@ -106,6 +108,9 @@ export async function finalizeCanvasFileUpload(fileUploadParams: CanvasFileUploa
 
   return await fetch(fileUploadParams.upload_url, {
     method: 'POST',
+    headers: {
+      'User-Agent': CANVAS_USER_AGENT,
+    },
     body: formData
   });
 }
@@ -121,6 +126,7 @@ export async function getOAuth2Token(canvasInstance: CanvasInstance | CanvasInst
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'User-Agent': CANVAS_USER_AGENT,
     },
     body: JSON.stringify({
       grant_type: 'authorization_code',

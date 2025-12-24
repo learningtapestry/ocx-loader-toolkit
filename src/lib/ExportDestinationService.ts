@@ -2,6 +2,7 @@ import { CanvasInstance, ExportDestination } from "@prisma/client"
 
 import db from "db"
 import { JsonObject } from "type-fest"
+import { CANVAS_USER_AGENT } from "../constants/canvas"
 
 export default class ExportDestinationService {
   exportDestination: ExportDestination;
@@ -19,6 +20,7 @@ export default class ExportDestinationService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "User-Agent": CANVAS_USER_AGENT,
       },
       body: JSON.stringify({
         grant_type: "refresh_token",
