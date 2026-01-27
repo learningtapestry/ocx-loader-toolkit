@@ -1,4 +1,5 @@
 import { HttpError } from "../types";
+import { CANVAS_USER_AGENT } from "../../../constants/canvas";
 
 export default async function callCanvas(
   baseUrl: string,
@@ -18,6 +19,7 @@ export default async function callCanvas(
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'User-Agent': CANVAS_USER_AGENT,
       }
     });
 
