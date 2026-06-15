@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/activity.schema.json",
+  "title": "OCX 1.0 Activity",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/ocx10_common.schema.json" }
+  ],
+  "properties": {
+    "@type": { "const": "Activity" },
+    "position": { "type": "number" },
+    "ordinalName": { "type": "string" },
+    "curriculumLabel": { "type": "string" },
+    "studentGroupingType": { "type": "string" },
+    "educationalUse": { "type": "string" },
+    "gradingRequired": { "type": "boolean" },
+    "submissionRequired": { "type": "boolean" },
+    "isOptional": { "type": "boolean" },
+    "uses": {
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  },
+  "required": ["@id", "@type", "name"],
+  "additionalProperties": true
+}

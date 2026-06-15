@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/course.schema.json",
+  "title": "OCX 1.0 Course",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/ocx10_common.schema.json" }
+  ],
+  "properties": {
+    "@type": { "const": "Course" },
+    "name": { "type": "string" },
+    "academicSubject": { "type": "string" },
+    "gradeLevel": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "courseCode": { "type": "string" }
+  },
+  "required": ["@id", "@type", "name", "academicSubject", "gradeLevel", "courseCode"],
+  "additionalProperties": true
+}

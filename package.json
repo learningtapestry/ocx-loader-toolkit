@@ -10,7 +10,8 @@
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "worker": "tsx src/app/worker.ts"
+    "worker": "tsx src/app/worker.ts",
+    "import:ocx10": "tsx src/lib/ocx10/importLocal.ts"
   },
   "prisma": {
     "schema": "db/schema.prisma"

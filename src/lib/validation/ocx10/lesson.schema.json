@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/lesson.schema.json",
+  "title": "OCX 1.0 Lesson",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/ocx10_common.schema.json" }
+  ],
+  "properties": {
+    "@type": { "const": "Lesson" },
+    "position": { "type": "number" },
+    "ordinalName": { "type": "string" },
+    "curriculumLabel": { "type": "string" }
+  },
+  "required": ["@id", "@type", "name"],
+  "additionalProperties": true
+}

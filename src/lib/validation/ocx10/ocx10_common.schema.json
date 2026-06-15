@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/ocx10/ocx10_common.schema.json",
+  "title": "OCX 1.0 Common Fields",
+  "type": "object",
+  "properties": {
+    "@id": { "type": "string" },
+    "@type": { "type": "string" },
+    "identifier": { "type": "string" },
+    "audience": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "author": { "type": "string" },
+    "license": { "type": "string" },
+    "provider": { "type": "string" },
+    "inLanguage": { "type": "string" },
+    "providerDateCreated": { "type": "string" },
+    "providerDateModified": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "academicSubject": { "type": "string" },
+    "gradeLevel": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "courseCode": { "type": "string" },
+    "timeRequired": { "type": "string" },
+    "hasPart": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "hasEducationalAlignment": {
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  },
+  "required": ["@id", "@type"],
+  "additionalProperties": true
+}

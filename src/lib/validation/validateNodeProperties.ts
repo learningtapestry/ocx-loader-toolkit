@@ -16,6 +16,11 @@ import referencedMaterialJsonSchema from "./referenced_material.schema.json";
 import supplementalMaterialJsonSchema from "./supplemental_material.schema.json";
 import supportingMaterialJsonSchema from "./supporting_material.schema.json";
 import unitJsonSchema from "./unit.schema.json";
+import ocx10CommonJsonSchema from "./ocx10/ocx10_common.schema.json";
+import ocx10CourseJsonSchema from "./ocx10/course.schema.json";
+import ocx10LessonGroupingJsonSchema from "./ocx10/lesson_grouping.schema.json";
+import ocx10LessonJsonSchema from "./ocx10/lesson.schema.json";
+import ocx10ActivityJsonSchema from "./ocx10/activity.schema.json";
 
 
 const jsonSchemaByType: {[key: string]: JSONSchema7}  = {
@@ -28,7 +33,11 @@ const jsonSchemaByType: {[key: string]: JSONSchema7}  = {
   "oer:ReferencedMaterial": referencedMaterialJsonSchema as JSONSchema7,
   "oer:SupplementalMaterial": supplementalMaterialJsonSchema as JSONSchema7,
   "oer:SupportingMaterial": supportingMaterialJsonSchema as JSONSchema7,
-  "oer:Unit": unitJsonSchema as JSONSchema7
+  "oer:Unit": unitJsonSchema as JSONSchema7,
+  "Course": ocx10CourseJsonSchema as JSONSchema7,
+  "LessonGrouping": ocx10LessonGroupingJsonSchema as JSONSchema7,
+  "Lesson": ocx10LessonJsonSchema as JSONSchema7,
+  "Activity": ocx10ActivityJsonSchema as JSONSchema7,
 };
 
 const jsonSchemaFileNameByType: {[key: string]: string} = {
@@ -41,10 +50,15 @@ const jsonSchemaFileNameByType: {[key: string]: string} = {
   "oer:ReferencedMaterial": "referenced_material.schema.json",
   "oer:SupplementalMaterial": "supplemental_material.schema.json",
   "oer:SupportingMaterial": "supporting_material.schema.json",
-  "oer:Unit": "unit.schema.json"
+  "oer:Unit": "unit.schema.json",
+  "Course": "ocx10/course.schema.json",
+  "LessonGrouping": "ocx10/lesson_grouping.schema.json",
+  "Lesson": "ocx10/lesson.schema.json",
+  "Activity": "ocx10/activity.schema.json",
 }
 
 const baseSchemaUrl = 'https://raw.githubusercontent.com/learningtapestry/ocx-loader-toolkit/main/src/lib/validation/';
+const ocx10BaseSchemaUrl = baseSchemaUrl + 'ocx10/';
 
 export default function validateNodeProperties(properties: Prisma.JsonObject, nodeTypes: string[])  {
   const ret = {
@@ -70,9 +84,12 @@ export default function validateNodeProperties(properties: Prisma.JsonObject, no
   // @ts-ignore
   addFormats(ajv);
 
-  const currentNodeTypeSchemaUri = baseSchemaUrl+propertiesSchemaFileName;
+  const currentNodeTypeSchemaUri = (propertiesSchemaFileName?.startsWith('ocx10/')
+    ? ocx10BaseSchemaUrl
+    : baseSchemaUrl) + propertiesSchemaFileName;
 
   ajv.addSchema(ocxNodeSchema, baseSchemaUrl+'ocx_node.schema.json');
+  ajv.addSchema(ocx10CommonJsonSchema, ocx10BaseSchemaUrl+'ocx10_common.schema.json');
   ajv.addSchema(propertiesSchema, currentNodeTypeSchemaUri);
 
   const validate = ajv.getSchema(currentNodeTypeSchemaUri)!;
@@ -82,7 +99,9 @@ export default function validateNodeProperties(properties: Prisma.JsonObject, no
   const validationErrors = validate.errors;
 
   for (const propertyName in properties) {
+    const ocx10CommonProperties = (ocx10CommonJsonSchema as JSONSchema7).properties ?? {};
     const propertyValidationSchema = propertiesSchema.properties![propertyName]
+      || ocx10CommonProperties[propertyName]
       || jsonSchemaByType['ocx:Node'].properties![propertyName];
 
     if (!propertyValidationSchema) {
