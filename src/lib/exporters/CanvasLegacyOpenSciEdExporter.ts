@@ -7,6 +7,7 @@ import { BundleExport, ExportDestination, User } from "@prisma/client"
 import { JsonObject } from "type-fest"
 
 import OcxBundle from "src/lib/OcxBundle"
+import { toLegacyExportView } from "src/lib/ocx10/toLegacyExportView"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "src/lib/exporters/OcxBundleExportCanvas"
 
@@ -86,7 +87,11 @@ export default class CanvasLegacyOpenSciEdExporter {
         }
       }))!;
 
-      const ocxBundle = new OcxBundle(bundle, bundle.nodes);
+      let ocxBundle = new OcxBundle(bundle, bundle.nodes);
+
+      if ((bundle.importMetadata as JsonObject)?.format === "ocx@1.0.0") {
+        ocxBundle = toLegacyExportView(ocxBundle);
+      }
 
       const googleRepository = new GoogleRepository(bundle.sourceAccessData);
 

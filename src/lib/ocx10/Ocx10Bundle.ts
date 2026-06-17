@@ -8,37 +8,55 @@ import { Ocx10CurriculumEntity, Ocx10LoadedEntity } from "./types"
 
 export default class Ocx10Bundle extends OcxBundle {
   async importFromLocalPackage(db: PrismaClient, packageRoot: string): Promise<PrismaBundle> {
-    const pkg = await Ocx10Package.open(packageRoot)
-    const loadedEntities = await pkg.loadAllCurriculumEntities()
-
-    const nodes = await this.createNodesFromOcx10Entities(db, loadedEntities)
-
-    await this.assignParentsToNodes(db, nodes)
-    await this.reloadFromDb(db)
-
-    const rootEntity = findRootEntity(loadedEntities.map((item) => item.entity))
-
     await db.bundle.update({
       where: { id: this.prismaBundle.id },
-      data: {
-        sitemapUrl: "ocx10://local",
-        parsedSitemap: Prisma.DbNull,
-        importMetadata: {
-          format: "ocx@1.0.0",
-          packageRoot: pkg.packageRoot,
-          inLanguage: pkg.manifest.inLanguage,
-          manifestId: pkg.manifest["@id"],
-          manifestName: pkg.manifest.name,
-          rootEntityId: rootEntity?.["@id"],
-          rootEntityType: rootEntity?.["@type"],
-        },
-        name: this.prismaBundle.name || pkg.manifest.name,
-      },
+      data: { importStatus: "processing" },
     })
 
-    await this.reloadFromDb(db)
+    try {
+      const pkg = await Ocx10Package.open(packageRoot)
+      const loadedEntities = await pkg.loadAllCurriculumEntities()
 
-    return this.prismaBundle
+      const nodes = await this.createNodesFromOcx10Entities(db, loadedEntities)
+
+      await this.assignParentsToNodes(db, nodes)
+      await this.reloadFromDb(db)
+
+      const rootEntity = findRootEntity(loadedEntities.map((item) => item.entity))
+      const fullCourseName =
+        (rootEntity?.name as string | undefined) || pkg.manifest.name
+
+      await db.bundle.update({
+        where: { id: this.prismaBundle.id },
+        data: {
+          sitemapUrl: "ocx10://local",
+          parsedSitemap: Prisma.DbNull,
+          importStatus: "completed",
+          importMetadata: {
+            format: "ocx@1.0.0",
+            packageRoot: pkg.packageRoot,
+            inLanguage: pkg.manifest.inLanguage,
+            manifestId: pkg.manifest["@id"],
+            manifestName: pkg.manifest.name,
+            rootEntityId: rootEntity?.["@id"],
+            rootEntityType: rootEntity?.["@type"],
+            full_course_name: fullCourseName,
+          },
+          name: this.prismaBundle.name || pkg.manifest.name,
+        },
+      })
+
+      await this.reloadFromDb(db)
+
+      return this.prismaBundle
+    } catch (error) {
+      await db.bundle.update({
+        where: { id: this.prismaBundle.id },
+        data: { importStatus: "failed" },
+      })
+
+      throw error
+    }
   }
 
   async createNodesFromOcx10Entities(
