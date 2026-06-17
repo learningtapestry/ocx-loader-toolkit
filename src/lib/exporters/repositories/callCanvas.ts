@@ -121,7 +121,16 @@ type CanvasInstanceLike = {
   clientSecret: string,
 }
 
-export async function getOAuth2Token(canvasInstance: CanvasInstance | CanvasInstanceLike, code: string, baseUrl: string) {
+export async function getOAuth2Token(
+  canvasInstance: CanvasInstance | CanvasInstanceLike,
+  code: string,
+  toolkitBaseUrl: string,
+  callbackPath = '/api/canvas-oauth-callback',
+) {
+  const redirectUri = `${toolkitBaseUrl.replace(/\/$/, '')}${
+    callbackPath.startsWith('/') ? callbackPath : `/${callbackPath}`
+  }`
+
   return fetch(`${canvasInstance.baseUrl}/login/oauth2/token`, {
     method: 'POST',
     headers: {
@@ -132,7 +141,7 @@ export async function getOAuth2Token(canvasInstance: CanvasInstance | CanvasInst
       grant_type: 'authorization_code',
       client_id: canvasInstance.clientId,
       client_secret: canvasInstance.clientSecret,
-      redirect_uri: `${baseUrl}/api/canvas-oauth-callback`,
+      redirect_uri: redirectUri,
       code: code,
     }),
   });

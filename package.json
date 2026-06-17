@@ -11,7 +11,8 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "worker": "tsx src/app/worker.ts",
-    "import:ocx10": "tsx src/lib/ocx10/importLocal.ts"
+    "import:ocx10": "tsx src/lib/ocx10/importLocal.ts",
+    "connect:canvas-oauth": "node scripts/connect-canvas-export-oauth.js"
   },
   "prisma": {
     "schema": "db/schema.prisma"

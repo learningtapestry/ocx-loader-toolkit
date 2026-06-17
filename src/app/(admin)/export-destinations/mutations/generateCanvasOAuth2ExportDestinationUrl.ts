@@ -10,11 +10,21 @@ const GenerateCanvasOAuth2ExportDestinationUrlSchema = z.object({
 })
 
 export class StateEncoder {
-  static encodeState(canvasInstanceId: number, name: string, baseUrl: string) {
-    return Buffer.from(JSON.stringify({ canvasInstanceId, name, baseUrl })).toString('base64')
+  static encodeState(
+    canvasInstanceId: number,
+    name: string,
+    baseUrl: string,
+    callbackPath = '/api/canvas-oauth-callback',
+  ) {
+    return Buffer.from(JSON.stringify({ canvasInstanceId, name, baseUrl, callbackPath })).toString('base64')
   }
 
-  static decodeState(state: string): { name: string, canvasInstanceId: number, baseUrl: string } {
+  static decodeState(state: string): {
+    name: string
+    canvasInstanceId: number
+    baseUrl: string
+    callbackPath?: string
+  } {
     return JSON.parse(Buffer.from(state, 'base64').toString())
   }
 }

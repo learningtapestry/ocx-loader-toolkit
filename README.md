@@ -84,12 +84,22 @@ Inside ocx-loader-toolkit create a Bundle Import Source with:
 - api secret key: must be the same as this which is set inside lcms `API_SECRET_KEY` ENV variable
 
 ### OCX-LOADER-TOOLKIT -> Canvas LMS Instances
-Inside Canvas instance we need to create a Api Key. To do so, go to Admin - Developer Keys - '+ Developer Key'. Put following data into fields:
+
+Canvas integration uses two OAuth callback paths:
+
+| Callback | Purpose |
+|----------|---------|
+| `/api/canvas-oauth-callback` | Admin **Export Bundle** — reusable export destinations |
+| `/api/canvas-oauth-export-callback` | Public bundle export — teacher one-off export |
+
+**Admin export (recommended):** follow [Canvas admin OAuth2 setup](./doc/canvas-admin-oauth2.md) to connect a permanent export destination without manual access tokens.
+
+**Public export / developer key registration:** Inside Canvas, go to Admin → Developer Keys → '+ Developer Key'. Put following data into fields:
 - key name: any name you want
 - owner email: your email or some admin email
-- redirect URIs: OCX-LOADER-TOOLKIT_HOST + `/api/canvas-oauth-export-callback`
+- redirect URIs: add `{TOOLKIT_HOST}/api/canvas-oauth-export-callback` for public export; add `{TOOLKIT_HOST}/api/canvas-oauth-callback` for admin export (both if you use both flows)
 
-Inside OCX-LOADER-TOOLKIT click `create Canvas Instance`. Fill the data:
+Inside OCX-LOADER-TOOLKIT register the Canvas instance in **`/admin`** → **Canvas Instance**. Fill the data:
 - Name: any name you want
 - Base URL: URL of Canvas instance
 - CLIENT ID and CLIENT_SECRET: get that info from previously generated developer key.
@@ -106,6 +116,10 @@ SMTP_PASSWORD
 SMTP_SECURE=false
 NOTIFICATION_EMAIL= - email we want to receive notification to
 ```
+
+## Documentation
+
+- [Canvas admin OAuth2 setup](./doc/canvas-admin-oauth2.md) — connect a reusable Canvas export destination for **Export Bundle**
 
 ## Tests
 

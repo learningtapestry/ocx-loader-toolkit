@@ -21,7 +21,7 @@ export default api(async (req, res) => {
     return
   }
 
-  const { name, canvasInstanceId, baseUrl } = StateEncoder.decodeState(state);
+  const { name, canvasInstanceId, baseUrl, callbackPath } = StateEncoder.decodeState(state);
 
   const canvasInstance = await db.canvasInstance.findFirst({ where: { id: canvasInstanceId } })
 
@@ -31,7 +31,12 @@ export default api(async (req, res) => {
   }
 
   // get the Canvas access token
-  const response = await getOAuth2Token(canvasInstance, code, baseUrl)
+  const response = await getOAuth2Token(
+    canvasInstance,
+    code,
+    baseUrl,
+    callbackPath || '/api/canvas-oauth-callback',
+  )
 
   if (!response.ok) {
     res.status(400).json({ error: "Failed to get Canvas access token" })
