@@ -33,6 +33,13 @@ export type LinkData = {
 
 export default class OcxBundleExportCanvas extends OcxBundleExport {
   async exportOcxNodeToModule(ocxNode: OcxNode, position: number) {
+    console.log(`[${this.prismaBundleExport.id}] exportOcxNodeToModule`, {
+      courseId: this.bundleExportCanvasId,
+      ocxId: ocxNode.ocxId,
+      moduleName: ocxNode.ocxName,
+      position,
+    });
+
     const canvasModule = await this.canvasRepository!.createModule(this.bundleExportCanvasId, ocxNode.ocxName, position);
 
     return this.createOcxNodeExport(ocxNode, canvasModule);
@@ -238,6 +245,13 @@ export async function createExportOcxBundleToCanvas(
   } else {
     const name = (metadata.newCourseName || bundleExport.name) as string;
     const courseCode = (metadata.newCourseCode || metadata.courseCode) as string;
+
+    console.log(`[${bundleExport.id}] Creating Canvas course`, {
+      name,
+      courseCode,
+      courseNameMetadata: metadata.courseName,
+      newCourseNameMetadata: metadata.newCourseName,
+    });
 
     canvasCourse = await canvasRepository.createCourse(name, courseCode);
 

@@ -22,6 +22,29 @@ export class HttpError extends Error {
   }
 }
 
+function logCanvasRequestFailure(
+  method: string,
+  path: string,
+  url: string | URL,
+  status: number,
+  statusText: string,
+  responseBody: string,
+  body: object
+) {
+  console.error(
+    `Canvas API error: ${method} ${path} → ${status} ${statusText}`,
+    `(url: ${url})`
+  );
+
+  if (responseBody) {
+    console.error("Canvas API response body:", responseBody);
+  }
+
+  if (method !== "GET" && Object.keys(body).length > 0) {
+    console.error("Canvas API request body:", JSON.stringify(body));
+  }
+}
+
 export default async function callCanvas(
   baseUrl: string,
   accessToken: string,
@@ -45,6 +68,10 @@ export default async function callCanvas(
     });
 
     if (!response.ok) {
+      const responseBody = await response.text();
+
+      logCanvasRequestFailure(method, path, url, response.status, response.statusText, responseBody, body);
+
       throw new HttpError(`${method} url: ${url}`, response.statusText, path, response.status);
     }
 

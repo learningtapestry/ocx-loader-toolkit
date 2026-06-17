@@ -56,7 +56,11 @@ export default class CanvasLegacyOpenSciEdExporter {
     let totalActivityNodes = 0;
 
     try {
-      console.log(`[${this.prismaBundleExport.id}] exportAll started`);
+      console.log(`[${this.prismaBundleExport.id}] exportAll started`, {
+        bundleId: this.prismaBundleExport.bundleId,
+        courseName: this.courseName,
+        language: this.language,
+      });
 
       await db.bundleExport.update({
         where: {
@@ -117,7 +121,27 @@ export default class CanvasLegacyOpenSciEdExporter {
         totalActivities: totalActivityNodes
       });
 
+      const rootNameBeforeCourseNameOverride = courseNode.metadata.name;
       courseNode.metadata.name = this.courseName;
+      const moduleName = courseNode.ocxName;
+
+      console.log(`[${this.prismaBundleExport.id}] Creating Canvas module`, {
+        courseId,
+        position: canvasModulePosition,
+        moduleName,
+        rootOcxId: courseNode.ocxId,
+        rootNameBeforeOverride: rootNameBeforeCourseNameOverride,
+        courseNameFromExportMetadata: this.courseName,
+        totalActivityNodes,
+      });
+
+      if (!moduleName) {
+        console.warn(
+          `[${this.prismaBundleExport.id}] Canvas module name is empty after applying courseName from bundleExport metadata`,
+          `(courseName=${JSON.stringify(this.courseName)}, root name before override=${JSON.stringify(rootNameBeforeCourseNameOverride)})`
+        );
+      }
+
       const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(courseNode, canvasModulePosition);
 
       // iterate on the oer:Unit nodes which represent lesson sets for OpenScied and should not generate any module in Canvas
