@@ -2,6 +2,7 @@ import { Node as PrismaNode } from "@prisma/client"
 import { JsonObject } from "type-fest"
 
 import OcxBundle from "../OcxBundle"
+import OcxNode from "../OcxNode"
 
 import { isUnitLessonGrouping } from "./curriculumTypes"
 
@@ -61,6 +62,34 @@ function convertNodeMetadata(metadata: JsonObject, inLanguage: string): JsonObje
   return converted
 }
 
+export function resolveLegacyExportRoots(ocxBundle: OcxBundle): OcxNode[] {
+  const rootNodes = ocxBundle.rootNodes
+
+  if (rootNodes.length === 0) {
+    throw new Error("toLegacyExportView: bundle has no root nodes")
+  }
+
+  const root = rootNodes[0]
+
+  if (isUnitLessonGrouping(root.metadata)) {
+    return [root]
+  }
+
+  if (root.metadata["@type"] === "Course") {
+    console.warn("Adapting to unit as being root level container from Legacy")
+
+    const units = root.children.filter((child) => isUnitLessonGrouping(child.metadata))
+
+    if (units.length === 0) {
+      throw new Error("toLegacyExportView: course-root package has no unit children")
+    }
+
+    return units
+  }
+
+  throw new Error("toLegacyExportView: expected unit-root or course-root package")
+}
+
 export function toLegacyExportView(ocxBundle: OcxBundle): OcxBundle {
   const importMetadata = ocxBundle.prismaBundle.importMetadata as JsonObject | null
 
@@ -70,8 +99,14 @@ export function toLegacyExportView(ocxBundle: OcxBundle): OcxBundle {
 
   const rootNodes = ocxBundle.rootNodes
 
-  if (rootNodes.length === 0 || !isUnitLessonGrouping(rootNodes[0].metadata)) {
-    throw new Error("toLegacyExportView: course-root packages not supported in Stage 2")
+  if (rootNodes.length === 0) {
+    throw new Error("toLegacyExportView: bundle has no root nodes")
+  }
+
+  const root = rootNodes[0]
+
+  if (!isUnitLessonGrouping(root.metadata) && root.metadata["@type"] !== "Course") {
+    throw new Error("toLegacyExportView: expected unit-root or course-root package")
   }
 
   const inLanguage = (importMetadata.inLanguage as string) || "en-US"
