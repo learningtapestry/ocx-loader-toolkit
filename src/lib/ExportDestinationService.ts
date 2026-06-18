@@ -3,6 +3,10 @@ import { CanvasInstance, ExportDestination } from "@prisma/client"
 import db from "db"
 import { JsonObject } from "type-fest"
 import { CANVAS_USER_AGENT } from "../constants/canvas"
+import {
+  formatCanvasErrorResponse,
+  logCanvasRequestFailure,
+} from "./exporters/repositories/callCanvas"
 
 export default class ExportDestinationService {
   exportDestination: ExportDestination;
@@ -16,7 +20,21 @@ export default class ExportDestinationService {
       where: { id: this.exportDestination.canvasInstanceId! },
     });
 
-    const response = await fetch(`${canvasInstance!.baseUrl}/login/oauth2/token`, {
+    const metadata = this.exportDestination.metadata! as {
+      refreshToken?: string;
+      accessToken?: string;
+      accessTokenExpiry?: string | Date;
+    };
+
+    if (!metadata.refreshToken) {
+      throw new Error(
+        "Cannot refresh Canvas access token: export destination is missing a refresh token. Re-authorize the Canvas export destination via OAuth."
+      );
+    }
+
+    const tokenUrl = `${canvasInstance!.baseUrl}/login/oauth2/token`;
+
+    const response = await fetch(tokenUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,27 +44,57 @@ export default class ExportDestinationService {
         grant_type: "refresh_token",
         client_id: canvasInstance!.clientId,
         client_secret: canvasInstance!.clientSecret,
-        refresh_token: (this.exportDestination.metadata! as any).refreshToken,
+        refresh_token: metadata.refreshToken,
       }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to refresh Canvas access token");
+      const responseBody = await response.text();
+
+      logCanvasRequestFailure(
+        "POST",
+        "/login/oauth2/token",
+        tokenUrl,
+        response.status,
+        response.statusText,
+        responseBody,
+        {}
+      );
+
+      console.error("Canvas OAuth token refresh failed", {
+        exportDestinationId: this.exportDestination.id,
+        exportDestinationType: this.exportDestination.type,
+        canvasInstanceId: canvasInstance!.id,
+        canvasBaseUrl: canvasInstance!.baseUrl,
+      });
+
+      const canvasError = formatCanvasErrorResponse(responseBody);
+      const detail = canvasError ?? `${response.status} ${response.statusText}`;
+
+      throw new Error(`Failed to refresh Canvas access token: ${detail}`);
     }
 
     const { access_token, refresh_token, expires_in } = await response.json();
 
+    const updatedMetadata = {
+      ...(this.exportDestination.metadata as any),
+      accessToken: access_token,
+      // Canvas does not return a new refresh token on refresh; keep the existing one.
+      refreshToken: refresh_token ?? metadata.refreshToken,
+      accessTokenExpiry: new Date(Date.now() + expires_in * 1000),
+    };
+
     await db.exportDestination.update({
       where: { id: this.exportDestination.id },
       data: {
-        metadata: {
-          ...(this.exportDestination.metadata as any),
-          accessToken: access_token,
-          refreshToken: refresh_token,
-          accessTokenExpiry: new Date(Date.now() + expires_in * 1000),
-        },
+        metadata: updatedMetadata,
       },
     });
+
+    this.exportDestination = {
+      ...this.exportDestination,
+      metadata: updatedMetadata,
+    };
 
     return access_token;
   }

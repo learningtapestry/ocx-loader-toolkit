@@ -22,7 +22,33 @@ export class HttpError extends Error {
   }
 }
 
-function logCanvasRequestFailure(
+export function formatCanvasErrorResponse(responseBody: string): string | null {
+  if (!responseBody.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(responseBody) as {
+      error?: string;
+      error_description?: string;
+      errors?: unknown;
+      message?: string;
+    };
+
+    const parts = [
+      parsed.error,
+      parsed.error_description,
+      parsed.message,
+      parsed.errors ? JSON.stringify(parsed.errors) : undefined,
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(" - ") : responseBody.trim();
+  } catch {
+    return responseBody.trim();
+  }
+}
+
+export function logCanvasRequestFailure(
   method: string,
   path: string,
   url: string | URL,
