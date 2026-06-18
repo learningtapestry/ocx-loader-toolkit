@@ -8,7 +8,7 @@ import { JsonObject } from "type-fest"
 
 import OcxBundle from "src/lib/OcxBundle"
 import { isLessonSetLessonGrouping } from "src/lib/ocx10/curriculumTypes"
-import { toLegacyExportView } from "src/lib/ocx10/toLegacyExportView"
+import { toLegacyExportView, resolveLegacyExportCourseName } from "src/lib/ocx10/toLegacyExportView"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "src/lib/exporters/OcxBundleExportCanvas"
 
@@ -124,7 +124,7 @@ export default class CanvasLegacyOpenSciEdExporter {
         totalActivities: totalActivityNodes
       });
 
-      unitRoot.metadata.name = this.courseName;
+      unitRoot.metadata.name = resolveLegacyExportCourseName(unitRoot.metadata);
       const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitRoot, canvasModulePosition);
 
       // iterate on lesson sets (legacy OSE called these oer:Unit nodes) — skip Materials siblings

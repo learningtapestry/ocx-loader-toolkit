@@ -10,6 +10,7 @@ import { StateEncoder } from "src/app/(admin)/export-destinations/mutations/gene
 
 import { languages } from "src/constants/languages";
 import { JsonObject } from "@prisma/client/runtime/library";
+import { resolveExportCourseName } from "src/lib/ocx10/toLegacyExportView"
 
 function toolkitBaseUrlFromRequest(req: { headers: Record<string, string | string[] | undefined> }) {
   const host = req.headers.host
@@ -131,10 +132,13 @@ export default api(async (req, res) => {
   const bundle = await db.bundle.findFirst({
     where: {
       id: bundleId,
-    }
+    },
+    include: {
+      nodes: true,
+    },
   });
   const languageDescription = language !== 'en' && languages[language] ? ` [${languages[language]}]` : '';
-  const courseName = (bundle?.importMetadata as JsonObject).full_course_name + languageDescription;
+  const courseName = resolveExportCourseName(bundle!, languageDescription);
 
   const bundleExport = await db.bundleExport.create({
     data: {
