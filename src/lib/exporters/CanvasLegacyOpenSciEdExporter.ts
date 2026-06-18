@@ -8,7 +8,7 @@ import { JsonObject } from "type-fest"
 
 import OcxBundle from "src/lib/OcxBundle"
 import { isLessonSetLessonGrouping } from "src/lib/ocx10/curriculumTypes"
-import { resolveLegacyExportRoots, toLegacyExportView } from "src/lib/ocx10/toLegacyExportView"
+import { toLegacyExportView } from "src/lib/ocx10/toLegacyExportView"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "src/lib/exporters/OcxBundleExportCanvas"
 
@@ -105,19 +105,18 @@ export default class CanvasLegacyOpenSciEdExporter {
       const baseUrl = exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
       this.courseUrl = `${baseUrl}/courses/${courseId}`;
 
-      const exportRoots = resolveLegacyExportRoots(ocxBundle);
+      const unitRoot = ocxBundle.rootNodes[0];
 
       let canvasModulePosition = 1;
+      let canvasModuleItemPosition = 1;
 
-      totalActivityNodes = exportRoots.reduce((acc, unitRoot) => {
-        return acc + unitRoot.children
-          .filter((child) => isLessonSetLessonGrouping(child.metadata))
-          .reduce((acc2, lessonSetNode) => {
-            return acc2 + lessonSetNode.children.reduce((acc3, lessonNode) => {
-              return acc3 + lessonNode.children.length;
-            }, 0);
+      totalActivityNodes = unitRoot.children
+        .filter((child) => isLessonSetLessonGrouping(child.metadata))
+        .reduce((acc, lessonSetNode) => {
+          return acc + lessonSetNode.children.reduce((acc2, lessonNode) => {
+            return acc2 + lessonNode.children.length;
           }, 0);
-      }, 0);
+        }, 0);
 
       publishBundleExportUpdate(this.prismaBundleExport.id, {
         status: 'exporting',
@@ -125,25 +124,19 @@ export default class CanvasLegacyOpenSciEdExporter {
         totalActivities: totalActivityNodes
       });
 
-      for (const unitRoot of exportRoots) {
-        let canvasModuleItemPosition = 1;
+      unitRoot.metadata.name = this.courseName;
+      const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitRoot, canvasModulePosition);
 
-        if (exportRoots.length === 1) {
-          unitRoot.metadata.name = this.courseName;
-        }
+      // iterate on lesson sets (legacy OSE called these oer:Unit nodes) — skip Materials siblings
+      for (const lessonSetNode of unitRoot.children.filter((child) => isLessonSetLessonGrouping(child.metadata))) {
+        // iterate on the oer:Lesson nodes
+        for (const lessonNode of lessonSetNode.children) {
+          lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;
 
-        const moduleExport = await this.ocxBundleExportCanvas.exportOcxNodeToModule(unitRoot, canvasModulePosition++);
+          const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.canvasId, canvasModuleItemPosition++, 0);
 
-        // iterate on lesson sets (legacy OSE called these oer:Unit nodes) — skip Materials siblings
-        for (const lessonSetNode of unitRoot.children.filter((child) => isLessonSetLessonGrouping(child.metadata))) {
-          // iterate on the oer:Lesson nodes
-          for (const lessonNode of lessonSetNode.children) {
-            lessonNode.metadata.name = `Lesson ${lessonNode.metadata.alternateName}`;
-
-            const lessonSubHeader = await this.ocxBundleExportCanvas.exportOcxNodeToModuleSubHeader(lessonNode, moduleExport.canvasId, canvasModuleItemPosition++, 0);
-
-            // iterate on the oer:Activity nodes
-            for (const activityNode of lessonNode.children) {
+          // iterate on the oer:Activity nodes
+          for (const activityNode of lessonNode.children) {
               const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData;
 
               // legacy OSE OCX has googleClassroom data
@@ -234,7 +227,6 @@ export default class CanvasLegacyOpenSciEdExporter {
             }
           }
         }
-      }
 
       await db.bundleExport.update(
         {

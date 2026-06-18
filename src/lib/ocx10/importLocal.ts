@@ -5,36 +5,38 @@ dotenv.config({ path: ".env" })
 
 import db from "db"
 
-import Ocx10Bundle from "./Ocx10Bundle"
+import { importOcx10LocalPackage } from "./importOcx10LocalPackage"
+import { isUnitLessonGrouping } from "./curriculumTypes"
 
 async function main() {
   const packageRoot = process.argv[2]
   const bundleName = process.argv[3]
 
   if (!packageRoot) {
-    console.error("Usage: npm run import:ocx10 -- <packageRoot> [bundleName]")
+    console.error("Usage: npm run import:ocx10 -- <packageRoot> [bundleNamePrefix]")
     process.exit(1)
   }
 
-  const prismaBundle = await db.bundle.create({
-    data: {
-      name: bundleName || `OCX 1.0 ${packageRoot}`,
-      sitemapUrl: "ocx10://local",
-    },
-  })
+  console.log(`Importing OCX 1.0 package from ${packageRoot}...`)
 
-  const ocx10Bundle = new Ocx10Bundle(prismaBundle, [])
+  const bundles = await importOcx10LocalPackage(db, packageRoot, bundleName)
 
-  console.log(`Importing OCX 1.0 package from ${packageRoot} into bundle ${prismaBundle.id}...`)
+  console.log(`Done. Created ${bundles.length} bundle(s):`)
 
-  await ocx10Bundle.importFromLocalPackage(db, packageRoot)
+  for (const ocx10Bundle of bundles) {
+    console.log(`  Bundle id: ${ocx10Bundle.prismaBundle.id} — ${ocx10Bundle.prismaBundle.name}`)
+    console.log(`    Nodes imported: ${ocx10Bundle.ocxNodes.length}`)
+    console.log(`    Root nodes: ${ocx10Bundle.rootNodes.length}`)
 
-  console.log(`Done. Bundle id: ${ocx10Bundle.prismaBundle.id}`)
-  console.log(`Nodes imported: ${ocx10Bundle.ocxNodes.length}`)
-  console.log(`Root nodes: ${ocx10Bundle.rootNodes.length}`)
+    for (const root of ocx10Bundle.rootNodes) {
+      const type = root.metadata["@type"]
+      const groupName = root.metadata.groupName
+      console.log(`      Root: ${root.ocxId} (${type}${groupName ? ` · ${groupName}` : ""})`)
 
-  for (const root of ocx10Bundle.rootNodes) {
-    console.log(`  Root: ${root.ocxId} (${root.ocxType})`)
+      if (!isUnitLessonGrouping(root.metadata)) {
+        console.warn(`      Warning: expected unit-root bundle; got ${type}`)
+      }
+    }
   }
 }
 

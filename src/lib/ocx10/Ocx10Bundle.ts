@@ -6,25 +6,60 @@ import { normalizeHasPart, skippedLinksToBundleErrors } from "./normalizeHasPart
 import { findRootEntity, Ocx10Package } from "./Ocx10Package"
 import { Ocx10CurriculumEntity, Ocx10LoadedEntity } from "./types"
 
+type ImportLoadedEntitiesOptions = {
+  pkg: Ocx10Package
+  loadedEntities: Ocx10LoadedEntity[]
+  rootEntity: Ocx10CurriculumEntity
+  courseEntity?: Ocx10CurriculumEntity
+  unitPath?: string
+}
+
 export default class Ocx10Bundle extends OcxBundle {
   async importFromLocalPackage(db: PrismaClient, packageRoot: string): Promise<PrismaBundle> {
+    const pkg = await Ocx10Package.open(packageRoot)
+    const loadedEntities = await pkg.loadAllCurriculumEntities()
+    const rootEntity = findRootEntity(loadedEntities.map((item) => item.entity))
+
+    if (!rootEntity) {
+      throw new Error("No root curriculum entity found in package")
+    }
+
+    if (rootEntity["@type"] === "Course") {
+      throw new Error(
+        "Course-root packages must be imported via importOcx10LocalPackage (creates one bundle per unit)"
+      )
+    }
+
+    return this.importLoadedEntities(db, {
+      pkg,
+      loadedEntities,
+      rootEntity,
+    })
+  }
+
+  async importLoadedEntities(
+    db: PrismaClient,
+    options: ImportLoadedEntitiesOptions
+  ): Promise<PrismaBundle> {
+    const { pkg, loadedEntities, rootEntity, courseEntity, unitPath } = options
+
     await db.bundle.update({
       where: { id: this.prismaBundle.id },
       data: { importStatus: "processing" },
     })
 
     try {
-      const pkg = await Ocx10Package.open(packageRoot)
-      const loadedEntities = await pkg.loadAllCurriculumEntities()
-
       const nodes = await this.createNodesFromOcx10Entities(db, loadedEntities)
 
       await this.assignParentsToNodes(db, nodes)
       await this.reloadFromDb(db)
 
-      const rootEntity = findRootEntity(loadedEntities.map((item) => item.entity))
+      const unitAbout = rootEntity.description as string | undefined
+      const unitAlternateName = rootEntity.ordinalName as string | undefined
       const fullCourseName =
-        (rootEntity?.name as string | undefined) || pkg.manifest.name
+        unitAlternateName && unitAbout
+          ? `${unitAlternateName}: ${unitAbout}`
+          : (rootEntity.name as string | undefined) || pkg.manifest.name
 
       await db.bundle.update({
         where: { id: this.prismaBundle.id },
@@ -34,15 +69,26 @@ export default class Ocx10Bundle extends OcxBundle {
           importStatus: "completed",
           importMetadata: {
             format: "ocx@1.0.0",
+            importScope: "unit",
             packageRoot: pkg.packageRoot,
             inLanguage: pkg.manifest.inLanguage,
             manifestId: pkg.manifest["@id"],
             manifestName: pkg.manifest.name,
-            rootEntityId: rootEntity?.["@id"],
-            rootEntityType: rootEntity?.["@type"],
+            ...(courseEntity
+              ? {
+                  courseEntityId: courseEntity["@id"],
+                  courseName: courseEntity.name,
+                }
+              : {}),
+            rootEntityId: rootEntity["@id"],
+            rootEntityType: rootEntity["@type"],
+            unitPath,
+            unitCode: unitPath ? unitCodeFromPath(unitPath) : undefined,
+            course_chapter: unitAlternateName,
+            course_about: unitAbout,
             full_course_name: fullCourseName,
           },
-          name: this.prismaBundle.name || pkg.manifest.name,
+          name: this.prismaBundle.name || (rootEntity.name as string),
         },
       })
 
@@ -152,4 +198,10 @@ export default class Ocx10Bundle extends OcxBundle {
 
     return updatedNodes
   }
+}
+
+function unitCodeFromPath(unitPath: string): string | undefined {
+  const baseName = unitPath.split("/").pop()?.replace(/\.json$/i, "") ?? ""
+  const segments = baseName.split("-")
+  return segments[segments.length - 1] || undefined
 }
