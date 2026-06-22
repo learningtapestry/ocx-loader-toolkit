@@ -7,6 +7,7 @@ import {
 import { isUnitLessonGrouping } from "./curriculumTypes"
 import Ocx10Bundle from "./Ocx10Bundle"
 import { findRootEntity, Ocx10Package } from "./Ocx10Package"
+import { Ocx10PackageSource } from "./Ocx10PackageSource"
 import { Ocx10LoadedEntity } from "./types"
 
 function unitBundleName(
@@ -20,10 +21,10 @@ function unitBundleName(
 
 export async function importOcx10LocalPackage(
   db: PrismaClient,
-  packageRoot: string,
+  source: Ocx10PackageSource,
   bundleNamePrefix?: string
 ): Promise<Ocx10Bundle[]> {
-  const pkg = await Ocx10Package.open(packageRoot)
+  const pkg = await Ocx10Package.openFromSource(source)
   const loadedEntities = await pkg.loadAllCurriculumEntities()
   const rootEntity = findRootEntity(loadedEntities.map((item) => item.entity))
 
@@ -86,7 +87,7 @@ export async function importOcx10LocalPackage(
 
   const prismaBundle = await db.bundle.create({
     data: {
-      name: bundleNamePrefix || rootEntity.name || `OCX 1.0 ${packageRoot}`,
+      name: bundleNamePrefix || rootEntity.name || `OCX 1.0 ${source.origin}`,
       sitemapUrl: "ocx10://local",
     },
   })

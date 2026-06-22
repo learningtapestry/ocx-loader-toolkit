@@ -1,8 +1,6 @@
-import { access, readFile } from "fs/promises"
-import path from "path"
-
 import { isCurriculumType, isUnitLessonGrouping } from "./curriculumTypes"
 import { Ocx10EntityLoader } from "./Ocx10EntityLoader"
+import { LocalOcx10PackageSource, Ocx10PackageSource } from "./Ocx10PackageSource"
 import {
   OCX10_FORMAT,
   Ocx10CurriculumEntity,
@@ -12,32 +10,34 @@ import {
 } from "./types"
 
 export class Ocx10Package {
-  readonly packageRoot: string
+  readonly source: Ocx10PackageSource
   readonly manifest: Ocx10Manifest
   readonly curriculumEntries: Ocx10ManifestContentEntry[]
   private readonly pathById: Map<string, string>
 
+  /** @deprecated Use source.origin. Kept for importMetadata.packageRoot compatibility. */
+  get packageRoot(): string {
+    return this.source.origin
+  }
+
   private constructor(
-    packageRoot: string,
+    source: Ocx10PackageSource,
     manifest: Ocx10Manifest,
     curriculumEntries: Ocx10ManifestContentEntry[],
     pathById: Map<string, string>
   ) {
-    this.packageRoot = packageRoot
+    this.source = source
     this.manifest = manifest
     this.curriculumEntries = curriculumEntries
     this.pathById = pathById
   }
 
-  static async open(packageRoot: string): Promise<Ocx10Package> {
-    const absoluteRoot = path.resolve(packageRoot)
-    const manifestPath = path.join(absoluteRoot, "manifest.json")
-
+  static async openFromSource(source: Ocx10PackageSource): Promise<Ocx10Package> {
     let manifestRaw: string
     try {
-      manifestRaw = await readFile(manifestPath, "utf8")
+      manifestRaw = await source.readText("manifest.json")
     } catch {
-      throw new Error(`manifest.json not found at ${manifestPath}`)
+      throw new Error(`manifest.json not found for package at ${source.origin}`)
     }
 
     const manifest = JSON.parse(manifestRaw) as Ocx10Manifest
@@ -62,11 +62,16 @@ export class Ocx10Package {
       pathById.set(entry.id, entry.path)
     }
 
-    const pkg = new Ocx10Package(absoluteRoot, manifest, curriculumEntries, pathById)
+    const pkg = new Ocx10Package(source, manifest, curriculumEntries, pathById)
 
     await pkg.validateCurriculumFiles()
 
     return pkg
+  }
+
+  /** Open a package from a local directory (convenience wrapper). */
+  static async open(packageRoot: string): Promise<Ocx10Package> {
+    return Ocx10Package.openFromSource(new LocalOcx10PackageSource(packageRoot))
   }
 
   pathForId(id: string): string {
@@ -77,10 +82,6 @@ export class Ocx10Package {
     }
 
     return relativePath
-  }
-
-  absolutePathForId(id: string): string {
-    return path.join(this.packageRoot, this.pathForId(id))
   }
 
   get rootEntry(): Ocx10ManifestContentEntry {
@@ -114,11 +115,7 @@ export class Ocx10Package {
 
   private async validateCurriculumFiles(): Promise<void> {
     for (const entry of this.curriculumEntries) {
-      const filePath = path.join(this.packageRoot, entry.path)
-
-      try {
-        await access(filePath)
-      } catch {
+      if (!(await this.source.exists(entry.path))) {
         throw new Error(`Curriculum file not found: ${entry.path}`)
       }
     }

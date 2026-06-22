@@ -4,6 +4,7 @@ import OcxBundle from "../OcxBundle"
 
 import { normalizeHasPart, skippedLinksToBundleErrors } from "./normalizeHasPart"
 import { findRootEntity, Ocx10Package } from "./Ocx10Package"
+import { LocalOcx10PackageSource } from "./Ocx10PackageSource"
 import { Ocx10CurriculumEntity, Ocx10LoadedEntity } from "./types"
 
 type ImportLoadedEntitiesOptions = {
@@ -15,8 +16,11 @@ type ImportLoadedEntitiesOptions = {
 }
 
 export default class Ocx10Bundle extends OcxBundle {
-  async importFromLocalPackage(db: PrismaClient, packageRoot: string): Promise<PrismaBundle> {
-    const pkg = await Ocx10Package.open(packageRoot)
+  async importFromLocalPackage(
+    db: PrismaClient,
+    source: LocalOcx10PackageSource
+  ): Promise<PrismaBundle> {
+    const pkg = await Ocx10Package.openFromSource(source)
     const loadedEntities = await pkg.loadAllCurriculumEntities()
     const rootEntity = findRootEntity(loadedEntities.map((item) => item.entity))
 

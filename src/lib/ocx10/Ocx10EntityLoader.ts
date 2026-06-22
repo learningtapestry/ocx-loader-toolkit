@@ -1,5 +1,3 @@
-import { readFile } from "fs/promises"
-
 import { isCurriculumType } from "./curriculumTypes"
 import type { Ocx10Package } from "./Ocx10Package"
 import { Ocx10CurriculumEntity } from "./types"
@@ -18,12 +16,12 @@ export class Ocx10EntityLoader {
       return cached
     }
 
-    const filePath = this.pkg.absolutePathForId(id)
-    const raw = await readFile(filePath, "utf8")
+    const relativePath = this.pkg.pathForId(id)
+    const raw = await this.pkg.source.readText(relativePath)
     const entity = JSON.parse(raw) as Ocx10CurriculumEntity
 
     if (entity["@id"] !== id) {
-      throw new Error(`Entity @id mismatch in ${this.pkg.pathForId(id)}: expected ${id}, got ${entity["@id"]}`)
+      throw new Error(`Entity @id mismatch in ${relativePath}: expected ${id}, got ${entity["@id"]}`)
     }
 
     const manifestEntry = this.pkg.curriculumEntries.find((entry) => entry.id === id)
