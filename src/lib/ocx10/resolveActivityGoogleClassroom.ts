@@ -1,11 +1,40 @@
 import { JsonObject } from "type-fest"
 
+import { languages } from "src/constants/languages"
+
 import { ResolvedLmsActivity } from "./lmsActivity"
+import {
+  isExportableRepresentation,
+  selectExportRepresentations,
+} from "./resolveMaterialRepresentations"
+import { LegacyGoogleClassroomMaterialEntry, ResolvedRepresentation } from "./types"
 
 export interface LegacyGoogleClassroomBlock {
   postTitle: { en: string; es: string }
   postInstructions: { en: string; es: string }
-  materials: []
+  materials: LegacyGoogleClassroomMaterialEntry[]
+}
+
+export function mapInLanguageToVersion(inLanguage: string | undefined): string {
+  if (inLanguage?.startsWith("es")) {
+    return languages.es
+  }
+
+  return languages.en
+}
+
+export function toLegacyGoogleClassroomMaterial(
+  material: JsonObject,
+  rep: ResolvedRepresentation
+): LegacyGoogleClassroomMaterialEntry {
+  return {
+    version: mapInLanguageToVersion(material.inLanguage as string | undefined),
+    object: {
+      title: (material.name as string | undefined) || "",
+      url: rep.legacyUrl!,
+      type: rep.legacyMaterialType || "material",
+    },
+  }
 }
 
 function legacyLanguageKey(language: string | undefined): "en" | "es" {
@@ -73,18 +102,53 @@ function findLmsActivityMaterial(
   return undefined
 }
 
+function collectActivityMaterials(
+  activity: JsonObject,
+  materialNodesById: Map<string, JsonObject>
+): LegacyGoogleClassroomMaterialEntry[] {
+  const materials: LegacyGoogleClassroomMaterialEntry[] = []
+  const hasPart = (activity.hasPart || []) as JsonObject[]
+
+  for (const stub of hasPart) {
+    if (stub["@type"] !== "Material") {
+      continue
+    }
+
+    const material = materialNodesById.get(stub["@id"] as string)
+
+    if (!material) {
+      continue
+    }
+
+    const resolvedRepresentations = material.resolvedRepresentations as
+      | ResolvedRepresentation[]
+      | undefined
+
+    if (!resolvedRepresentations?.some(isExportableRepresentation)) {
+      continue
+    }
+
+    for (const rep of selectExportRepresentations(resolvedRepresentations)) {
+      materials.push(toLegacyGoogleClassroomMaterial(material, rep))
+    }
+  }
+
+  return materials
+}
+
 export function resolveActivityGoogleClassroom(
   activity: JsonObject,
   materialNodesById: Map<string, JsonObject>
 ): LegacyGoogleClassroomBlock {
   const activityName = (activity.name as string | undefined) || ""
   const match = findLmsActivityMaterial(activity, materialNodesById)
+  const materials = collectActivityMaterials(activity, materialNodesById)
 
   if (!match) {
     return {
       postTitle: { en: activityName, es: activityName },
       postInstructions: emptyLocalizedText(),
-      materials: [],
+      materials,
     }
   }
 
@@ -102,6 +166,6 @@ export function resolveActivityGoogleClassroom(
   return {
     postTitle,
     postInstructions,
-    materials: [],
+    materials,
   }
 }

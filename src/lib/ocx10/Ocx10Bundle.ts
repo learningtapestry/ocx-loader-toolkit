@@ -6,9 +6,15 @@ import {
   lmsActivityResolutionErrorToBundleError,
   resolveLmsActivityForMaterial,
 } from "./lmsActivity"
+import { packageTransport } from "./importOcx10Package"
+import { collectMaterialIdsForUnit } from "./collectUnitSubtree"
 import { normalizeHasPart, skippedLinksToBundleErrors } from "./normalizeHasPart"
 import { findRootEntity, Ocx10Package } from "./Ocx10Package"
 import { LocalOcx10PackageSource } from "./Ocx10PackageSource"
+import {
+  representationResolutionErrorToBundleError,
+  resolveRepresentationsForMaterial,
+} from "./resolveMaterialRepresentations"
 import { Ocx10CurriculumEntity, Ocx10LoadedEntity, Ocx10LoadedMaterial } from "./types"
 
 type ImportLoadedEntitiesOptions = {
@@ -18,6 +24,7 @@ type ImportLoadedEntitiesOptions = {
   rootEntity: Ocx10CurriculumEntity
   courseEntity?: Ocx10CurriculumEntity
   unitPath?: string
+  transport?: "local" | "http"
 }
 
 export default class Ocx10Bundle extends OcxBundle {
@@ -35,15 +42,19 @@ export default class Ocx10Bundle extends OcxBundle {
 
     if (rootEntity["@type"] === "Course") {
       throw new Error(
-        "Course-root packages must be imported via importOcx10LocalPackage (creates one bundle per unit)"
+        "Course-root packages must be imported via importOcx10Package (creates one bundle per unit)"
       )
     }
+
+    const materialIds = collectMaterialIdsForUnit(rootEntity["@id"], loadedEntities)
+    const loadedMaterials = await pkg.loadMaterials(materialIds)
 
     return this.importLoadedEntities(db, {
       pkg,
       loadedEntities,
-      loadedMaterials: [],
+      loadedMaterials,
       rootEntity,
+      transport: packageTransport(source),
     })
   }
 
@@ -51,7 +62,8 @@ export default class Ocx10Bundle extends OcxBundle {
     db: PrismaClient,
     options: ImportLoadedEntitiesOptions
   ): Promise<PrismaBundle> {
-    const { pkg, loadedEntities, loadedMaterials, rootEntity, courseEntity, unitPath } = options
+    const { pkg, loadedEntities, loadedMaterials, rootEntity, courseEntity, unitPath, transport } =
+      options
 
     await db.bundle.update({
       where: { id: this.prismaBundle.id },
@@ -59,7 +71,12 @@ export default class Ocx10Bundle extends OcxBundle {
     })
 
     try {
-      const nodes = await this.createNodesFromOcx10Entities(db, loadedEntities, loadedMaterials, pkg)
+      const { nodes, assetValidation } = await this.createNodesFromOcx10Entities(
+        db,
+        loadedEntities,
+        loadedMaterials,
+        pkg
+      )
 
       await this.assignParentsToNodes(db, nodes)
       await this.reloadFromDb(db)
@@ -82,6 +99,8 @@ export default class Ocx10Bundle extends OcxBundle {
             format: "ocx@1.0.0",
             importScope: "unit",
             packageRoot: pkg.packageRoot,
+            transport: transport ?? packageTransport(pkg.source),
+            assetValidation,
             inLanguage: pkg.manifest.inLanguage,
             manifestId: pkg.manifest["@id"],
             manifestName: pkg.manifest.name,
@@ -162,7 +181,7 @@ export default class Ocx10Bundle extends OcxBundle {
     loadedEntities: Ocx10LoadedEntity[],
     loadedMaterials: Ocx10LoadedMaterial[],
     pkg: Ocx10Package
-  ): Promise<PrismaNode[]> {
+  ): Promise<{ nodes: PrismaNode[]; assetValidation: { checked: number; missing: number; external: number } }> {
     await db.nodeExport.deleteMany({
       where: { nodeId: { in: this.ocxNodes.map((node) => node.prismaNode.id) } },
     })
@@ -195,6 +214,7 @@ export default class Ocx10Bundle extends OcxBundle {
     })
 
     const bundleErrors: Prisma.JsonObject[] = skippedLinksToBundleErrors(allSkippedLinks)
+    const assetValidation = { checked: 0, missing: 0, external: 0 }
 
     const curriculumNodes = await Promise.all(
       loadedEntities.map(async (item) => {
@@ -223,16 +243,30 @@ export default class Ocx10Bundle extends OcxBundle {
 
     const materialNodes = await Promise.all(
       loadedMaterials.map(async (item) => {
-        const resolution = await resolveLmsActivityForMaterial(pkg.source, item.entity)
+        const [lmsResolution, representationResolution] = await Promise.all([
+          resolveLmsActivityForMaterial(pkg.source, item.entity),
+          resolveRepresentationsForMaterial(pkg.source, item.entity),
+        ])
+
+        assetValidation.checked += representationResolution.stats.checked
+        assetValidation.missing += representationResolution.stats.missing
+        assetValidation.external += representationResolution.stats.external
+
         const metadata: Prisma.JsonObject = {
           ...(item.entity as Prisma.JsonObject),
-          ...(resolution.lmsActivity
-            ? { lmsActivity: resolution.lmsActivity as unknown as Prisma.JsonObject }
+          resolvedRepresentations:
+            representationResolution.resolvedRepresentations as unknown as Prisma.JsonArray,
+          ...(lmsResolution.lmsActivity
+            ? { lmsActivity: lmsResolution.lmsActivity as unknown as Prisma.JsonObject }
             : {}),
         }
 
-        if (resolution.error) {
-          bundleErrors.push(lmsActivityResolutionErrorToBundleError(resolution.error))
+        if (lmsResolution.error) {
+          bundleErrors.push(lmsActivityResolutionErrorToBundleError(lmsResolution.error))
+        }
+
+        for (const error of representationResolution.errors) {
+          bundleErrors.push(representationResolutionErrorToBundleError(error))
         }
 
         return db.node.create({
@@ -283,7 +317,7 @@ export default class Ocx10Bundle extends OcxBundle {
 
     await this.appendErrors(db, bundleErrors)
 
-    return updatedNodes
+    return { nodes: updatedNodes, assetValidation }
   }
 }
 

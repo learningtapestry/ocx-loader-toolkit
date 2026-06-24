@@ -6,7 +6,7 @@ dotenv.config({ path: ".env" })
 import db from "db"
 
 import { isUnitLessonGrouping } from "./curriculumTypes"
-import { importOcx10LocalPackage } from "./importOcx10LocalPackage"
+import { importOcx10Package } from "./importOcx10Package"
 import { LocalOcx10PackageSource } from "./Ocx10PackageSource"
 
 async function main() {
@@ -21,7 +21,7 @@ async function main() {
   const source = new LocalOcx10PackageSource(packageRoot)
   console.log(`Importing OCX 1.0 package from ${source.origin}...`)
 
-  const bundles = await importOcx10LocalPackage(db, source, bundleName)
+  const bundles = await importOcx10Package(db, source, bundleName)
 
   console.log(`Done. Created ${bundles.length} bundle(s):`)
 

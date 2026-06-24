@@ -96,6 +96,7 @@ export type Ocx10CurriculumEntity =
 export interface Ocx10MaterialRepresentation {
   "@id"?: string
   "@type"?: string
+  identifier?: string
   encodingFormat?: string
   accessResource?: string
   lmsLoadingGuidance?: string
@@ -123,4 +124,42 @@ export interface Ocx10LoadedEntity {
 export interface Ocx10LoadedMaterial {
   path: string
   entity: Ocx10Material
+}
+
+export type ResolvedRepresentationAccessKind =
+  | "packageAsset"
+  | "externalUrl"
+  | "googleDrive"
+  | "googleForm"
+  | "googleSlides"
+  | "video"
+  | "unknown"
+
+export interface ResolvedRepresentation {
+  id: string
+  encodingFormat: string
+  lmsLoadingGuidance: string
+  preferred?: boolean
+  inLanguage?: string
+  accessKind: ResolvedRepresentationAccessKind
+  accessResource: string
+  packagePath?: string
+  assetExists?: boolean
+  legacyUrl?: string
+  legacyMaterialType?: "material" | "video"
+}
+
+export interface LegacyGoogleClassroomMaterialEntry {
+  version: string
+  object: {
+    title: string
+    url: string
+    type: "material" | "video"
+  }
+}
+
+export interface AssetValidationSummary {
+  checked: number
+  missing: number
+  external: number
 }

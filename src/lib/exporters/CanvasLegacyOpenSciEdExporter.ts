@@ -11,6 +11,7 @@ import { isLessonSetLessonGrouping } from "src/lib/ocx10/curriculumTypes"
 import { toLegacyExportView, resolveLegacyExportCourseName } from "src/lib/ocx10/toLegacyExportView"
 
 import OcxBundleExportCanvas, {createExportOcxBundleToCanvas, AttachmentData, LinkData} from "src/lib/exporters/OcxBundleExportCanvas"
+import { attachmentFromLegacyFileUrl } from "src/lib/exporters/legacyFileAttachment"
 
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
@@ -157,7 +158,13 @@ export default class CanvasLegacyOpenSciEdExporter {
                 if ((material.version as string).includes(languages[this.language])) {
                   if (material.object.url) {
                     if (material.object.type === 'material') {
-                      if (material.object.url.includes('google.com/forms')) {
+                      if (material.object.url.startsWith('file://')) {
+                        console.log(`[${this.prismaBundleExport.id}] reading package material`, material.object.url);
+
+                        attachments.push(
+                          await attachmentFromLegacyFileUrl(material.object.url, material.object.title)
+                        );
+                      } else if (material.object.url.includes('google.com/forms')) {
                         console.log(`[${this.prismaBundleExport.id}] loading form`, material.object.url);
 
                         const formJson = await googleRepository.downloadGoogleForm(material.object.url);

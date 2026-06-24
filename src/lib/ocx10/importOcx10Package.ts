@@ -8,7 +8,7 @@ import {
 import { isUnitLessonGrouping } from "./curriculumTypes"
 import Ocx10Bundle from "./Ocx10Bundle"
 import { findRootEntity, Ocx10Package } from "./Ocx10Package"
-import { Ocx10PackageSource } from "./Ocx10PackageSource"
+import { HttpOcx10PackageSource, Ocx10PackageSource } from "./Ocx10PackageSource"
 import { Ocx10LoadedEntity } from "./types"
 
 function unitBundleName(
@@ -20,7 +20,15 @@ function unitBundleName(
   return `${prefix} — ${unitName}`
 }
 
-export async function importOcx10LocalPackage(
+export function packageTransport(source: Ocx10PackageSource): "local" | "http" {
+  if (source instanceof HttpOcx10PackageSource) {
+    return "http"
+  }
+
+  return "local"
+}
+
+export async function importOcx10Package(
   db: PrismaClient,
   source: Ocx10PackageSource,
   bundleNamePrefix?: string
@@ -77,6 +85,7 @@ export async function importOcx10LocalPackage(
         rootEntity: unitLoaded.entity,
         courseEntity: rootEntity,
         unitPath: unitLoaded.path,
+        transport: packageTransport(source),
       })
 
       bundles.push(ocx10Bundle)
@@ -106,7 +115,11 @@ export async function importOcx10LocalPackage(
     loadedEntities,
     loadedMaterials,
     rootEntity,
+    transport: packageTransport(source),
   })
 
   return [ocx10Bundle]
 }
+
+/** @deprecated Use importOcx10Package */
+export const importOcx10LocalPackage = importOcx10Package

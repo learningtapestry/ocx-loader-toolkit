@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveActivityGoogleClassroom } from "../resolveActivityGoogleClassroom"
+import path from "path"
+import { pathToFileURL } from "url"
+
+import {
+  mapInLanguageToVersion,
+  resolveActivityGoogleClassroom,
+} from "../resolveActivityGoogleClassroom"
 
 describe("resolveActivityGoogleClassroom", () => {
   it("maps lmsActivity title and content to legacy googleClassroom fields", () => {
@@ -83,5 +89,152 @@ describe("resolveActivityGoogleClassroom", () => {
       postInstructions: { en: "", es: "" },
       materials: [],
     })
+  })
+
+  it("does not include lmsActivity-only materials in materials[]", () => {
+    const activity = {
+      "@type": "Activity",
+      name: "Activity with instructions only",
+      hasPart: [{ "@id": "material-1", "@type": "Material" }],
+    }
+
+    const materialNodesById = new Map([
+      [
+        "material-1",
+        {
+          "@type": "Material",
+          "@id": "material-1",
+          inLanguage: "en-US",
+          name: "Instructions material",
+          lmsActivity: {
+            title: "Instructions title",
+            content: "Do the thing.",
+            language: "en-US",
+            accessResource: "assets/lms_activity/example.json",
+          },
+          resolvedRepresentations: [
+            {
+              id: "lms",
+              encodingFormat: "application/vnd.ocx.lmsActivity+json",
+              lmsLoadingGuidance: "Optional",
+              accessKind: "packageAsset",
+              accessResource: "assets/lms_activity/example.json",
+              legacyUrl: "file:///tmp/example.json",
+              legacyMaterialType: "material",
+            },
+          ],
+        },
+      ],
+    ])
+
+    const result = resolveActivityGoogleClassroom(activity, materialNodesById)
+
+    expect(result.materials).toEqual([])
+    expect(result.postInstructions.en).toBe("Do the thing.")
+  })
+
+  it("maps Google Drive material to https legacy materials[] entry", () => {
+    const driveUrl =
+      "https://drive.google.com/open?id=1_H35J0MaY3_4oUdqypMfWG3sKk4DrR0r5G6Cxt7Gq4s"
+    const activity = {
+      "@type": "Activity",
+      name: "Revisit and explain collision types",
+      hasPart: [{ "@id": "material-drive", "@type": "Material", name: "Explicando una colisión" }],
+    }
+
+    const materialNodesById = new Map([
+      [
+        "material-drive",
+        {
+          "@type": "Material",
+          "@id": "material-drive",
+          name: "Explicando una colisión",
+          inLanguage: "en-US",
+          resolvedRepresentations: [
+            {
+              id: "drive",
+              encodingFormat: "application/octet-stream",
+              lmsLoadingGuidance: "Required",
+              accessKind: "googleDrive",
+              accessResource: driveUrl,
+              legacyUrl: driveUrl,
+              legacyMaterialType: "material",
+            },
+            {
+              id: "markdown",
+              encodingFormat: "text/markdown",
+              lmsLoadingGuidance: "Optional",
+              accessKind: "packageAsset",
+              accessResource: "assets/markdown/example.md",
+              legacyUrl: "file:///tmp/example.md",
+              legacyMaterialType: "material",
+            },
+          ],
+        },
+      ],
+    ])
+
+    expect(resolveActivityGoogleClassroom(activity, materialNodesById).materials).toEqual([
+      {
+        version: "English",
+        object: {
+          title: "Explicando una colisión",
+          url: driveUrl,
+          type: "material",
+        },
+      },
+    ])
+  })
+
+  it("maps package PDF material to file:// legacy materials[] entry", () => {
+    const pdfPath = path.join(
+      "alex/test-data/science-grade-8.ocx",
+      "assets/pdf/8.2-Lesson-9-Handout-Self-Assessment-for-Classroom.pdf"
+    )
+    const fileUrl = pathToFileURL(path.resolve(pdfPath)).href
+    const activity = {
+      "@type": "Activity",
+      name: "Navigation",
+      hasPart: [{ "@id": "material-pdf", "@type": "Material" }],
+    }
+
+    const materialNodesById = new Map([
+      [
+        "material-pdf",
+        {
+          "@type": "Material",
+          "@id": "material-pdf",
+          name: "So.l9.ho3",
+          inLanguage: "en-US",
+          resolvedRepresentations: [
+            {
+              id: "pdf",
+              encodingFormat: "application/pdf",
+              lmsLoadingGuidance: "Recommended",
+              accessKind: "packageAsset",
+              accessResource: "assets/pdf/8.2-Lesson-9-Handout-Self-Assessment-for-Classroom.pdf",
+              legacyUrl: fileUrl,
+              legacyMaterialType: "material",
+            },
+          ],
+        },
+      ],
+    ])
+
+    expect(resolveActivityGoogleClassroom(activity, materialNodesById).materials).toEqual([
+      {
+        version: "English",
+        object: {
+          title: "So.l9.ho3",
+          url: fileUrl,
+          type: "material",
+        },
+      },
+    ])
+  })
+
+  it("maps inLanguage to legacy version labels", () => {
+    expect(mapInLanguageToVersion("en-US")).toBe("English")
+    expect(mapInLanguageToVersion("es-US")).toBe("Spanish")
   })
 })
