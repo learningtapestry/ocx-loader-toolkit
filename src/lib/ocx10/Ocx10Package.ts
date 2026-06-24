@@ -1,18 +1,21 @@
-import { isCurriculumType, isUnitLessonGrouping } from "./curriculumTypes"
+import { isCurriculumType, isMaterialType, isUnitLessonGrouping } from "./curriculumTypes"
 import { Ocx10EntityLoader } from "./Ocx10EntityLoader"
 import { LocalOcx10PackageSource, Ocx10PackageSource } from "./Ocx10PackageSource"
 import {
   OCX10_FORMAT,
   Ocx10CurriculumEntity,
   Ocx10LoadedEntity,
+  Ocx10LoadedMaterial,
   Ocx10Manifest,
   Ocx10ManifestContentEntry,
+  Ocx10Material,
 } from "./types"
 
 export class Ocx10Package {
   readonly source: Ocx10PackageSource
   readonly manifest: Ocx10Manifest
   readonly curriculumEntries: Ocx10ManifestContentEntry[]
+  readonly materialEntries: Ocx10ManifestContentEntry[]
   private readonly pathById: Map<string, string>
 
   /** @deprecated Use source.origin. Kept for importMetadata.packageRoot compatibility. */
@@ -24,11 +27,13 @@ export class Ocx10Package {
     source: Ocx10PackageSource,
     manifest: Ocx10Manifest,
     curriculumEntries: Ocx10ManifestContentEntry[],
+    materialEntries: Ocx10ManifestContentEntry[],
     pathById: Map<string, string>
   ) {
     this.source = source
     this.manifest = manifest
     this.curriculumEntries = curriculumEntries
+    this.materialEntries = materialEntries
     this.pathById = pathById
   }
 
@@ -51,6 +56,7 @@ export class Ocx10Package {
     }
 
     const curriculumEntries = manifest.contents.filter((entry) => isCurriculumType(entry.type))
+    const materialEntries = manifest.contents.filter((entry) => isMaterialType(entry.type))
 
     if (!curriculumEntries.length) {
       throw new Error("No curriculum entities found in manifest.contents")
@@ -59,10 +65,22 @@ export class Ocx10Package {
     const pathById = new Map<string, string>()
 
     for (const entry of manifest.contents) {
-      pathById.set(entry.id, entry.path)
+      if (entry.id) {
+        pathById.set(entry.id, entry.path)
+      }
     }
 
-    const pkg = new Ocx10Package(source, manifest, curriculumEntries, pathById)
+    for (const entry of materialEntries) {
+      if (entry.id) {
+        continue
+      }
+
+      const raw = await source.readText(entry.path)
+      const entity = JSON.parse(raw) as Ocx10Material
+      pathById.set(entity["@id"], entry.path)
+    }
+
+    const pkg = new Ocx10Package(source, manifest, curriculumEntries, materialEntries, pathById)
 
     await pkg.validateCurriculumFiles()
 
@@ -111,6 +129,39 @@ export class Ocx10Package {
         entity: await loader.load(entry.id),
       }))
     )
+  }
+
+  async loadMaterial(id: string): Promise<Ocx10LoadedMaterial> {
+    const relativePath = this.pathForId(id)
+    const raw = await this.source.readText(relativePath)
+    const entity = JSON.parse(raw) as Ocx10Material
+
+    if (entity["@id"] !== id) {
+      throw new Error(`Material @id mismatch in ${relativePath}: expected ${id}, got ${entity["@id"]}`)
+    }
+
+    const manifestEntry = this.materialEntries.find((entry) => entry.path === relativePath)
+
+    if (!manifestEntry || !isMaterialType(manifestEntry.type)) {
+      throw new Error(`Id ${id} is not a Material entity in manifest`)
+    }
+
+    if (entity["@type"] !== manifestEntry.type) {
+      throw new Error(
+        `Material @type mismatch for ${id}: manifest says ${manifestEntry.type}, file says ${entity["@type"]}`
+      )
+    }
+
+    return {
+      path: relativePath,
+      entity,
+    }
+  }
+
+  async loadMaterials(ids: Iterable<string>): Promise<Ocx10LoadedMaterial[]> {
+    const uniqueIds = [...new Set(ids)]
+
+    return Promise.all(uniqueIds.map((id) => this.loadMaterial(id)))
   }
 
   private async validateCurriculumFiles(): Promise<void> {

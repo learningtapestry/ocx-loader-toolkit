@@ -3,7 +3,8 @@ import { JsonObject } from "type-fest"
 
 import OcxBundle from "../OcxBundle"
 
-import { isUnitLessonGrouping } from "./curriculumTypes"
+import { findUnitRootNode, isUnitLessonGrouping } from "./curriculumTypes"
+import { resolveActivityGoogleClassroom } from "./resolveActivityGoogleClassroom"
 
 export const CANVAS_MAX_NAME_LENGTH = 255
 
@@ -47,7 +48,7 @@ export function resolveOcx10ExportCourseName(
     return null
   }
 
-  const rootNode = bundle.nodes.find((node) => node.parentId === null)
+  const rootNode = findUnitRootNode(bundle.nodes)
 
   if (!rootNode) {
     return null
@@ -55,13 +56,9 @@ export function resolveOcx10ExportCourseName(
 
   const unitMetadata = rootNode.metadata as JsonObject
 
-  if (!isUnitLessonGrouping(unitMetadata)) {
-    return null
-  }
-
   const inLanguage = (importMetadata.inLanguage as string) || "en-US"
 
-  return resolveLegacyExportCourseName(convertNodeMetadata(unitMetadata, inLanguage))
+  return resolveLegacyExportCourseName(convertNodeMetadata(unitMetadata, inLanguage, new Map()))
 }
 
 export function resolveExportCourseName(
@@ -106,8 +103,25 @@ function lessonNumberFromOrdinalName(
   return "1"
 }
 
-function convertNodeMetadata(metadata: JsonObject, inLanguage: string): JsonObject {
-  const lang = inLanguage.startsWith("es") ? "es" : "en"
+function buildMaterialNodesById(nodes: PrismaNode[]): Map<string, JsonObject> {
+  const materialNodesById = new Map<string, JsonObject>()
+
+  for (const node of nodes) {
+    const metadata = node.metadata as JsonObject
+
+    if (metadata["@type"] === "Material") {
+      materialNodesById.set(metadata["@id"] as string, metadata)
+    }
+  }
+
+  return materialNodesById
+}
+
+function convertNodeMetadata(
+  metadata: JsonObject,
+  inLanguage: string,
+  materialNodesById: Map<string, JsonObject>
+): JsonObject {
   const converted: JsonObject = { ...metadata }
 
   if (isUnitLessonGrouping(metadata)) {
@@ -125,11 +139,10 @@ function convertNodeMetadata(metadata: JsonObject, inLanguage: string): JsonObje
       metadata.name as string | undefined
     )
   } else if (metadata["@type"] === "Activity") {
-    converted.googleClassroom = {
-      postTitle: { en: metadata.name, es: lang === "es" ? metadata.name : "" },
-      postInstructions: { en: "", es: "" },
-      materials: [],
-    }
+    converted.googleClassroom = resolveActivityGoogleClassroom(
+      metadata,
+      materialNodesById
+    ) as unknown as JsonObject
   }
 
   return converted
@@ -142,18 +155,25 @@ export function toLegacyExportView(ocxBundle: OcxBundle): OcxBundle {
     throw new Error('toLegacyExportView: expected importMetadata.format "ocx@1.0.0"')
   }
 
-  const rootNodes = ocxBundle.rootNodes
-
-  if (rootNodes.length === 0 || !isUnitLessonGrouping(rootNodes[0].metadata)) {
-    throw new Error("toLegacyExportView: expected unit-root package")
-  }
-
   const inLanguage = (importMetadata.inLanguage as string) || "en-US"
+  const materialNodesById = buildMaterialNodesById(ocxBundle.ocxNodes.map((node) => node.prismaNode))
 
   const clonedNodes: PrismaNode[] = ocxBundle.ocxNodes.map((ocxNode) => ({
     ...ocxNode.prismaNode,
-    metadata: convertNodeMetadata(ocxNode.metadata, inLanguage),
+    metadata: convertNodeMetadata(ocxNode.metadata, inLanguage, materialNodesById),
   }))
 
-  return new OcxBundle(ocxBundle.prismaBundle, clonedNodes)
+  const curriculumNodes = clonedNodes.filter(
+    (node) => (node.metadata as JsonObject)["@type"] !== "Material"
+  )
+
+  const unitRootNode = curriculumNodes.find((node) =>
+    isUnitLessonGrouping(node.metadata as JsonObject)
+  )
+
+  if (!unitRootNode) {
+    throw new Error("toLegacyExportView: expected unit-root package")
+  }
+
+  return new OcxBundle(ocxBundle.prismaBundle, curriculumNodes)
 }

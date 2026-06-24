@@ -105,7 +105,7 @@ export default class CanvasLegacyOpenSciEdExporter {
       const baseUrl = exportDestination.baseUrl; // Ensure this contains the base URL of Canvas
       this.courseUrl = `${baseUrl}/courses/${courseId}`;
 
-      const unitRoot = ocxBundle.rootNodes[0];
+      const unitRoot = ocxBundle.rootNodes[0]
 
       let canvasModulePosition = 1;
       let canvasModuleItemPosition = 1;

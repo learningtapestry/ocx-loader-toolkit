@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client"
 
-import { isCurriculumLink, isCurriculumType } from "./curriculumTypes"
-import { Ocx10CurriculumEntity, Ocx10HasPartStub, Ocx10LinkReference } from "./types"
+import { isCurriculumLink, isCurriculumType, isMaterialType } from "./curriculumTypes"
+import { Ocx10CurriculumEntity, Ocx10HasPartStub, Ocx10LinkReference, Ocx10Material } from "./types"
 
 export interface NormalizeHasPartResult {
   hasPart: Ocx10HasPartStub[]
@@ -37,7 +37,8 @@ function getLinkId(item: Ocx10LinkReference | Ocx10HasPartStub): string | undefi
 export function normalizeHasPart(
   parentId: string,
   hasPart: (Ocx10LinkReference | Ocx10HasPartStub)[] | undefined,
-  entitiesById: Map<string, Ocx10CurriculumEntity>
+  entitiesById: Map<string, Ocx10CurriculumEntity>,
+  materialsById: Map<string, Ocx10Material> = new Map()
 ): NormalizeHasPartResult {
   const normalized: Ocx10HasPartStub[] = []
   const skippedLinks: SkippedLink[] = []
@@ -47,6 +48,17 @@ export function normalizeHasPart(
     const linkId = getLinkId(item)
 
     if (!linkType || !linkId) {
+      continue
+    }
+
+    if (isMaterialType(linkType)) {
+      const material = materialsById.get(linkId)
+
+      normalized.push({
+        "@id": linkId,
+        "@type": linkType,
+        name: material?.name,
+      })
       continue
     }
 

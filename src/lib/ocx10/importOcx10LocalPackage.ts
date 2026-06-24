@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client"
 
 import {
+  collectMaterialIdsForUnit,
   filterLoadedEntitiesForUnit,
   getCourseUnitEntities,
 } from "./collectUnitSubtree"
@@ -53,6 +54,8 @@ export async function importOcx10LocalPackage(
         loadedEntities,
         unitLoaded.entity["@id"]
       )
+      const materialIds = collectMaterialIdsForUnit(unitLoaded.entity["@id"], loadedEntities)
+      const loadedMaterials = await pkg.loadMaterials(materialIds)
 
       const prismaBundle = await db.bundle.create({
         data: {
@@ -70,6 +73,7 @@ export async function importOcx10LocalPackage(
       await ocx10Bundle.importLoadedEntities(db, {
         pkg,
         loadedEntities: unitSubtree,
+        loadedMaterials,
         rootEntity: unitLoaded.entity,
         courseEntity: rootEntity,
         unitPath: unitLoaded.path,
@@ -92,11 +96,15 @@ export async function importOcx10LocalPackage(
     },
   })
 
+  const materialIds = collectMaterialIdsForUnit(rootEntity["@id"], loadedEntities)
+  const loadedMaterials = await pkg.loadMaterials(materialIds)
+
   const ocx10Bundle = new Ocx10Bundle(prismaBundle, [])
 
   await ocx10Bundle.importLoadedEntities(db, {
     pkg,
     loadedEntities,
+    loadedMaterials,
     rootEntity,
   })
 

@@ -1,5 +1,18 @@
 import { isUnitLessonGrouping } from "./curriculumTypes"
-import { Ocx10CurriculumEntity, Ocx10HasPartStub, Ocx10LinkReference, Ocx10LoadedEntity } from "./types"
+import {
+  Ocx10CurriculumEntity,
+  Ocx10HasPartStub,
+  Ocx10LinkReference,
+  Ocx10LoadedEntity,
+} from "./types"
+
+function getLinkType(item: Ocx10LinkReference | Ocx10HasPartStub): string | undefined {
+  if (isLinkReference(item)) {
+    return item.link["@type"]
+  }
+
+  return item["@type"]
+}
 
 function isLinkReference(item: Ocx10LinkReference | Ocx10HasPartStub): item is Ocx10LinkReference {
   return "link" in item && !!item.link
@@ -63,6 +76,32 @@ export function getCourseUnitEntities(
   }
 
   return units
+}
+
+export function collectMaterialIdsForUnit(
+  unitRootId: string,
+  loadedEntities: Ocx10LoadedEntity[]
+): Set<string> {
+  const entitiesById = new Map<string, Ocx10CurriculumEntity>(
+    loadedEntities.map((item) => [item.entity["@id"], item.entity])
+  )
+  const curriculumIds = collectDescendantEntityIds(unitRootId, entitiesById)
+  const materialIds = new Set<string>()
+
+  for (const entityId of curriculumIds) {
+    const entity = entitiesById.get(entityId)
+
+    for (const item of entity?.hasPart ?? []) {
+      const linkType = getLinkType(item)
+      const linkId = getLinkId(item)
+
+      if (linkType === "Material" && linkId) {
+        materialIds.add(linkId)
+      }
+    }
+  }
+
+  return materialIds
 }
 
 export function filterLoadedEntitiesForUnit(

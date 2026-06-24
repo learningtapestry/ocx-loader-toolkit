@@ -1,4 +1,4 @@
-import { Ocx10CurriculumType } from "./curriculumTypes"
+import { Ocx10CurriculumType, OCX10_MATERIAL_TYPE } from "./curriculumTypes"
 
 export const OCX10_FORMAT = "ocx@1.0.0"
 
@@ -93,7 +93,34 @@ export type Ocx10CurriculumEntity =
   | Ocx10Lesson
   | Ocx10Activity
 
+export interface Ocx10MaterialRepresentation {
+  "@id"?: string
+  "@type"?: string
+  encodingFormat?: string
+  accessResource?: string
+  lmsLoadingGuidance?: string
+  inLanguage?: string
+  preferred?: boolean
+  isOcxGenerated?: boolean
+}
+
+export interface Ocx10Material {
+  "@id": string
+  "@type": typeof OCX10_MATERIAL_TYPE
+  name?: string
+  content?: string
+  audience?: string[]
+  materialType?: string
+  hasRepresentation?: Ocx10MaterialRepresentation[]
+  [key: string]: unknown
+}
+
 export interface Ocx10LoadedEntity {
   path: string
   entity: Ocx10CurriculumEntity
+}
+
+export interface Ocx10LoadedMaterial {
+  path: string
+  entity: Ocx10Material
 }

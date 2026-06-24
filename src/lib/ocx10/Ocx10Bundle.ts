@@ -2,14 +2,19 @@ import { Bundle as PrismaBundle, Node as PrismaNode, Prisma, PrismaClient } from
 
 import OcxBundle from "../OcxBundle"
 
+import {
+  lmsActivityResolutionErrorToBundleError,
+  resolveLmsActivityForMaterial,
+} from "./lmsActivity"
 import { normalizeHasPart, skippedLinksToBundleErrors } from "./normalizeHasPart"
 import { findRootEntity, Ocx10Package } from "./Ocx10Package"
 import { LocalOcx10PackageSource } from "./Ocx10PackageSource"
-import { Ocx10CurriculumEntity, Ocx10LoadedEntity } from "./types"
+import { Ocx10CurriculumEntity, Ocx10LoadedEntity, Ocx10LoadedMaterial } from "./types"
 
 type ImportLoadedEntitiesOptions = {
   pkg: Ocx10Package
   loadedEntities: Ocx10LoadedEntity[]
+  loadedMaterials: Ocx10LoadedMaterial[]
   rootEntity: Ocx10CurriculumEntity
   courseEntity?: Ocx10CurriculumEntity
   unitPath?: string
@@ -37,6 +42,7 @@ export default class Ocx10Bundle extends OcxBundle {
     return this.importLoadedEntities(db, {
       pkg,
       loadedEntities,
+      loadedMaterials: [],
       rootEntity,
     })
   }
@@ -45,7 +51,7 @@ export default class Ocx10Bundle extends OcxBundle {
     db: PrismaClient,
     options: ImportLoadedEntitiesOptions
   ): Promise<PrismaBundle> {
-    const { pkg, loadedEntities, rootEntity, courseEntity, unitPath } = options
+    const { pkg, loadedEntities, loadedMaterials, rootEntity, courseEntity, unitPath } = options
 
     await db.bundle.update({
       where: { id: this.prismaBundle.id },
@@ -53,13 +59,14 @@ export default class Ocx10Bundle extends OcxBundle {
     })
 
     try {
-      const nodes = await this.createNodesFromOcx10Entities(db, loadedEntities)
+      const nodes = await this.createNodesFromOcx10Entities(db, loadedEntities, loadedMaterials, pkg)
 
       await this.assignParentsToNodes(db, nodes)
       await this.reloadFromDb(db)
 
-      const unitAbout = rootEntity.description as string | undefined
-      const unitAlternateName = rootEntity.ordinalName as string | undefined
+    const unitAbout = rootEntity.description as string | undefined
+    const unitAlternateName =
+      "ordinalName" in rootEntity ? (rootEntity.ordinalName as string | undefined) : undefined
       const fullCourseName =
         unitAlternateName && unitAbout
           ? `${unitAlternateName}: ${unitAbout}`
@@ -109,9 +116,52 @@ export default class Ocx10Bundle extends OcxBundle {
     }
   }
 
+  async assignParentsToNodes(db: PrismaClient, nodes: PrismaNode[]) {
+    const errors = this.prismaBundle.errors as Prisma.JsonObject[]
+
+    for (const node of nodes) {
+      const metadata = node.metadata as Prisma.JsonObject
+      const parts = (metadata.hasPart || []) as Prisma.JsonObject[]
+
+      for (const childData of parts) {
+        if (childData["@type"] === "Material") {
+          continue
+        }
+
+        const ocxId = childData["@id"] as string
+        const child = nodes.find((n) => (n.metadata as Prisma.JsonObject)["@id"] === ocxId)
+
+        if (child) {
+          await db.node.update({
+            where: { id: child.id },
+            data: {
+              parentId: node.id,
+            },
+          })
+        } else {
+          errors.push({
+            node: (node.metadata as Prisma.JsonObject)["@id"],
+            message: `Child not found: ${ocxId}`,
+          })
+        }
+      }
+    }
+
+    if (errors.length > (this.prismaBundle.errors as Prisma.JsonObject[]).length) {
+      await db.bundle.update({
+        where: { id: this.prismaBundle.id },
+        data: {
+          errors,
+        },
+      })
+    }
+  }
+
   async createNodesFromOcx10Entities(
     db: PrismaClient,
-    loadedEntities: Ocx10LoadedEntity[]
+    loadedEntities: Ocx10LoadedEntity[],
+    loadedMaterials: Ocx10LoadedMaterial[],
+    pkg: Ocx10Package
   ): Promise<PrismaNode[]> {
     await db.nodeExport.deleteMany({
       where: { nodeId: { in: this.ocxNodes.map((node) => node.prismaNode.id) } },
@@ -132,26 +182,33 @@ export default class Ocx10Bundle extends OcxBundle {
     const entitiesById = new Map<string, Ocx10CurriculumEntity>(
       loadedEntities.map((item) => [item.entity["@id"], item.entity])
     )
+    const materialsById = new Map(loadedMaterials.map((item) => [item.entity["@id"], item.entity]))
 
     const allSkippedLinks = loadedEntities.flatMap((item) => {
       const { skippedLinks } = normalizeHasPart(
         item.entity["@id"],
         item.entity.hasPart,
-        entitiesById
+        entitiesById,
+        materialsById
       )
       return skippedLinks
     })
 
     const bundleErrors: Prisma.JsonObject[] = skippedLinksToBundleErrors(allSkippedLinks)
 
-    const nodes = await Promise.all(
+    const curriculumNodes = await Promise.all(
       loadedEntities.map(async (item) => {
-        const { hasPart } = normalizeHasPart(item.entity["@id"], item.entity.hasPart, entitiesById)
+        const { hasPart } = normalizeHasPart(
+          item.entity["@id"],
+          item.entity.hasPart,
+          entitiesById,
+          materialsById
+        )
 
-        const metadata: Prisma.JsonObject = {
-          ...item.entity,
-          hasPart,
-        }
+        const metadata = {
+          ...(item.entity as unknown as Prisma.JsonObject),
+          hasPart: hasPart as unknown as Prisma.JsonArray,
+        } satisfies Prisma.JsonObject
 
         return db.node.create({
           data: {
@@ -164,6 +221,32 @@ export default class Ocx10Bundle extends OcxBundle {
       })
     )
 
+    const materialNodes = await Promise.all(
+      loadedMaterials.map(async (item) => {
+        const resolution = await resolveLmsActivityForMaterial(pkg.source, item.entity)
+        const metadata: Prisma.JsonObject = {
+          ...(item.entity as Prisma.JsonObject),
+          ...(resolution.lmsActivity
+            ? { lmsActivity: resolution.lmsActivity as unknown as Prisma.JsonObject }
+            : {}),
+        }
+
+        if (resolution.error) {
+          bundleErrors.push(lmsActivityResolutionErrorToBundleError(resolution.error))
+        }
+
+        return db.node.create({
+          data: {
+            url: item.path,
+            content: (item.entity.content as string | undefined) || "",
+            metadata,
+            bundleId: this.prismaBundle.id,
+          },
+        })
+      })
+    )
+
+    const nodes = [...curriculumNodes, ...materialNodes]
     const ocxIds: string[] = []
 
     const updatedNodes = await Promise.all(
