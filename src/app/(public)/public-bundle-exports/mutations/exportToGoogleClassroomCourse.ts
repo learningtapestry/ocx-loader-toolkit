@@ -1,26 +1,18 @@
 import { resolver } from "@blitzjs/rpc";
 import db from "db";
 
-import { ExportToCanvasCourseSchema } from "../schemas";
+import { ExportToGoogleClassroomCourseSchema } from "../schemas";
 
 import ExportBundleJob from "@/src/app/jobs/exportBundleJob"
 
 export default resolver.pipe(
-  resolver.zod(ExportToCanvasCourseSchema),
+  resolver.zod(ExportToGoogleClassroomCourseSchema),
   async (input) => {
-    const {
-      bundleExportId,
-      token,
-      newCourseName,
-      newCourseCode,
-      existingCourseId
-    } = input;
+    const { bundleExportId, token } = input;
 
-    const bundleExport = await db.bundleExport.findFirst(
-      {
-        where: { id: bundleExportId },
-      }
-    );
+    const bundleExport = await db.bundleExport.findFirst({
+      where: { id: bundleExportId },
+    });
 
     if (!bundleExport || bundleExport.token !== token) {
       throw new Error("Invalid token");
@@ -29,13 +21,7 @@ export default resolver.pipe(
     const updatedBundleExport = await db.bundleExport.update({
       where: { id: bundleExportId },
       data: {
-        metadata: {
-          ...bundleExport.metadata as any,
-          newCourseName,
-          newCourseCode,
-          existingCourseId
-        },
-        state: 'pending'
+        state: "pending",
       },
       include: {
         bundle: true,
@@ -44,7 +30,7 @@ export default resolver.pipe(
     })
 
     await ExportBundleJob.enqueueJob({
-      bundleExportId: bundleExport.id
+      bundleExportId: bundleExport.id,
     })
 
     return updatedBundleExport;

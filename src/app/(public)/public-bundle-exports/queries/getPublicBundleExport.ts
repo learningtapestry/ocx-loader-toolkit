@@ -15,6 +15,7 @@ export default resolver.pipe(
       where: { id },
       include: {
         bundle: true,
+        exportDestination: true,
       },
     });
 

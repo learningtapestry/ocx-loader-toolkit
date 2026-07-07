@@ -8,12 +8,12 @@ import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 import { Prisma } from "@prisma/client"
 import { JsonObject } from '@prisma/client/runtime/library';
 
-type BundleExportWithBundle = Prisma.BundleExportGetPayload<{
-  include: { bundle: true };
+type BundleExportWithRelations = Prisma.BundleExportGetPayload<{
+  include: { bundle: true, exportDestination: true };
 }>;
 
 type PublicBundleExportProps = {
-  bundleExport: BundleExportWithBundle,
+  bundleExport: BundleExportWithRelations,
   refetch: () => void,
 }
 
@@ -26,6 +26,8 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
   const [exportUrl, setExportUrl] = useState('');
   const [showProgress, setShowProgress] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  const isGoogleClassroom = bundleExport.exportDestination.type.startsWith("google-classroom");
 
   useEffect(() => {
     if (!bundleExport) {
@@ -70,10 +72,17 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
     failed: 'failed'
   };
 
+  const destinationLabel = isGoogleClassroom ? "Google Classroom" : "Canvas";
+  const exportedLinkText = isGoogleClassroom ? "View course in Google Classroom" : "View Unit on Canvas";
+
   return (
     <>
       <div>
         <h2>Loading {(bundleExport.metadata as JsonObject).courseName as string}</h2>
+
+        <p>
+          Destination: {destinationLabel}
+        </p>
 
         <p>
           Status: {exportStateMapping[exportProgress.status]}
@@ -86,7 +95,7 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
             rel="noreferrer"
             style={{ display: "block", marginBottom: "1rem", color: "blue" }}
           >
-            View Unit on Canvas
+            {exportedLinkText}
           </a>
         )}
 
@@ -94,10 +103,10 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
           showProgress && <ExportUpdatesWidget
             exportProgress={exportProgress}
             exportUrl={exportUrl}
+            exportedLinkText={exportedLinkText}
           />
         }
       </div>
     </>
   )
 }
-

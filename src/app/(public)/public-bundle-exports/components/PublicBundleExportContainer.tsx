@@ -1,12 +1,14 @@
 "use client";
 
-import { useQuery, useMutation } from "@blitzjs/rpc"
+import { useMutation, useQuery } from "@blitzjs/rpc"
 
 import getBundleExport from "../queries/getPublicBundleExport";
 import exportToCanvasCourse from "../mutations/exportToCanvasCourse";
+import exportToGoogleClassroomCourse from "../mutations/exportToGoogleClassroomCourse";
 
 import { PublicBundleExport } from "./PublicBundleExport"
 import NewBundleExportToCanvas from "./NewBundleExportToCanvas"
+import NewBundleExportToGoogleClassroom from "./NewBundleExportToGoogleClassroom"
 
 type PublicBundleExportContainerProps = {
   bundleExportId: number,
@@ -24,6 +26,7 @@ export const PublicBundleExportContainer = ({bundleExportId, token}: PublicBundl
   );
 
   const [exportToCanvasCourseMutation] = useMutation(exportToCanvasCourse);
+  const [exportToGoogleClassroomCourseMutation] = useMutation(exportToGoogleClassroomCourse);
 
   const startExportWithNewCourse = async (courseName: string, courseCode: string) => {
     const updatedBundleExport = await exportToCanvasCourseMutation({
@@ -46,15 +49,30 @@ export const PublicBundleExportContainer = ({bundleExportId, token}: PublicBundl
     setQueryData(updatedBundleExport);
   }
 
+  const startGoogleClassroomExport = async () => {
+    const updatedBundleExport = await exportToGoogleClassroomCourseMutation({
+      bundleExportId,
+      token,
+    });
+
+    setQueryData(updatedBundleExport);
+  }
+
   if (bundleExport.token !== token) {
     return <div>Invalid token</div>
   }
 
+  const isGoogleClassroom = bundleExport.exportDestination.type.startsWith("google-classroom");
+
   return <div>
-    {bundleExport.state === 'waiting_user_input' && <NewBundleExportToCanvas
+    {bundleExport.state === 'waiting_user_input' && !isGoogleClassroom && <NewBundleExportToCanvas
       bundleExport={bundleExport}
       startExportWithNewCourse={startExportWithNewCourse}
       startExportWithExistingCourse={startExportWithExistingCourse}
+    />}
+    {bundleExport.state === 'waiting_user_input' && isGoogleClassroom && <NewBundleExportToGoogleClassroom
+      bundleExport={bundleExport}
+      startExport={startGoogleClassroomExport}
     />}
     {bundleExport.state !== 'waiting_user_input' && <PublicBundleExport bundleExport={bundleExport} refetch={refetch} />}
   </div>

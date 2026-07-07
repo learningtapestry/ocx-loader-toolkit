@@ -1,3 +1,8 @@
+export const googleOAuth = {
+  clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+};
+
 export const googleApiKey = {
   "type": "service_account",
   "project_id": "",

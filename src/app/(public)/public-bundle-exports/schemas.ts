@@ -7,3 +7,8 @@ export const ExportToCanvasCourseSchema = z.object({
   newCourseCode: z.string().optional(),
   existingCourseId: z.number().optional(),
 });
+
+export const ExportToGoogleClassroomCourseSchema = z.object({
+  bundleExportId: z.number(),
+  token: z.string(),
+});
