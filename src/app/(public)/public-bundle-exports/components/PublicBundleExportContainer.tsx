@@ -49,10 +49,11 @@ export const PublicBundleExportContainer = ({bundleExportId, token}: PublicBundl
     setQueryData(updatedBundleExport);
   }
 
-  const startGoogleClassroomExport = async () => {
+  const startGoogleClassroomExport = async (newCourseName: string) => {
     const updatedBundleExport = await exportToGoogleClassroomCourseMutation({
       bundleExportId,
       token,
+      newCourseName,
     });
 
     setQueryData(updatedBundleExport);

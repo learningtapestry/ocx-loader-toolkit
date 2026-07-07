@@ -1,10 +1,11 @@
 import { googleOAuth } from "config/secrets"
 
+// TODO(refactor): document courseworkmaterials scope in phase plan — required for courseWorkMaterials.create
 export const GOOGLE_CLASSROOM_SCOPES = [
   "https://www.googleapis.com/auth/classroom.courses",
+  "https://www.googleapis.com/auth/classroom.coursework.students",
+  "https://www.googleapis.com/auth/classroom.courseworkmaterials",
 ];
-
-export const GOOGLE_CLASSROOM_PLACEHOLDER_COURSE_NAME = "OCX Loader Export";
 
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_OAUTH_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";

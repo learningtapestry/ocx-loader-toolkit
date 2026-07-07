@@ -1,10 +1,13 @@
 import { api } from "src/app/blitz-server"
 
-import db from "db";
-import { randomBytes } from "crypto";
+import db from "db"
+import { randomBytes } from "crypto"
 
-import { getGoogleOAuth2Token, GOOGLE_CLASSROOM_PLACEHOLDER_COURSE_NAME } from "src/lib/exporters/repositories/callGoogleClassroom"
+import { languages } from "src/constants/languages"
+import { getGoogleOAuth2Token } from "src/lib/exporters/repositories/callGoogleClassroom"
 import ExportDestinationService from "src/lib/ExportDestinationService"
+
+import { JsonObject } from "@prisma/client/runtime/library"
 
 export default api(async (req, res) => {
   const { code, state } = req.query
@@ -23,9 +26,9 @@ export default api(async (req, res) => {
     bundleId: number
     language: string
     localUrlBase: string
-  }>(state);
+  }>(state)
 
-  const redirectUri = `${localUrlBase}/api/google-classroom-oauth-export-callback`;
+  const redirectUri = `${localUrlBase}/api/google-classroom-oauth-export-callback`
   const response = await getGoogleOAuth2Token(code, redirectUri)
 
   if (!response.ok) {
@@ -48,13 +51,23 @@ export default api(async (req, res) => {
     },
   })
 
-  const token = randomBytes(32).toString("hex");
+  const token = randomBytes(32).toString("hex")
+
+  const bundle = await db.bundle.findFirst({
+    where: {
+      id: bundleId,
+    },
+  })
+  const languageDescription =
+    language !== "en" && languages[language] ? ` [${languages[language]}]` : ""
+  const courseName =
+    (bundle?.importMetadata as JsonObject)?.full_course_name + languageDescription
 
   const bundleExport = await db.bundleExport.create({
     data: {
       name: "Temp Google Classroom Export",
       metadata: {
-        courseName: GOOGLE_CLASSROOM_PLACEHOLDER_COURSE_NAME,
+        courseName,
         language: language || "en",
       },
       token: token,
@@ -70,7 +83,7 @@ export default api(async (req, res) => {
       },
       state: "waiting_user_input",
     },
-  });
+  })
 
   res.redirect(`/public-bundle-exports/${bundleExport.id}?token=${token}`)
 })
