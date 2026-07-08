@@ -1,15 +1,21 @@
 import { googleOAuth } from "config/secrets"
 
+import callGoogleApi, { GoogleApiError } from "./callGoogleApi"
+
+export { GoogleApiError }
+
 // TODO(refactor): document courseworkmaterials scope in phase plan — required for courseWorkMaterials.create
 export const GOOGLE_CLASSROOM_SCOPES = [
   "https://www.googleapis.com/auth/classroom.courses",
   "https://www.googleapis.com/auth/classroom.coursework.students",
   "https://www.googleapis.com/auth/classroom.courseworkmaterials",
-];
+  "https://www.googleapis.com/auth/drive",
+  "https://www.googleapis.com/auth/forms.body",
+]
 
-const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const GOOGLE_OAUTH_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-const GOOGLE_CLASSROOM_API_BASE = "https://classroom.googleapis.com/v1";
+const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token"
+const GOOGLE_OAUTH_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+const GOOGLE_CLASSROOM_API_BASE = "https://classroom.googleapis.com/v1"
 
 export function googleOAuthAuthLink(state: string, redirectUri: string): string {
   const params = new URLSearchParams({
@@ -56,25 +62,7 @@ export default async function callGoogleClassroomApi(
   accessToken: string,
   path: string,
   method = "GET",
-  body?: object
+  body?: object,
 ) {
-  const url = /^https?:\/\//i.test(path)
-    ? path
-    : `${GOOGLE_CLASSROOM_API_BASE}/${path}`;
-
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Google Classroom API ${method} ${path} failed: ${response.status} ${text}`);
-  }
-
-  return response.json();
+  return callGoogleApi(accessToken, GOOGLE_CLASSROOM_API_BASE, path, method, body)
 }

@@ -98,7 +98,7 @@ Inside OCX-LOADER-TOOLKIT click `create Canvas Instance`. Fill the data:
 
 Public bundle export supports Google Classroom via OAuth 2. Each teacher consents with their own Google account when exporting.
 
-1. In [Google Cloud Console](https://console.cloud.google.com/), create or select a project and enable the **Google Classroom API**.
+1. In [Google Cloud Console](https://console.cloud.google.com/), create or select a project and enable the **Google Classroom API**, **Google Drive API**, and **Google Forms API**.
 2. Create an **OAuth 2.0 Client ID** (application type: **Web application**).
 3. Add an authorized redirect URI: `OCX-LOADER-TOOLKIT_HOST/api/google-classroom-oauth-export-callback`  
    For local development: `http://localhost:3000/api/google-classroom-oauth-export-callback`
@@ -109,7 +109,9 @@ GOOGLE_OAUTH_CLIENT_ID=your_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
 ```
 
-Teachers choose **Sync with Google Classroom** on the public bundle page. Phase 1 creates a placeholder course named **OCX Loader Export** in the consenting user's Classroom account.
+Teachers choose **Sync with Google Classroom** on the public bundle page. Export creates a Classroom course with DRAFT coursework and copies submission materials into a `Classroom-{course name}` Drive staging folder.
+
+OAuth scopes: Classroom courses/coursework, Drive, and Forms (`forms.body`). Teachers who previously consented may need to re-consent when scopes change.
 
 Note: This OAuth client is separate from the service account used for read-side Google Drive/Forms access (`GOOGLE_CLIENT_EMAIL` / `GOOGLE_PRIVATE_KEY`).
 

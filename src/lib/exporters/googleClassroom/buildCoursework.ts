@@ -2,7 +2,6 @@ import { Prisma } from "@prisma/client"
 
 import OcxNode from "src/lib/OcxNode"
 
-import { buildAttachments } from "./buildAttachments"
 import { stripHtml } from "./stripHtml"
 import {
   CourseworkPayload,
@@ -118,7 +117,7 @@ export function buildCoursework(
     title: buildTitle(googleClassroomData, activityNode, parentNode, parentCourseType, lang),
     description: buildDescription(googleClassroomData, activityNode, lang),
     state: "DRAFT",
-    materials: buildAttachments(googleClassroomData.materials),
+    materials: [],
   }
 
   if (postType === "assignment") {

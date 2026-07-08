@@ -20,9 +20,12 @@ export type GoogleClassroomData = {
   materials: GoogleClassroomMaterial[]
 }
 
+export type DriveShareMode = "STUDENT_COPY" | "EDIT" | "VIEW"
+
 export type ClassroomMaterial =
   | { link: { url: string; title?: string } }
   | { youtubeVideo: { id: string } }
+  | { driveFile: { driveFile: { id: string }; shareMode: DriveShareMode } }
 
 export type CourseworkPayload = {
   title: string

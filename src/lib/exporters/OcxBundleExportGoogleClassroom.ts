@@ -9,9 +9,10 @@ import db from "db"
 import OcxBundle from "src/lib/OcxBundle"
 import OcxNode from "src/lib/OcxNode"
 import OcxNodeExport from "src/lib/OcxNodeExport"
-import ExportDestinationService from "src/lib/ExportDestinationService"
 
+import { buildAttachments } from "./googleClassroom/buildAttachments"
 import { BuiltCoursework } from "./googleClassroom/buildCoursework"
+import { GoogleClassroomData } from "./googleClassroom/types"
 import { stripHtml } from "./googleClassroom/stripHtml"
 import GoogleClassroomRepository from "./repositories/GoogleClassroomRepository"
 
@@ -32,6 +33,10 @@ export default class OcxBundleExportGoogleClassroom {
     return (this.metadata.googleClassroomCourseId as string) || (this.metadata.id as string)
   }
 
+  get googleClassroomStagingFolderId(): string {
+    return this.metadata.googleClassroomStagingFolderId as string
+  }
+
   get metadata() {
     return this.prismaBundleExport.metadata as Prisma.JsonObject
   }
@@ -42,18 +47,34 @@ export default class OcxBundleExportGoogleClassroom {
   ) {
     const { postType, payload } = builtCoursework
     const courseId = this.googleClassroomCourseId
+    const googleClassroomData = activityNode.metadata.googleClassroom as
+      | GoogleClassroomData
+      | undefined
+
+    const materials = await buildAttachments(googleClassroomData?.materials, {
+      stagingFolderId: this.googleClassroomStagingFolderId,
+      repository: this.googleClassroomRepository,
+    })
+
+    const exportPayload = {
+      ...payload,
+      materials,
+    }
 
     let gcResponse: Prisma.JsonObject
 
     if (postType === "assignment") {
-      gcResponse = await this.googleClassroomRepository.createCourseWork(courseId, payload)
+      gcResponse = await this.googleClassroomRepository.createCourseWork(courseId, exportPayload)
     } else {
-      gcResponse = await this.googleClassroomRepository.createCourseWorkMaterial(courseId, payload)
+      gcResponse = await this.googleClassroomRepository.createCourseWorkMaterial(
+        courseId,
+        exportPayload,
+      )
     }
 
     console.log(
       `[${this.prismaBundleExport.id}] Exported ${postType}:`,
-      payload.title,
+      exportPayload.title,
     )
 
     return this.createOcxNodeExport(activityNode, gcResponse)
@@ -137,6 +158,10 @@ export async function createExportOcxBundleToGoogleClassroom(
 
   console.log(`[${bundleExport.id}] Created Google Classroom course:`, course.name)
 
+  const stagingFolder = await googleClassroomRepository.createStagingFolder(course.name)
+
+  console.log(`[${bundleExport.id}] Created Google Classroom staging folder:`, stagingFolder.id)
+
   const updatedBundleExport = await dbClient.bundleExport.update({
     where: {
       id: bundleExport.id,
@@ -147,6 +172,7 @@ export async function createExportOcxBundleToGoogleClassroom(
         ...metadata,
         ...course,
         googleClassroomCourseId: course.id,
+        googleClassroomStagingFolderId: stagingFolder.id,
       },
     },
   })

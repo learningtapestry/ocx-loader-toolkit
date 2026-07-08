@@ -119,9 +119,20 @@ export default class GoogleClassroomExporter {
               builtCoursework.payload.title,
             )
 
-            await ocxBundleExport.exportActivity(activityNode, builtCoursework)
+            try {
+              await ocxBundleExport.exportActivity(activityNode, builtCoursework)
+              activityNodesExported++
+            } catch (error) {
+              if (process.env.NODE_ENV === "production") {
+                throw error
+              }
 
-            activityNodesExported++
+              console.warn(
+                `[${this.prismaBundleExport.id}] Skipping activity in non-production after export failure:`,
+                builtCoursework.payload.title,
+                error,
+              )
+            }
 
             publishBundleExportUpdate(this.prismaBundleExport.id, {
               status: "exporting",
