@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "@blitzjs/rpc"
 import getGoogleExportRedirectUrl from "../../public-bundles/mutations/getGoogleExportRedirectUrl"
 import getBundle from "../../public-bundles/queries/getPublicBundle";
 
-import { languages } from "src/constants/languages";
+import { formatCourseNameWithLanguage } from "src/constants/languages";
 
 type PublicBundleGoogleClassroomProps = {
   bundleId: number
@@ -52,8 +52,7 @@ export const PublicBundleGoogleClassroom = ({ bundleId, language }: PublicBundle
 
   const importMetadata = bundle.importMetadata as importMetadata;
 
-  const languageDescription = language !== 'en' && languages[language] ? ` [${languages[language]}]` : '';
-  const courseName = importMetadata.full_course_name + languageDescription;
+  const courseName = formatCourseNameWithLanguage(importMetadata.full_course_name, language);
 
   return (
     <div>

@@ -70,15 +70,16 @@ export const PublicBundleExportGc = ({ bundleExport }: PublicBundleExportGcProps
     failed: 'failed'
   };
 
+  const courseName = (bundleExport.metadata as JsonObject).courseName as string
   const exportedLinkText = "View course in Google Classroom";
 
   return (
     <>
       <div>
-        <h2>Loading {(bundleExport.metadata as JsonObject).courseName as string}</h2>
+        <h2>Loading {courseName}</h2>
 
         <p>
-          Destination: Google Classroom
+          Unit: {courseName}
         </p>
 
         <p>

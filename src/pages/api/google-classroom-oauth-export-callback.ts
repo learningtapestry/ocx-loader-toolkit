@@ -3,7 +3,7 @@ import { api } from "src/app/blitz-server"
 import db from "db"
 import { randomBytes } from "crypto"
 
-import { languages } from "src/constants/languages"
+import { formatCourseNameWithLanguage } from "src/constants/languages"
 import { getGoogleOAuth2Token } from "src/lib/exporters/repositories/callGoogleClassroom"
 import ExportDestinationService from "src/lib/ExportDestinationService"
 
@@ -58,10 +58,10 @@ export default api(async (req, res) => {
       id: bundleId,
     },
   })
-  const languageDescription =
-    language !== "en" && languages[language] ? ` [${languages[language]}]` : ""
-  const courseName =
-    (bundle?.importMetadata as JsonObject)?.full_course_name + languageDescription
+  const courseName = formatCourseNameWithLanguage(
+    (bundle?.importMetadata as JsonObject)?.full_course_name as string,
+    language || "en",
+  )
 
   const bundleExport = await db.bundleExport.create({
     data: {

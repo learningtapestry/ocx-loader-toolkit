@@ -19,7 +19,7 @@ export default function NewBundleExportToGoogleClassroom({
   startExport,
 }: NewBundleExportToGoogleClassroomProps) {
   const courseName = (bundleExport.metadata as JsonObject).courseName as string
-  const [newCourseName, setNewCourseName] = useState(courseName || "")
+  const [newCourseName, setNewCourseName] = useState(courseName ? `Unit: ${courseName}` : "Unit: ")
 
   const handleStartExport = () => {
     // TODO(refactor): drop alert — disabled button already blocks empty course name
