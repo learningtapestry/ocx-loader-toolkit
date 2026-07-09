@@ -1,3 +1,5 @@
+import { languages } from "src/constants/languages"
+
 import {
   extractYoutubeVideoId,
   isGoogleAppsMime,
@@ -26,6 +28,17 @@ export type AttachmentResolver = {
 export type AttachmentResolverContext = {
   stagingFolderId: string
   repository: AttachmentResolver
+}
+
+export type AttachmentLanguage = "en" | "es"
+
+export function filterMaterialsByLanguage(
+  materials: GoogleClassroomMaterial[],
+  language: AttachmentLanguage,
+): GoogleClassroomMaterial[] {
+  return materials.filter((material) =>
+    String(material.version || "").includes(languages[language]),
+  )
 }
 
 function driveFileMaterial(fileId: string, shareMode: DriveShareMode): ClassroomMaterial {
@@ -123,10 +136,11 @@ async function resolveDriveMaterial(
 export async function buildAttachments(
   materials: GoogleClassroomMaterial[] = [],
   ctx?: AttachmentResolverContext,
+  language: AttachmentLanguage = "en",
 ): Promise<ClassroomMaterial[]> {
   const attachments: ClassroomMaterial[] = []
 
-  for (const material of materials) {
+  for (const material of filterMaterialsByLanguage(materials, language)) {
     const object = material.object
     if (!object) {
       continue

@@ -6,7 +6,7 @@ import {
   isSubmissionAccessType,
   resolveShareMode,
 } from "../attachmentHelpers"
-import { buildAttachments, AttachmentResolver } from "../buildAttachments"
+import { buildAttachments, AttachmentResolver, filterMaterialsByLanguage } from "../buildAttachments"
 import { buildCoursework, resolveMaxPoints } from "../buildCoursework"
 import { GoogleClassroomMaterial, normalizePostType } from "../types"
 import { stripHtml } from "../stripHtml"
@@ -161,6 +161,64 @@ describe("resolveMaxPoints", () => {
 })
 
 describe("buildAttachments", () => {
+  it("filters materials by export language", async () => {
+    const materials = [
+      {
+        version: "English",
+        object: {
+          title: "Microwave Oven Manual",
+          type: "material" as const,
+          url: "https://example.com/en.pdf",
+        },
+      },
+      {
+        version: "Spanish",
+        object: {
+          title: "Manual del horno microondas",
+          type: "material" as const,
+          url: "https://example.com/es.pdf",
+        },
+      },
+      {
+        version: "English, Spanish",
+        object: {
+          title: "Shared Simulation",
+          type: "material" as const,
+          url: "https://example.com/sim",
+        },
+      },
+    ]
+
+    const englishAttachments = await buildAttachments(materials, undefined, "en")
+    const spanishAttachments = await buildAttachments(materials, undefined, "es")
+
+    expect(englishAttachments).toEqual([
+      { link: { url: "https://example.com/en.pdf", title: "Microwave Oven Manual" } },
+      { link: { url: "https://example.com/sim", title: "Shared Simulation" } },
+    ])
+    expect(spanishAttachments).toEqual([
+      { link: { url: "https://example.com/es.pdf", title: "Manual del horno microondas" } },
+      { link: { url: "https://example.com/sim", title: "Shared Simulation" } },
+    ])
+  })
+
+  it("filterMaterialsByLanguage mirrors Canvas version filtering", () => {
+    const allMaterials = [
+      { version: "English", object: { title: "A", type: "material" as const } },
+      { version: "Spanish", object: { title: "B", type: "material" as const } },
+      { version: "English, Spanish", object: { title: "C", type: "material" as const } },
+    ]
+
+    expect(filterMaterialsByLanguage(allMaterials, "en").map((m) => m.object.title)).toEqual([
+      "A",
+      "C",
+    ])
+    expect(filterMaterialsByLanguage(allMaterials, "es").map((m) => m.object.title)).toEqual([
+      "B",
+      "C",
+    ])
+  })
+
   it("builds youtubeVideo attachment", async () => {
     const materials = (youtubeMaterialActivity.metadata.googleClassroom as { materials: [] }).materials
     const attachments = await buildAttachments(materials)

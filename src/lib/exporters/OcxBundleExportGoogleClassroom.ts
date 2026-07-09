@@ -51,10 +51,12 @@ export default class OcxBundleExportGoogleClassroom {
       | GoogleClassroomData
       | undefined
 
+    const language = ((this.metadata.language as "en" | "es") || "en")
+
     const materials = await buildAttachments(googleClassroomData?.materials, {
       stagingFolderId: this.googleClassroomStagingFolderId,
       repository: this.googleClassroomRepository,
-    })
+    }, language)
 
     const exportPayload = {
       ...payload,
