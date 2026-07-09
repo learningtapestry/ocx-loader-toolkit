@@ -15,6 +15,17 @@ const generateLegacyOSEPublicBundleLink = (bundle: Bundle, language: string): st
   return `/public-bundles/from-import/${bundle.importSourceId}/grade%20${grade}/${unit}/${language}`;
 };
 
+const generateLegacyOSEGoogleClassroomLink = (bundle: Bundle, language: string): string | null => {
+  const importMetadata = bundle.importMetadata as { grade?: string, unit?: string };
+  const grade = importMetadata.grade;
+  const unit = importMetadata.unit;
+
+  if (!grade || !unit) {
+    return null;
+  }
+  return `/public-bundles-gc/from-import/${bundle.importSourceId}/grade%20${grade}/${unit}/${language}`;
+};
+
 interface ExportLinksProps {
   bundle: Bundle;
 }
@@ -25,23 +36,42 @@ const ExportLinks = ({ bundle }: ExportLinksProps) => {
   return (
     <div className="export-links">
       Export:
-      <ul>
-        {languageEntries.map(([code, label]) => {
-          const link = generateLegacyOSEPublicBundleLink(bundle, code)
+      <div style={{ marginTop: "0.5rem" }}>
+        <strong>Canvas:</strong>
+        <ul>
+          {languageEntries.map(([code, label]) => {
+            const link = generateLegacyOSEPublicBundleLink(bundle, code)
 
-          if (!link) return null
+            if (!link) return null
 
-          return (
-            <li>
-              <React.Fragment key={code}>
+            return (
+              <li key={`canvas-${code}`}>
                 <Link href={link as any}>
                   {label}
                 </Link>
-              </React.Fragment>
-            </li>
-          )
-        })}
-      </ul>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+      <div style={{ marginTop: "0.5rem" }}>
+        <strong>Google Classroom:</strong>
+        <ul>
+          {languageEntries.map(([code, label]) => {
+            const link = generateLegacyOSEGoogleClassroomLink(bundle, code)
+
+            if (!link) return null
+
+            return (
+              <li key={`gc-${code}`}>
+                <Link href={link as any}>
+                  {label}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
     </div>
   );
 };

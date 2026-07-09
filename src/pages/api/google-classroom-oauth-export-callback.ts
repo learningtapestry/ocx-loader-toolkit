@@ -85,5 +85,5 @@ export default api(async (req, res) => {
     },
   })
 
-  res.redirect(`/public-bundle-exports/${bundleExport.id}?token=${token}`)
+  res.redirect(`/public-bundle-exports-gc/${bundleExport.id}?token=${token}`)
 })
