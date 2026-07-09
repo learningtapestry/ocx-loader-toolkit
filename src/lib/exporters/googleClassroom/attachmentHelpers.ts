@@ -1,10 +1,12 @@
 import { DriveShareMode } from "./types"
 
+export const GOOGLE_FORM_MIME = "application/vnd.google-apps.form"
+
 const GOOGLE_APPS_MIME_TYPES = new Set([
   "application/vnd.google-apps.document",
   "application/vnd.google-apps.presentation",
   "application/vnd.google-apps.spreadsheet",
-  "application/vnd.google-apps.form",
+  GOOGLE_FORM_MIME,
 ])
 
 export function extractYoutubeVideoId(url: string): string | null {
@@ -37,6 +39,10 @@ export function isGoogleDriveOrFormUrl(url: string): boolean {
 
 export function isGoogleFormUrl(url: string): boolean {
   return /google\.com\/forms/i.test(url) || /forms\.gle/i.test(url)
+}
+
+export function isGoogleFormMime(mimeType: string | undefined): boolean {
+  return mimeType === GOOGLE_FORM_MIME
 }
 
 export function isYoutubeUrl(url: string): boolean {

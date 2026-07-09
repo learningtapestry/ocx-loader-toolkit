@@ -27,6 +27,7 @@ function createMockRepository(
 ): AttachmentResolver {
   return {
     copyFromS3: vi.fn().mockResolvedValue({ id: "s3-file-id" }),
+    getGoogleDriveUrlFromS3: vi.fn().mockResolvedValue(null),
     resolveDriveAttachment: vi.fn().mockResolvedValue({ id: "drive-file-id" }),
     ...overrides,
   }
@@ -357,7 +358,7 @@ describe("buildAttachments", () => {
     ])
   })
 
-  it("recreates form URL with submission access as STUDENT_COPY", async () => {
+  it("attaches form URL with submission access as link", async () => {
     const repository = createMockRepository()
     const attachments = await buildAttachments(
       [
@@ -374,15 +375,38 @@ describe("buildAttachments", () => {
       { stagingFolderId: "folder-123", repository },
     )
 
-    expect(repository.resolveDriveAttachment).toHaveBeenCalled()
+    expect(repository.resolveDriveAttachment).not.toHaveBeenCalled()
     expect(attachments).toEqual([
-      {
-        driveFile: {
-          driveFile: { id: "drive-file-id" },
-          shareMode: "STUDENT_COPY",
-        },
-      },
+      { link: { url: "https://docs.google.com/forms/d/form123/edit", title: "Exit Ticket" } },
     ])
+  })
+
+  it("attaches S3 form material as link using Google Drive URL from S3", async () => {
+    const formUrl = "https://docs.google.com/forms/d/form123/edit"
+    const repository = createMockRepository({
+      getGoogleDriveUrlFromS3: vi.fn().mockResolvedValue(formUrl),
+    })
+    const attachments = await buildAttachments(
+      [
+        {
+          version: "English",
+          access_type: "individual-submission",
+          object: {
+            title: "L1 Exit Ticket",
+            type: "material",
+            s3_url: "https://s3.example.com/form-data.json",
+            mime_type: "application/vnd.google-apps.form",
+          },
+        },
+      ],
+      { stagingFolderId: "folder-123", repository },
+    )
+
+    expect(repository.copyFromS3).not.toHaveBeenCalled()
+    expect(repository.getGoogleDriveUrlFromS3).toHaveBeenCalledWith(
+      "https://s3.example.com/form-data.json",
+    )
+    expect(attachments).toEqual([{ link: { url: formUrl, title: "L1 Exit Ticket" } }])
   })
 
   it("falls back to S3 link when fetch fails in non-production", async () => {

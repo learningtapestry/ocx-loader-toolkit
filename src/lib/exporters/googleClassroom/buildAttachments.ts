@@ -4,6 +4,7 @@ import {
   extractYoutubeVideoId,
   isGoogleAppsMime,
   isGoogleDriveOrFormUrl,
+  isGoogleFormMime,
   isGoogleFormUrl,
   isSubmissionAccessType,
   isYoutubeUrl,
@@ -18,6 +19,7 @@ export type AttachmentResolver = {
     mimeType: string,
     title: string,
   ) => Promise<{ id: string }>
+  getGoogleDriveUrlFromS3: (s3Url: string) => Promise<string | null>
   resolveDriveAttachment: (
     url: string,
     folderId: string,
@@ -58,6 +60,33 @@ function isProduction(): boolean {
   return process.env.NODE_ENV === "production"
 }
 
+function isFormMaterial(object: GoogleClassroomMaterial["object"]): boolean {
+  return isGoogleFormMime(object.mime_type) || !!(object.url && isGoogleFormUrl(object.url))
+}
+
+async function resolveFormMaterial(
+  material: GoogleClassroomMaterial,
+  ctx?: AttachmentResolverContext,
+): Promise<ClassroomMaterial | null> {
+  const object = material.object
+
+  if (!isFormMaterial(object)) {
+    return null
+  }
+
+  let url = object.url && isGoogleFormUrl(object.url) ? object.url : null
+
+  if (!url && object.s3_url && ctx) {
+    url = await ctx.repository.getGoogleDriveUrlFromS3(object.s3_url)
+  }
+
+  if (!url) {
+    return null
+  }
+
+  return linkMaterial(url, object.title)
+}
+
 async function resolveS3Material(
   material: GoogleClassroomMaterial,
   ctx: AttachmentResolverContext,
@@ -69,7 +98,7 @@ async function resolveS3Material(
     return null
   }
 
-  if (!isGoogleAppsMime(object.mime_type)) {
+  if (!isGoogleAppsMime(object.mime_type) || isGoogleFormMime(object.mime_type)) {
     return null
   }
 
@@ -81,7 +110,7 @@ async function resolveS3Material(
       object.title,
     )
 
-    const shareMode = resolveShareMode(accessType, object.mime_type === "application/vnd.google-apps.form")
+    const shareMode = resolveShareMode(accessType, false)
     return driveFileMaterial(copied.id, shareMode)
   } catch (error) {
     if (!isProduction() && object.s3_url) {
@@ -105,7 +134,7 @@ async function resolveDriveMaterial(
   const url = object.url
   const accessType = material.access_type
 
-  if (!url || !isGoogleDriveOrFormUrl(url)) {
+  if (!url || !isGoogleDriveOrFormUrl(url) || isGoogleFormUrl(url)) {
     return null
   }
 
@@ -120,7 +149,7 @@ async function resolveDriveMaterial(
       object.title,
     )
 
-    const shareMode = resolveShareMode(accessType, isGoogleFormUrl(url))
+    const shareMode = resolveShareMode(accessType, false)
     return driveFileMaterial(copied.id, shareMode)
   } catch (error) {
     if (!isProduction() && url) {
@@ -143,6 +172,12 @@ export async function buildAttachments(
   for (const material of filterMaterialsByLanguage(materials, language)) {
     const object = material.object
     if (!object) {
+      continue
+    }
+
+    const formAttachment = await resolveFormMaterial(material, ctx)
+    if (formAttachment) {
+      attachments.push(formAttachment)
       continue
     }
 

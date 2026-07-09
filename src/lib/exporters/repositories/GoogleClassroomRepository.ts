@@ -2,13 +2,31 @@ import { ExportDestination } from "@prisma/client"
 
 import ExportDestinationService from "src/lib/ExportDestinationService"
 
-import { extractGoogleFileId, isGoogleFormUrl } from "../googleClassroom/attachmentHelpers"
-import { recreateFormInFolder } from "../googleClassroom/recreateForm"
+import { extractGoogleFileId, isGoogleAppsMime } from "../googleClassroom/attachmentHelpers"
 import callGoogleApi, { GoogleApiError, sleep } from "./callGoogleApi"
 import callGoogleClassroomApi from "./callGoogleClassroom"
 
 const GOOGLE_DRIVE_API_BASE = "https://www.googleapis.com/drive/v3"
 const GOOGLE_DRIVE_UPLOAD_BASE = "https://www.googleapis.com/upload/drive/v3"
+const S3_GOOGLE_DRIVE_URL_HEADER = "x-amz-meta-google_drive_url"
+const S3_MIME_TYPE_HEADER = "x-amz-meta-mime_type"
+
+function extractGoogleDriveUrlFromS3Body(body: string): string | null {
+  try {
+    const parsed = JSON.parse(body) as Record<string, unknown>
+    const candidates = [parsed.google_drive_url, parsed.googleDriveUrl, parsed.url]
+
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && candidate.trim()) {
+        return candidate
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
 
 export default class GoogleClassroomRepository {
   exportDestinationService: ExportDestinationService
@@ -122,17 +140,16 @@ export default class GoogleClassroomRepository {
     combined.set(blobBytes, metadataPart.length + blobPart.length)
     combined.set(closingPart, metadataPart.length + blobPart.length + blobBytes.length)
 
-    const response = await fetch(
-      `${GOOGLE_DRIVE_UPLOAD_BASE}/files?uploadType=multipart&fields=id`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": `multipart/related; boundary=${boundary}`,
-        },
-        body: combined,
+    const uploadUrl = `${GOOGLE_DRIVE_UPLOAD_BASE}/files?uploadType=multipart&fields=id`
+
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": `multipart/related; boundary=${boundary}`,
       },
-    )
+      body: combined,
+    })
 
     if (!response.ok) {
       const text = await response.text()
@@ -142,6 +159,20 @@ export default class GoogleClassroomRepository {
     return response.json()
   }
 
+  async getGoogleDriveUrlFromS3(s3Url: string): Promise<string | null> {
+    const response = await fetch(s3Url)
+    if (!response.ok) {
+      return null
+    }
+
+    const googleDriveUrl = response.headers.get(S3_GOOGLE_DRIVE_URL_HEADER)
+    if (googleDriveUrl) {
+      return googleDriveUrl
+    }
+
+    return extractGoogleDriveUrlFromS3Body(await response.text())
+  }
+
   async copyFromS3(
     s3Url: string,
     folderId: string,
@@ -149,17 +180,29 @@ export default class GoogleClassroomRepository {
     title: string,
   ): Promise<{ id: string }> {
     const response = await fetch(s3Url)
+
     if (!response.ok) {
       throw new Error(`S3 fetch failed: ${response.status} ${s3Url}`)
     }
 
-    const blob = await response.blob()
-    return this.uploadFileToFolder(blob, title, mimeType, folderId)
-  }
+    const materialMimeType = response.headers.get(S3_MIME_TYPE_HEADER) ?? mimeType
+    const googleDriveUrl = response.headers.get(S3_GOOGLE_DRIVE_URL_HEADER)
 
-  async recreateFormInFolder(formSourceUrl: string, folderId: string): Promise<{ id: string }> {
-    const token = await this.getToken()
-    return recreateFormInFolder(token, formSourceUrl, folderId)
+    if (!materialMimeType) {
+      throw new Error(`S3 material missing mime type metadata: ${s3Url}`)
+    }
+
+    if (isGoogleAppsMime(materialMimeType)) {
+      if (!googleDriveUrl) {
+        throw new Error(`S3 Google Apps material missing Google Drive source URL: ${s3Url}`)
+      }
+
+      return this.copyDriveFileFromUrl(googleDriveUrl, folderId, title)
+    }
+
+    const blob = await response.blob()
+
+    return this.uploadFileToFolder(blob, title, materialMimeType, folderId)
   }
 
   async resolveDriveAttachment(
@@ -167,10 +210,6 @@ export default class GoogleClassroomRepository {
     folderId: string,
     title?: string,
   ): Promise<{ id: string }> {
-    if (isGoogleFormUrl(url)) {
-      return this.recreateFormInFolder(url, folderId)
-    }
-
     return this.copyDriveFileFromUrl(url, folderId, title)
   }
 
