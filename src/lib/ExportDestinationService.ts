@@ -3,6 +3,7 @@ import { CanvasInstance, ExportDestination } from "@prisma/client"
 import db from "db"
 import { JsonObject } from "type-fest"
 import { CANVAS_USER_AGENT } from "../constants/canvas"
+import { refreshGoogleOAuth2Token } from "./exporters/repositories/callGoogleClassroom"
 
 export default class ExportDestinationService {
   exportDestination: ExportDestination;
@@ -51,6 +52,32 @@ export default class ExportDestinationService {
     return access_token;
   }
 
+  async refreshGoogleAccessToken() {
+    const metadata = this.exportDestination.metadata! as any;
+
+    const response = await refreshGoogleOAuth2Token(metadata.refreshToken);
+
+    if (!response.ok) {
+      throw new Error("Failed to refresh Google access token");
+    }
+
+    const { access_token, refresh_token, expires_in } = await response.json();
+
+    await db.exportDestination.update({
+      where: { id: this.exportDestination.id },
+      data: {
+        metadata: {
+          ...metadata,
+          accessToken: access_token,
+          refreshToken: refresh_token ?? metadata.refreshToken,
+          accessTokenExpiry: new Date(Date.now() + expires_in * 1000).toISOString(),
+        },
+      },
+    });
+
+    return access_token;
+  }
+
   async getToken(): Promise<string> {
     if (this.exportDestination.type === 'canvas') {
       return (this.exportDestination.metadata! as any).accessToken;
@@ -63,6 +90,16 @@ export default class ExportDestinationService {
 
       if (accessTokenExpiryDate < new Date()) {
         accessToken = await this.refreshAccessToken();
+      }
+
+      return accessToken;
+    }
+
+    if (this.exportDestination.type.startsWith('google-classroom-oauth2')) {
+      let { accessToken, accessTokenExpiry } = (this.exportDestination.metadata! as any);
+
+      if (new Date(accessTokenExpiry) < new Date()) {
+        accessToken = await this.refreshGoogleAccessToken();
       }
 
       return accessToken;

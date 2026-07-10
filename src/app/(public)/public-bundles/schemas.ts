@@ -14,3 +14,9 @@ export const ExportBundleSchema = z.object({
   localUrlBase: z.string(),
   language: z.string().optional()
 });
+
+export const GoogleExportBundleSchema = z.object({
+  id: z.number(),
+  localUrlBase: z.string(),
+  language: z.string().optional()
+});

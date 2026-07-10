@@ -39,6 +39,7 @@ export default resolver.pipe(
       },
       include: {
         bundle: true,
+        exportDestination: true,
       },
     })
 

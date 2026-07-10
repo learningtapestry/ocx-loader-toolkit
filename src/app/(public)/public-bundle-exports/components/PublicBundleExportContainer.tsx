@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation } from "@blitzjs/rpc"
+import { useMutation, useQuery } from "@blitzjs/rpc"
 
 import getBundleExport from "../queries/getPublicBundleExport";
 import exportToCanvasCourse from "../mutations/exportToCanvasCourse";

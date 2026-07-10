@@ -10,7 +10,7 @@ export default async function PublicLayout({
   return (
     <>
       <div className='publicHeader'>
-        <h1><ClientInfoVar field="clientName"/> Canvas Loader</h1>
+        <h1><ClientInfoVar field="clientName"/>LMS Loader</h1>
       </div>
 
       <div className='container' style={{ marginTop: '1em' }}>

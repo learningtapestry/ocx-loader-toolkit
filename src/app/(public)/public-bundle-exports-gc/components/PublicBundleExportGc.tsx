@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 
-import ExportUpdatesWidget from "./ExportUpdatesWidget";
+import ExportUpdatesWidget from "../../public-bundle-exports/components/ExportUpdatesWidget";
 
 import { BundleExportUpdate } from "src/app/jobs/BundleExportUpdate"
 
@@ -12,12 +12,12 @@ type BundleExportWithRelations = Prisma.BundleExportGetPayload<{
   include: { bundle: true, exportDestination: true };
 }>;
 
-type PublicBundleExportProps = {
+type PublicBundleExportGcProps = {
   bundleExport: BundleExportWithRelations,
   refetch: () => void,
 }
 
-export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) => {
+export const PublicBundleExportGc = ({ bundleExport }: PublicBundleExportGcProps) => {
   const [exportProgress, setExportProgress] = useState<{ status: keyof typeof exportStateMapping, progress: number, totalActivities: number }>({
     status: bundleExport.state as keyof typeof exportStateMapping,
     progress: 0,
@@ -70,15 +70,16 @@ export const PublicBundleExport = ({ bundleExport }: PublicBundleExportProps) =>
     failed: 'failed'
   };
 
-  const exportedLinkText = "View Unit on Canvas";
+  const courseName = (bundleExport.metadata as JsonObject).courseName as string
+  const exportedLinkText = "View course in Google Classroom";
 
   return (
     <>
       <div>
-        <h2>Loading {(bundleExport.metadata as JsonObject).courseName as string}</h2>
+        <h2>Loading {courseName}</h2>
 
         <p>
-          Destination: Canvas
+          Unit: {courseName}
         </p>
 
         <p>

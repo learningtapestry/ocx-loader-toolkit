@@ -8,11 +8,13 @@ interface ExportUpdatesWidgetProps {
     totalActivities: number;
   };
   exportUrl: string;
+  exportedLinkText?: string;
 }
 
 const ExportUpdatesWidget: React.FC<ExportUpdatesWidgetProps> = ({
                                                                exportProgress,
                                                                exportUrl,
+                                                               exportedLinkText = "View Unit on Canvas",
                                                              }) => {
 
   return (
@@ -45,7 +47,7 @@ const ExportUpdatesWidget: React.FC<ExportUpdatesWidgetProps> = ({
             rel="noreferrer"
             style={{ display: "block", marginBottom: "1rem", color: "blue" }}
           >
-            View Unit on Canvas
+            {exportedLinkText}
           </a>
         </div>
       )}
