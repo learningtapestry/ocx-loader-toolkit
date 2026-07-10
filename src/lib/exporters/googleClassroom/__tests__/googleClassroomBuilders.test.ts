@@ -8,8 +8,8 @@ import {
 } from "../attachmentHelpers"
 import { buildAttachments, AttachmentResolver, filterMaterialsByLanguage } from "../buildAttachments"
 import { buildCoursework, resolveMaxPoints } from "../buildCoursework"
-import { GoogleClassroomMaterial, normalizePostType } from "../types"
-import { stripHtml } from "../stripHtml"
+import { GoogleClassroomMaterial } from "../types"
+import { normalizePostType, stripHtml } from "../utils"
 
 import {
   assignmentActivity,
@@ -33,7 +33,6 @@ function createMockRepository(
   }
 }
 
-// TODO(refactor): add Unit-parent title and unknown postType cases from phase plan test matrix
 describe("normalizePostType", () => {
   it("returns assignment for exact match", () => {
     expect(normalizePostType("assignment")).toBe("assignment")
@@ -221,6 +220,7 @@ describe("buildAttachments", () => {
   })
 
   it("builds youtubeVideo attachment", async () => {
+    // TODO(refactor): Remove direct reference to Google Classroom
     const materials = (youtubeMaterialActivity.metadata.googleClassroom as { materials: [] }).materials
     const attachments = await buildAttachments(materials)
 
@@ -228,6 +228,7 @@ describe("buildAttachments", () => {
   })
 
   it("builds link attachment for plain https URLs", async () => {
+    // TODO(refactor): Remove direct reference to Google Classroom
     const materials = (materialActivity.metadata.googleClassroom as { materials: [] }).materials
     const attachments = await buildAttachments(materials)
 
@@ -237,6 +238,7 @@ describe("buildAttachments", () => {
   })
 
   it("skips Google Drive URLs without resolver context", async () => {
+    // TODO(refactor): Remove direct reference to Google Classroom
     const materials = (driveMaterialActivity.metadata.googleClassroom as { materials: [] }).materials
     const attachments = await buildAttachments(materials)
 

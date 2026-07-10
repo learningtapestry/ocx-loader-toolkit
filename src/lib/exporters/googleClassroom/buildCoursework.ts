@@ -2,13 +2,12 @@ import { Prisma } from "@prisma/client"
 
 import OcxNode from "src/lib/OcxNode"
 
-import { stripHtml } from "./stripHtml"
 import {
   CourseworkPayload,
   GoogleClassroomData,
   GoogleClassroomPostType,
-  normalizePostType,
 } from "./types"
+import { normalizePostType, stripHtml } from "./utils"
 
 export type BuiltCoursework = {
   postType: GoogleClassroomPostType
@@ -102,6 +101,7 @@ export function buildCoursework(
   parentCourseType: ParentCourseType,
   lang: Language = "en",
 ): BuiltCoursework | null {
+  // TODO(refactor): Remove direct reference to Google Classroom
   const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData | undefined
 
   if (!googleClassroomData) {
@@ -129,6 +129,7 @@ export function buildCoursework(
 }
 
 export function isExportableActivity(activityNode: OcxNode): boolean {
+  // TODO(refactor): Remove direct reference to Google Classroom
   const googleClassroomData = activityNode.metadata.googleClassroom as GoogleClassroomData | undefined
 
   if (!googleClassroomData) {

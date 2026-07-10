@@ -56,12 +56,12 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
   }
 
   const handleExport = async () => {
-    try {
-      if (!destinationUrl) {
-        alert("Please enter a destination canvas URL");
-        return;
-      }
+    if (!destinationUrl) {
+      alert("Please enter a destination canvas URL");
+      return;
+    }
 
+    try {
       const {redirectUrl, error} = await getExportRedirectUrlMutation({
         id: bundle.id,
         canvasUrl: destinationUrl,
@@ -91,7 +91,7 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
   return (
     <>
       <div>
-        <h2>Export this unit</h2>
+        <h2>Create a Canvas Version</h2>
 
         <h3>{courseName}</h3>
 
@@ -103,16 +103,16 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
             placeholder={`Enter URL of the Canvas instance where you want to load this ${clientName} unit: https://mydistrictname.instructure.com`}
             style={{ marginRight: "0.5rem" }}
           />
-        </div>
 
-        <button
-          type="button"
-          onClick={handleExport}
-          style={{ marginTop: "0.5rem" }}
-          disabled={!destinationUrlValid}
-        >
-          Sync with Canvas
-        </button>
+          <button
+            type="button"
+            onClick={handleExport}
+            style={{ marginLeft: "0.5rem" }}
+            disabled={!destinationUrlValid}
+          >
+            Sync with Canvas
+          </button>
+        </div>
 
         <ExportUpdateModal
           isOpen={isExportUpdateModalOpen}
@@ -123,4 +123,9 @@ export const PublicBundle = ({ bundleId, language }: PublicBundleProps) => {
       </div>
     </>
   )
+}
+
+interface Destination {
+  id: number
+  name: string
 }

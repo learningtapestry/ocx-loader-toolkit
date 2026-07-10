@@ -35,33 +35,3 @@ export type CourseworkPayload = {
   maxPoints?: number
   workType?: "ASSIGNMENT"
 }
-
-export function normalizePostType(raw: string | undefined): GoogleClassroomPostType | null {
-  if (!raw) {
-    return null
-  }
-
-  const normalized = raw.trim().toLowerCase()
-
-  if (!normalized) {
-    return null
-  }
-
-  if (normalized.includes(",") || normalized.includes("choose one")) {
-    return null
-  }
-
-  if (normalized === "assignment") {
-    return "assignment"
-  }
-
-  if (normalized === "material") {
-    return "material"
-  }
-
-  if (normalized === "summary post" || normalized === "summarypost") {
-    return "summary post"
-  }
-
-  return null
-}

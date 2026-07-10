@@ -10,7 +10,8 @@ import {
   buildCoursework,
   countExportableActivities,
 } from "./googleClassroom/buildCoursework"
-import { GoogleClassroomData, normalizePostType } from "./googleClassroom/types"
+import { GoogleClassroomData } from "./googleClassroom/types"
+import { normalizePostType } from "./googleClassroom/utils"
 import OcxBundleExportGoogleClassroom, {
   createExportOcxBundleToGoogleClassroom,
 } from "./OcxBundleExportGoogleClassroom"
@@ -79,6 +80,7 @@ export default class GoogleClassroomExporter {
 
           for (const activityNode of lessonNode.children) {
             // TODO(refactor): consolidate postType skip/ambiguous-warn with buildCoursework — duplicated rules drift easily
+            // TODO(refactor): Remove direct reference to Google Classroom
             const googleClassroomData = activityNode.metadata
               .googleClassroom as GoogleClassroomData | undefined
 

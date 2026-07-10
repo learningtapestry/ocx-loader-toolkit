@@ -13,10 +13,11 @@ import OcxNodeExport from "src/lib/OcxNodeExport"
 import { buildAttachments } from "./googleClassroom/buildAttachments"
 import { BuiltCoursework } from "./googleClassroom/buildCoursework"
 import { GoogleClassroomData } from "./googleClassroom/types"
-import { stripHtml } from "./googleClassroom/stripHtml"
+import { stripHtml } from "./googleClassroom/utils"
 import GoogleClassroomRepository from "./repositories/GoogleClassroomRepository"
 
-// TODO(refactor): consider destination-agnostic OcxBundleExport base if more exporters are added
+// TODO(refactor): All bundles should inherit from OcxBundleExport base class but
+// it needs to be stripped of Canvas specific logic (or at least naming).
 export default class OcxBundleExportGoogleClassroom {
   prismaBundleExport: BundleExport
   googleClassroomRepository: GoogleClassroomRepository
@@ -47,6 +48,7 @@ export default class OcxBundleExportGoogleClassroom {
   ) {
     const { postType, payload } = builtCoursework
     const courseId = this.googleClassroomCourseId
+    // TODO(refactor): Remove direct reference to Google Classroom
     const googleClassroomData = activityNode.metadata.googleClassroom as
       | GoogleClassroomData
       | undefined
@@ -157,11 +159,9 @@ export async function createExportOcxBundleToGoogleClassroom(
   const courseDescription = deriveCourseDescription(courseNode)
 
   const course = await googleClassroomRepository.createCourse(courseName, courseDescription)
-
   console.log(`[${bundleExport.id}] Created Google Classroom course:`, course.name)
 
   const stagingFolder = await googleClassroomRepository.createStagingFolder(course.name)
-
   console.log(`[${bundleExport.id}] Created Google Classroom staging folder:`, stagingFolder.id)
 
   const updatedBundleExport = await dbClient.bundleExport.update({

@@ -15,7 +15,7 @@ const generateLegacyOSEPublicBundleLink = (bundle: Bundle, language: string): st
   return `/public-bundles/from-import/${bundle.importSourceId}/grade%20${grade}/${unit}/${language}`;
 };
 
-const generateLegacyOSEGoogleClassroomLink = (bundle: Bundle, language: string): string | null => {
+const generateGoogleClassroomLink = (bundle: Bundle, language: string): string | null => {
   const importMetadata = bundle.importMetadata as { grade?: string, unit?: string };
   const grade = importMetadata.grade;
   const unit = importMetadata.unit;
@@ -58,7 +58,7 @@ const ExportLinks = ({ bundle }: ExportLinksProps) => {
         <strong>Google Classroom:</strong>
         <ul>
           {languageEntries.map(([code, label]) => {
-            const link = generateLegacyOSEGoogleClassroomLink(bundle, code)
+            const link = generateGoogleClassroomLink(bundle, code)
 
             if (!link) return null
 

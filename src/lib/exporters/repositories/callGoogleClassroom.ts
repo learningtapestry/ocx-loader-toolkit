@@ -4,7 +4,6 @@ import callGoogleApi, { GoogleApiError } from "./callGoogleApi"
 
 export { GoogleApiError }
 
-// TODO(refactor): document courseworkmaterials scope in phase plan — required for courseWorkMaterials.create
 export const GOOGLE_CLASSROOM_SCOPES = [
   "https://www.googleapis.com/auth/classroom.courses",
   "https://www.googleapis.com/auth/classroom.coursework.students",
