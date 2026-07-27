@@ -4,6 +4,7 @@ import { ImportLegacyOSEUnitSchema } from "../schemas"
 import db from "db";
 
 import OpenSciEdLegacyOcxBundle from "src/lib/LegacyOpenSciEdOcxBundle"
+import { IMPORT_TRANSACTION_OPTIONS } from "src/lib/db/DbClient"
 
 export default resolver.pipe(
   resolver.zod(ImportLegacyOSEUnitSchema),
@@ -18,10 +19,24 @@ export default resolver.pipe(
 
     if (!bundle) throw new Error("Bundle not found");
 
-    const ocxBundle: OpenSciEdLegacyOcxBundle = new OpenSciEdLegacyOcxBundle(bundle, bundle.nodes);
+    const ocxBundle = new OpenSciEdLegacyOcxBundle(bundle, []);
 
-    await ocxBundle.createNodesFromUnitHtml(db, data.unitUrl);
+    const unitText = await ocxBundle.fetchUnitHtml(data.unitUrl);
+    ocxBundle.validateUnitHtml(unitText);
 
-    return ocxBundle.prismaBundle;
+    const updatedBundle = await db.$transaction(async (tx) => {
+      await ocxBundle.importNodesFromUnitText(tx, unitText);
+
+      return tx.bundle.findFirst({
+        where: { id: bundle.id },
+        include: { nodes: true },
+      });
+    }, IMPORT_TRANSACTION_OPTIONS);
+
+    if (!updatedBundle) {
+      throw new Error("Bundle not found after import");
+    }
+
+    return updatedBundle;
   }
 );

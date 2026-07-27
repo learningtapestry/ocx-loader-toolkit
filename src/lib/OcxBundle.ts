@@ -1,6 +1,7 @@
 import { Bundle as PrismaBundle, Node as PrismaNode, PrismaClient } from "@prisma/client"
 
 import OcxNode, { PropertyValidationResult } from "./OcxNode"
+import { DbClient } from "./db/DbClient"
 
 import * as cheerio from 'cheerio';
 import JSZip from 'jszip';
@@ -83,7 +84,7 @@ export default class OcxBundle {
     return zip.generateAsync({ type: 'blob' });
   }
 
-  async reloadFromDb(db : PrismaClient) {
+  async reloadFromDb(db : DbClient) {
     const prismaBundle = await db.bundle.findFirst(
       {
         where: { id: this.prismaBundle.id },
@@ -296,10 +297,14 @@ export default class OcxBundle {
     return this.createNodesFromFilesTexts(db, filesTexts);
   }
 
-  async createNodesFromFilesTexts(db: PrismaClient, filesTexts: { [key: string]: string }) {
-    await db.nodeExport.deleteMany({
-      where: { nodeId: { in: this.ocxNodes.map(node => node.prismaNode.id) } }
-    });
+  async createNodesFromFilesTexts(db: DbClient, filesTexts: { [key: string]: string }) {
+    const existingNodeIds = this.ocxNodes.map((node) => node.prismaNode.id)
+
+    if (existingNodeIds.length > 0) {
+      await db.nodeExport.deleteMany({
+        where: { nodeId: { in: existingNodeIds } },
+      })
+    }
 
     await db.node.deleteMany({
       where: { bundleId: this.prismaBundle.id }
@@ -321,7 +326,17 @@ export default class OcxBundle {
 
       const $ = cheerio.load(html);
       const content = $('body').first();
-      const metadata = JSON.parse($(METADATA_SELECTOR).first().html()!);
+      const metadataHtml = $(METADATA_SELECTOR).first().html();
+
+      if (!metadataHtml) {
+        throw new Error("Invalid OCX HTML: missing application/ld+json metadata");
+      }
+
+      const metadata = JSON.parse(metadataHtml) as Prisma.JsonObject;
+
+      if (!metadata || typeof metadata !== "object" || !metadata["@type"]) {
+        throw new Error("Invalid OCX HTML: metadata missing @type");
+      }
 
       const node: PrismaNode = await db.node.create({
         data: {
@@ -368,7 +383,7 @@ export default class OcxBundle {
     return updatedNodes;
   }
 
-  async appendErrors(db: PrismaClient, errors: Prisma.JsonObject[]) {
+  async appendErrors(db: DbClient, errors: Prisma.JsonObject[]) {
     const updatedErrors = ((this.prismaBundle.errors || []) as Prisma.JsonObject[]).concat(errors);
 
     await db.bundle.update({
@@ -381,7 +396,7 @@ export default class OcxBundle {
     this.prismaBundle.errors = updatedErrors;
   }
 
-  async splitPartNodes(db: PrismaClient, nodes: PrismaNode[]) {
+  async splitPartNodes(db: DbClient, nodes: PrismaNode[]) {
     // for each hasPart, check if there is an html element with the same id
     // if there is, split the content and create a new node
     // a node metadata in hasPart could have hasPart too, so we need to also iterate on the new nodes
@@ -486,7 +501,7 @@ export default class OcxBundle {
     return updatedNodes;
   }
 
-  async assignParentsToNodes(db: PrismaClient, nodes: PrismaNode[]) {
+  async assignParentsToNodes(db: DbClient, nodes: PrismaNode[]) {
     const errors = this.prismaBundle.errors as Prisma.JsonObject[];
 
     for (const node of nodes) {

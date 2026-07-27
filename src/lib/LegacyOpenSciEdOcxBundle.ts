@@ -8,23 +8,19 @@ import computeHmacSignature from "./hmac/computeHmacSignature";
 import db from "@/db";
 
 import { JsonObject } from '@prisma/client/runtime/library';
+import * as cheerio from 'cheerio';
+
+import { DbClient } from "./db/DbClient";
+
+const METADATA_SELECTOR = 'script[type="application/ld+json"]';
 
 const createFetchWithCookies = () => fetchCookie(fetch);
 
 export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
   // legacy openscied doesn't create an xml sitemap, and a whole unit is
   // in one single .ocx.html file, where the data has some errors to fix
-  async createNodesFromUnitHtml(db: PrismaClient, unitUrl: string) {
-    let unitText = ""
 
-    if (unitUrl.includes("/api/")) {
-      unitText = await this.fetchUsingApi(unitUrl).then((res) => res.text());
-    } else {
-      const fetchWithCookies = await this.logIntoOSELCMS(unitUrl);
-      unitText = await fetchWithCookies(unitUrl).then((res) => res.text());
-    }
-    
-
+  normalizeUnitHtml(unitText: string): string {
     // all ids reference the fragments in the file itself
     unitText = unitText.replaceAll('"@id":"SCI', '"@id":"#SCI');
 
@@ -32,8 +28,52 @@ export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
     unitText = unitText.replaceAll('<div id="Lesson_', ',<div id="');
     unitText = unitText.replaceAll('<div id="Unit_', ',<div id="');
 
+    return unitText;
+  }
+
+  validateUnitHtml(unitText: string): void {
+    const normalized = this.normalizeUnitHtml(unitText);
+    const $ = cheerio.load(normalized);
+    const metadataHtml = $(METADATA_SELECTOR).first().html();
+
+    if (!metadataHtml) {
+      throw new Error("Invalid OCX HTML: missing application/ld+json metadata");
+    }
+
+    const metadata = JSON.parse(metadataHtml) as JsonObject | null;
+
+    if (!metadata || typeof metadata !== "object" || !metadata["@type"]) {
+      throw new Error("Invalid OCX HTML: metadata missing @type");
+    }
+  }
+
+  async fetchUnitHtml(unitUrl: string): Promise<string> {
+    if (unitUrl.includes("/api/")) {
+      const response = await this.fetchUsingApi(unitUrl);
+
+      if (!response.ok) {
+        throw new Error(`LCMS returned ${response.status} ${response.statusText}`);
+      }
+
+      return response.text();
+    }
+
+    const fetchWithCookies = await this.logIntoOSELCMS(unitUrl);
+    const response = await fetchWithCookies(unitUrl);
+
+    if (!response.ok) {
+      throw new Error(`LCMS returned ${response.status} ${response.statusText}`);
+    }
+
+    return response.text();
+  }
+
+  /** DB writes only — run inside a transaction. Fetch and validate before calling. */
+  async importNodesFromUnitText(db: DbClient, unitText: string): Promise<void> {
+    const normalized = this.normalizeUnitHtml(unitText);
+
     const filesTexts = {
-      unitUrl: unitText,
+      unitUrl: normalized,
     };
 
     const nodes = await this.createNodesFromFilesTexts(db, filesTexts);
@@ -53,7 +93,12 @@ export default class OpenSciEdLegacyOcxBundle extends OcxBundle {
     }
 
     await this.reloadFromDb(db);
+  }
 
+  async createNodesFromUnitHtml(db: PrismaClient, unitUrl: string) {
+    const unitText = await this.fetchUnitHtml(unitUrl);
+    this.validateUnitHtml(unitText);
+    await this.importNodesFromUnitText(db, unitText);
     return this.prismaBundle;
   }
 

@@ -2,6 +2,7 @@ import { Node as PrismaNode, Prisma, PrismaClient } from "@prisma/client"
 import { ErrorObject } from "ajv"
 
 import OcxBundle from "./OcxBundle";
+import { DbClient } from "./db/DbClient";
 
 import validateNodeProperties from "src/lib/validation/validateNodeProperties"
 
@@ -206,7 +207,7 @@ export default class OcxNode {
     });
   }
 
-  async fixIsPartOf(db: PrismaClient, parent: OcxNode) {
+  async fixIsPartOf(db: DbClient, parent: OcxNode) {
     if (!parent.children.find((child) => child.ocxId === this.ocxId)) {
       throw new Error(`Node ${this.ocxId} is not part of the parent ${parent.ocxId}`);
     }
